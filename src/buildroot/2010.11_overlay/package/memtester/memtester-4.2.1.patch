@@ -1,0 +1,70 @@
+diff -Nuar memtester-4.2.1_orig/memtester.c memtester-4.2.1/memtester.c
+--- memtester-4.2.1_orig/memtester.c	2010-10-04 02:56:13.000000000 +0700
++++ memtester-4.2.1/memtester.c	2012-02-09 04:14:23.000000000 +0700
+@@ -27,12 +27,14 @@
+ #include "types.h"
+ #include "sizes.h"
+ #include "tests.h"
++#include "memtester.h"
+ 
+ #define EXIT_FAIL_NONSTARTER    0x01
+ #define EXIT_FAIL_ADDRESSLINES  0x02
+ #define EXIT_FAIL_OTHERTEST     0x04
+ 
+ struct test tests[] = {
++#if !(defined SERGA_DISABLE)
+     { "Random Value", test_random_value },
+     { "Compare XOR", test_xor_comparison },
+     { "Compare SUB", test_sub_comparison },
+@@ -41,6 +43,7 @@
+     { "Compare OR", test_or_comparison },
+     { "Compare AND", test_and_comparison },
+     { "Sequential Increment", test_seqinc_comparison },
++
+     { "Solid Bits", test_solidbits_comparison },
+     { "Block Sequential", test_blockseq_comparison },
+     { "Checkerboard", test_checkerboard_comparison },
+@@ -52,6 +55,7 @@
+     { "8-bit Writes", test_8bit_wide_random },
+     { "16-bit Writes", test_16bit_wide_random },
+ #endif
++#endif
+     { NULL, NULL }
+ };
+ 
+@@ -327,6 +331,7 @@
+         for (i=0;;i++) {
+             if (!tests[i].name) break;
+             printf("  %-20s: ", tests[i].name);
++            fflush(stdout);
+             if (!tests[i].fp(bufa, bufb, count)) {
+                 printf("ok\n");
+             } else {
+diff -Nuar memtester-4.2.1_orig/memtester.h memtester-4.2.1/memtester.h
+--- memtester-4.2.1_orig/memtester.h	2010-10-04 02:56:13.000000000 +0700
++++ memtester-4.2.1/memtester.h	2012-02-09 04:14:15.000000000 +0700
+@@ -15,6 +15,9 @@
+ 
+ #include <sys/types.h>
+ 
++//SergA`s skip test for improving test time
++#define SERGA_DISABLE
++
+ /* extern declarations. */
+ 
+ extern int use_phys;
+diff -Nuar memtester-4.2.1_orig/tests.c memtester-4.2.1/tests.c
+--- memtester-4.2.1_orig/tests.c	2010-10-04 02:56:13.000000000 +0700
++++ memtester-4.2.1/tests.c	2012-02-09 04:15:09.000000000 +0700
+@@ -64,7 +64,11 @@
+ 
+     printf("           ");
+     fflush(stdout);
++#if !(defined SERGA_DISABLE)
+     for (j = 0; j < 16; j++) {
++#else
++    for (j = 0; j < 2; j++) {
++#endif
+         printf("\b\b\b\b\b\b\b\b\b\b\b");
+         p1 = (ulv *) bufa;
+         printf("setting %3u", j);

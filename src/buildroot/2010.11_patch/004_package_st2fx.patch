@@ -1,0 +1,186 @@
+--- buildroot-2010.11_orig/package/zlib/Config.in	2010-11-30 21:52:43.000000000 +0600
++++ buildroot-2010.11/package/zlib/Config.in	2012-03-07 09:52:40.000000000 +0700
+@@ -5,3 +5,15 @@
+ 	  gzip and libpng.
+ 
+ 	  http://www.gzip.org/zlib/
++
++if BR2_PACKAGE_ZLIB
++
++config BR2_PACKAGE_ZLIB_ST
++	bool "zlib from stapisdk"
++	help
++	  Standard (de)compression library from STAPI SDK.  Used by things like
++	  gzip and libpng.
++
++	  http://www.gzip.org/zlib/
++
++endif # BR2_PACKAGE_ZLIB
+--- buildroot-2010.11_orig/package/zlib/zlib.mk	2010-11-30 21:52:43.000000000 +0600
++++ buildroot-2010.11/package/zlib/zlib.mk	2012-03-07 10:20:02.000000000 +0700
+@@ -75,5 +75,12 @@
+ 	$(MAKE1) -C $(@D) uninstall
+ endef
+ 
++ifeq ($(BR2_PACKAGE_ZLIB_ST),y)
++ZLIB_NAME=zlib
++include package/elecard/st2fx_common.mk
++$(eval $(call GENTARGETS_ST2FX,zlib,libz,zlib))
++else
+ $(eval $(call GENTARGETS,package,zlib))
++endif
++
+ $(eval $(call GENTARGETS,package,zlib,host))
+--- buildroot-2010.11_orig/package/tiff/Config.in	2010-11-30 21:52:43.000000000 +0600
++++ buildroot-2010.11/package/tiff/Config.in	2012-03-07 09:52:40.000000000 +0700
+@@ -6,3 +6,16 @@
+ 	  Library for handling TIFF (Tag Image File Format) images.
+ 
+ 	  http://www.libtiff.org/
++
++if BR2_PACKAGE_TIFF
++
++config BR2_PACKAGE_TIFF_ST
++	bool "tiff from stapisdk"
++	select BR2_PACKAGE_ZLIB_ST
++	select BR2_PACKAGE_JPEG_ST
++	help
++	  Library for handling TIFF (Tag Image File Format) images. From STAPI SDK.
++
++	  http://www.libtiff.org/
++
++endif # BR2_PACKAGE_TIFF
+--- buildroot-2010.11_orig/package/tiff/tiff.mk	2010-11-30 21:52:43.000000000 +0600
++++ buildroot-2010.11/package/tiff/tiff.mk	2012-03-07 10:21:52.000000000 +0700
+@@ -21,4 +21,9 @@
+ 	-cp -a $(@D)/libtiff/.libs/libtiff.so* $(TARGET_DIR)/usr/lib/
+ endef
+ 
++ifeq ($(BR2_PACKAGE_TIFF_ST),y)
++include package/elecard/st2fx_common.mk
++$(eval $(call GENTARGETS_ST2FX,tiff,libtiff,tiff))
++else
+ $(eval $(call AUTOTARGETS,package,tiff))
++endif
+--- buildroot-2010.11_orig/package/libpng/Config.in	2010-11-30 21:52:43.000000000 +0600
++++ buildroot-2010.11/package/libpng/Config.in	2012-03-07 09:52:40.000000000 +0700
+@@ -6,3 +6,17 @@
+ 	  images.
+ 
+ 	  http://www.libpng.org/
++
++
++if BR2_PACKAGE_LIBPNG
++
++config BR2_PACKAGE_LIBPNG_ST
++	bool "libpng  from stapisdk"
++	select BR2_PACKAGE_ZLIB
++	help
++	  Library for handling PNG (Portable Network Graphics). From STAPI SDK.
++	  images.
++
++	  http://www.libpng.org/
++
++endif # BR2_PACKAGE_LIBPNG
+--- buildroot-2010.11_orig/package/libpng/libpng.mk	2010-11-30 21:52:43.000000000 +0600
++++ buildroot-2010.11/package/libpng/libpng.mk	2012-03-07 10:23:12.000000000 +0700
+@@ -23,5 +23,10 @@
+ 
+ LIBPNG_POST_INSTALL_STAGING_HOOKS += LIBPNG_STAGING_LIBPNG12_CONFIG_FIXUP
+ 
++ifeq ($(BR2_PACKAGE_LIBPNG_ST),y)
++include package/elecard/st2fx_common.mk
++$(eval $(call GENTARGETS_ST2FX,libpng,libpng,png))
++else
+ $(eval $(call AUTOTARGETS,package,libpng))
++endif
+ $(eval $(call AUTOTARGETS,package,libpng,host))
+--- buildroot-2010.11_orig/package/jpeg/Config.in	2010-11-30 21:52:43.000000000 +0600
++++ buildroot-2010.11/package/jpeg/Config.in	2012-03-07 09:52:40.000000000 +0700
+@@ -4,3 +4,14 @@
+ 	  The ubiquitous C library for manipulating JPEG images.
+ 
+ 	  http://www.ijg.org/
++
++if BR2_PACKAGE_JPEG
++
++config BR2_PACKAGE_JPEG_ST
++	bool "jpeg from stapisdk"
++	help
++	  The ubiquitous C library for manipulating JPEG images. From STAPI SDK.
++
++	  http://www.ijg.org/
++
++endif # BR2_PACKAGE_JPEG
+--- buildroot-2010.11_orig/package/jpeg/jpeg.mk	2010-11-30 21:52:43.000000000 +0600
++++ buildroot-2010.11/package/jpeg/jpeg.mk	2012-03-07 10:25:03.000000000 +0700
+@@ -16,4 +16,9 @@
+ 
+ JPEG_POST_INSTALL_TARGET_HOOKS += JPEG_REMOVE_USELESS_TOOLS
+ 
++ifeq ($(BR2_PACKAGE_JPEG_ST),y)
++include package/elecard/st2fx_common.mk
++$(eval $(call GENTARGETS_ST2FX,jpeg,libjpeg,jpeg))
++else
+ $(eval $(call AUTOTARGETS,package,jpeg))
++endif
+--- buildroot-2010.11_orig/package/freetype/Config.in	2010-11-30 21:52:43.000000000 +0600
++++ buildroot-2010.11/package/freetype/Config.in	2012-03-07 09:52:40.000000000 +0700
+@@ -4,3 +4,15 @@
+ 	  a free, high-quality and portable font engine.
+ 
+ 	  http://www.freetype.org/
++
++
++if BR2_PACKAGE_FREETYPE
++
++config BR2_PACKAGE_FREETYPE_ST
++	bool "freetype from stapisdk"
++	help
++	  a free, high-quality and portable font engine. From STAPI SDK.
++
++	  http://www.freetype.org/
++
++endif # BR2_PACKAGE_FREETYPE
+--- buildroot-2010.11_orig/package/freetype/freetype.mk	2010-11-30 21:52:43.000000000 +0600
++++ buildroot-2010.11/package/freetype/freetype.mk	2012-03-07 10:26:22.000000000 +0700
+@@ -31,5 +31,11 @@
+ FREETYPE_POST_INSTALL_TARGET_HOOKS += FREETYPE_FREETYPE_CONFIG_TARGET_REMOVE
+ endif
+ 
++ifeq ($(BR2_PACKAGE_FREETYPE_ST),y)
++include package/elecard/st2fx_common.mk
++$(eval $(call GENTARGETS_ST2FX,freetype,libfreetype,freetype))
++else
+ $(eval $(call AUTOTARGETS,package,freetype))
++endif
++
+ $(eval $(call AUTOTARGETS,package,freetype,host))
+--- buildroot-2010.11_orig/package/directfb/Config.in	2010-11-30 21:52:43.000000000 +0600
++++ buildroot-2010.11/package/directfb/Config.in	2012-03-07 09:52:40.000000000 +0700
+@@ -102,4 +102,9 @@
+ config BR2_PACKAGE_DIRECTB_TESTS
+ 	bool "build directfb tests"
+ 
++config BR2_PACKAGE_DIRECTFB_ST
++	bool "directfb from stapisdk"
++	help
++	  http://www.directfb.org/
++
+ endif # BR2_PACKAGE_DIRECTFB
+--- buildroot-2010.11_orig/package/directfb/directfb.mk	2010-11-30 21:52:43.000000000 +0600
++++ buildroot-2010.11/package/directfb/directfb.mk	2012-03-07 10:30:04.000000000 +0700
+@@ -139,7 +139,13 @@
+ HOST_DIRECTFB_INSTALL_CMDS = \
+ 	$(INSTALL) -m 0755 $(@D)/tools/directfb-csource $(HOST_DIR)/usr/bin
+ 
++ifeq ($(BR2_PACKAGE_DIRECTFB_ST),y)
++include package/elecard/st2fx_common.mk
++$(eval $(call GENTARGETS_ST2FX_DIRECTFB))
++else
+ $(eval $(call AUTOTARGETS,package,directfb))
++endif
++
+ $(eval $(call AUTOTARGETS,package,directfb,host))
+ 
+ # directfb-csource for the host

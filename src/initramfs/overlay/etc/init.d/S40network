@@ -1,0 +1,4 @@
+
+# Delete this from file system.
+# Use sh script instead for speed up loading.
+[% SKIPFILE %]

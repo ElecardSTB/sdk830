@@ -1,0 +1,79 @@
+--- compat-wireless-3.0-2/include/linux/compat-2.6.33.h.orig	2011-05-31 02:52:53.000000000 +0700
++++ compat-wireless-3.0-2/include/linux/compat-2.6.33.h	2011-09-13 17:07:45.581999996 +0700
+@@ -14,6 +14,7 @@
+ #endif
+ #include <linux/firmware.h>
+
++#ifdef __SH4__
+ #define release_firmware compat_release_firmware
+ #define request_firmware compat_request_firmware
+ #define request_firmware_nowait compat_request_firmware_nowait
+@@ -46,6 +47,7 @@
+ {
+ }
+ #endif
++#endif
+
+ #define KEY_RFKILL		247	/* Key that controls all radios */
+
+@@ -55,6 +57,7 @@
+ /* this will never happen on older kernels */
+ #define NETDEV_POST_INIT 0xffff
+
++#ifdef __SH4__
+ static inline struct sk_buff *netdev_alloc_skb_ip_align(struct net_device *dev,
+                 unsigned int length)
+ {
+@@ -64,6 +67,7 @@
+ 		skb_reserve(skb, NET_IP_ALIGN);
+ 	return skb;
+ }
++#endif
+
+ #if defined(CONFIG_PCCARD) || defined(CONFIG_PCCARD_MODULE)
+
+--- compat-wireless-3.0-2/config.mk.orig	2011-07-28 05:33:25.000000000 +0700
++++ compat-wireless-3.0-2/config.mk	2011-09-13 17:18:21.801999996 +0700
+@@ -116,7 +116,9 @@
+
+ ifdef CONFIG_COMPAT_KERNEL_2_6_33
+ ifdef CONFIG_FW_LOADER
++ifeq ($(PRJROOT),)
+  CONFIG_COMPAT_FIRMWARE_CLASS=m
++endif
+ endif #CONFIG_FW_LOADER
+ endif #CONFIG_COMPAT_KERNEL_2_6_33
+
+@@ -238,6 +240,7 @@
+ # for long range considerations.
+ CONFIG_ATH9K_RATE_CONTROL=y
+
++ifeq ($(PRJROOT),)
+ # PCI Drivers
+ ifdef CONFIG_PCI
+
+@@ -402,6 +405,8 @@
+
+ endif #CONFIG_PCMCIA
+ ## end of PCMCIA
++endif
++## end of STSDK
+
+ # This is required for some cards
+ CONFIG_EEPROM_93CX6=m
+@@ -447,6 +452,7 @@
+
+ CONFIG_AT76C50X_USB=m
+
++ifeq ($(PRJROOT),)
+ ifndef CONFIG_COMPAT_KERNEL_2_6_29
+ CONFIG_CARL9170=m
+ ifdef CONFIG_MAC80211_LEDS
+@@ -455,6 +461,7 @@
+ # CONFIG_CARL9170_DEBUGFS=y
+ CONFIG_CARL9170_WPC=y
+ endif #CONFIG_COMPAT_KERNEL_2_6_29
++endif
+
+ # This activates a threading fix for usb urb.
+ # this is mainline commit: b3e670443b7fb8a2d29831b62b44a039c283e351

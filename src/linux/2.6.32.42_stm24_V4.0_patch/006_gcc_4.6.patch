@@ -1,0 +1,24 @@
+--- linux-sh4-2.6.32.42_stm24_V4.0_orig/arch/sh/kernel/Makefile	2001-08-20 15:37:13.000000000 +0700
++++ linux-sh4-2.6.32.42_stm24_V4.0/arch/sh/kernel/Makefile	2012-03-13 13:13:22.972591899 +0700
+@@ -40,4 +40,4 @@
+
+ obj-$(CONFIG_GENERIC_CLOCKEVENTS_BROADCAST)	+= localtimer.o
+
+-EXTRA_CFLAGS += -Werror
++#EXTRA_CFLAGS += -Werror
+--- linux-sh4-2.6.32.42_stm24_V4.0_orig/arch/sh/lib/Makefile	2001-08-20 15:37:12.000000000 +0700
++++ linux-sh4-2.6.32.42_stm24_V4.0/arch/sh/lib/Makefile	2012-03-13 17:28:39.553576758 +0700
+@@ -30,4 +30,4 @@
+ lib-$(CONFIG_MCOUNT)		+= mcount.o
+ lib-y				+= $(memcpy-y) $(memset-y) $(udivsi3-y)
+
+-EXTRA_CFLAGS += -Werror
++#EXTRA_CFLAGS += -Werror
+--- linux-sh4-2.6.32.42_stm24_V4.0_orig/arch/sh/mm/Makefile	2001-08-20 15:37:13.000000000 +0700
++++ linux-sh4-2.6.32.42_stm24_V4.0/arch/sh/mm/Makefile	2012-03-13 13:13:50.256325842 +0700
+@@ -65,4 +65,4 @@
+ 	-ffixed-r60 -ffixed-r61 -ffixed-r62 \
+ 	-fomit-frame-pointer
+
+-EXTRA_CFLAGS += -Werror
++#EXTRA_CFLAGS += -Werror

@@ -1,0 +1,11 @@
+--- compat-wireless-3.0-2_orig/Makefile	2011-07-28 05:33:25.000000000 +0700
++++ compat-wireless-3.0-2/Makefile	2012-02-29 09:52:14.000000000 +0700
+@@ -162,7 +162,7 @@
+ install-modules: modules
+ 	$(MAKE) -C $(KLIB_BUILD) M=$(PWD) $(KMODDIR_ARG) $(KMODPATH_ARG) \
+ 		modules_install
+-	@./scripts/update-initramfs
++#	@./scripts/update-initramfs
+ 
+ install-scripts:
+ 	@# All the scripts we can use

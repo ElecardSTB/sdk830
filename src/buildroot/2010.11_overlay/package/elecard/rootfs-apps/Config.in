@@ -1,0 +1,5 @@
+config BR2_PACKAGE_ROOTFS_APPS
+	bool "rootfs apps"
+	help
+	  Rootfs applications.
+

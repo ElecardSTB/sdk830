@@ -1,0 +1,116 @@
+Les fichiers /home/jaube/src/linuxtv-dvb-apps-hg-03042008/lib/libdvbapi/dvbaudio.o et linuxtv-dvb-apps-hg-03042008/lib/libdvbapi/dvbaudio.o sont différents.
+Les fichiers /home/jaube/src/linuxtv-dvb-apps-hg-03042008/lib/libdvbapi/dvbca.o et linuxtv-dvb-apps-hg-03042008/lib/libdvbapi/dvbca.o sont différents.
+Les fichiers /home/jaube/src/linuxtv-dvb-apps-hg-03042008/lib/libdvbapi/dvbdemux.o et linuxtv-dvb-apps-hg-03042008/lib/libdvbapi/dvbdemux.o sont différents.
+Les fichiers /home/jaube/src/linuxtv-dvb-apps-hg-03042008/lib/libdvbapi/dvbfe.o et linuxtv-dvb-apps-hg-03042008/lib/libdvbapi/dvbfe.o sont différents.
+Les fichiers /home/jaube/src/linuxtv-dvb-apps-hg-03042008/lib/libdvbapi/dvbnet.o et linuxtv-dvb-apps-hg-03042008/lib/libdvbapi/dvbnet.o sont différents.
+diff -prU5 /home/jaube/src/linuxtv-dvb-apps-hg-03042008/lib/libdvbapi/dvbvideo.c linuxtv-dvb-apps-hg-03042008/lib/libdvbapi/dvbvideo.c
+--- /home/jaube/src/linuxtv-dvb-apps-hg-03042008/lib/libdvbapi/dvbvideo.c	2008-04-03 16:08:09.000000000 +0200
++++ linuxtv-dvb-apps-hg-03042008/lib/libdvbapi/dvbvideo.c	2008-04-04 09:55:00.000000000 +0200
+@@ -23,10 +23,11 @@
+ #include <stdio.h>
+ #include <sys/param.h>
+ #include <fcntl.h>
+ #include <unistd.h>
+ #include <sys/ioctl.h>
++#include <asm/types.h>
+ #include <linux/dvb/video.h>
+ #include <errno.h>
+ #include "dvbvideo.h"
+ 
+ int dvbvideo_open(int adapter, int videodeviceid)
+diff -prU5 /home/jaube/src/linuxtv-dvb-apps-hg-03042008/test/test_av.c linuxtv-dvb-apps-hg-03042008/test/test_av.c
+--- /home/jaube/src/linuxtv-dvb-apps-hg-03042008/test/test_av.c	2008-04-03 16:08:09.000000000 +0200
++++ linuxtv-dvb-apps-hg-03042008/test/test_av.c	2008-04-04 09:55:32.000000000 +0200
+@@ -27,11 +27,11 @@
+ #include <sys/types.h>
+ #include <sys/stat.h>
+ #include <fcntl.h>
+ #include <time.h>
+ #include <unistd.h>
+-
++#include <asm/types.h>
+ #include <linux/dvb/audio.h>
+ #include <linux/dvb/video.h>
+ 
+ int audioStop(int fd, char *arg)
+ {
+diff -prU5 /home/jaube/src/linuxtv-dvb-apps-hg-03042008/test/test_av_play.c linuxtv-dvb-apps-hg-03042008/test/test_av_play.c
+--- /home/jaube/src/linuxtv-dvb-apps-hg-03042008/test/test_av_play.c	2008-04-03 16:08:09.000000000 +0200
++++ linuxtv-dvb-apps-hg-03042008/test/test_av_play.c	2008-04-04 09:55:45.000000000 +0200
+@@ -39,11 +39,11 @@
+ #include <fcntl.h>
+ #include <time.h>
+ #include <termios.h>
+ #include <unistd.h>
+ #include <errno.h>
+-
++#include <asm/types.h>
+ #include <linux/dvb/dmx.h>
+ #include <linux/dvb/video.h>
+ #include <linux/dvb/audio.h>
+ #include <sys/poll.h>
+ 
+diff -prU5 /home/jaube/src/linuxtv-dvb-apps-hg-03042008/test/test.c linuxtv-dvb-apps-hg-03042008/test/test.c
+--- /home/jaube/src/linuxtv-dvb-apps-hg-03042008/test/test.c	2008-04-03 16:08:09.000000000 +0200
++++ linuxtv-dvb-apps-hg-03042008/test/test.c	2008-04-04 09:55:54.000000000 +0200
+@@ -26,11 +26,11 @@
+ #include <stdint.h>
+ #include <sys/types.h>
+ #include <sys/stat.h>
+ #include <fcntl.h>
+ #include <time.h>
+-
++#include <asm/types.h>
+ #include <linux/dvb/dmx.h>
+ #include <linux/dvb/frontend_old.h>
+ #include <linux/dvb/sec.h>
+ #include <linux/dvb/video.h>
+ 
+diff -prU5 /home/jaube/src/linuxtv-dvb-apps-hg-03042008/test/test_stillimage.c linuxtv-dvb-apps-hg-03042008/test/test_stillimage.c
+--- /home/jaube/src/linuxtv-dvb-apps-hg-03042008/test/test_stillimage.c	2008-04-03 16:08:09.000000000 +0200
++++ linuxtv-dvb-apps-hg-03042008/test/test_stillimage.c	2008-04-04 09:56:04.000000000 +0200
+@@ -18,11 +18,11 @@
+ #include <sys/types.h>
+ #include <sys/stat.h>
+ #include <fcntl.h>
+ #include <time.h>
+ #include <unistd.h>
+-
++#include <asm/types.h>
+ #include <linux/dvb/video.h>
+ 
+ 
+ static const char *usage_string = "\n\t"
+ 	"usage: %s <still.mpg> [still.mpg ...]\n"
+diff -prU5 /home/jaube/src/linuxtv-dvb-apps-hg-03042008/test/test_vevent.c linuxtv-dvb-apps-hg-03042008/test/test_vevent.c
+--- /home/jaube/src/linuxtv-dvb-apps-hg-03042008/test/test_vevent.c	2008-04-03 16:08:09.000000000 +0200
++++ linuxtv-dvb-apps-hg-03042008/test/test_vevent.c	2008-04-04 09:56:14.000000000 +0200
+@@ -26,11 +26,11 @@
+ #include <sys/stat.h>
+ #include <sys/poll.h>
+ #include <fcntl.h>
+ #include <time.h>
+ #include <unistd.h>
+-
++#include <asm/types.h>
+ #include <linux/dvb/video.h>
+ 
+ 
+ int videoGetSize(int fd, char *arg)
+ {
+diff -prU5 /home/jaube/src/linuxtv-dvb-apps-hg-03042008/test/test_video.c linuxtv-dvb-apps-hg-03042008/test/test_video.c
+--- /home/jaube/src/linuxtv-dvb-apps-hg-03042008/test/test_video.c	2008-04-03 16:08:09.000000000 +0200
++++ linuxtv-dvb-apps-hg-03042008/test/test_video.c	2008-04-04 09:56:25.000000000 +0200
+@@ -27,11 +27,11 @@
+ #include <sys/types.h>
+ #include <sys/stat.h>
+ #include <fcntl.h>
+ #include <time.h>
+ #include <unistd.h>
+-
++#include <asm/types.h>
+ #include <linux/dvb/dmx.h>
+ #include <linux/dvb/frontend_old.h>
+ #include <linux/dvb/sec.h>
+ #include <linux/dvb/video.h>
+ #include <sys/poll.h>

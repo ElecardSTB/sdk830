@@ -1,0 +1,5 @@
+#!/bin/sh
+
+if [ "$METHOD" = "static" -a "$MODE" = "start" ] && grep nameserver /var/etc/resolv.conf &>/dev/null; then
+	cat /var/etc/resolv.conf > /tmp/resolv.conf
+fi

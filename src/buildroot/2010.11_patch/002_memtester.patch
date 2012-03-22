@@ -1,0 +1,33 @@
+--- buildroot-2010.11_orig/package/memtester/memtester.mk	2010-11-30 21:52:43.000000000 +0600
++++ buildroot-2010.11/package/memtester/memtester.mk	2012-03-07 09:52:40.000000000 +0700
+@@ -3,7 +3,7 @@
+ # memtester
+ #
+ #############################################################
+-MEMTESTER_VERSION:=4.0.6
++MEMTESTER_VERSION:=4.2.1
+ MEMTESTER_SOURCE:=memtester-$(MEMTESTER_VERSION).tar.gz
+ MEMTESTER_SITE:=http://pyropus.ca/software/memtester/old-versions/
+ MEMTESTER_DIR:=$(BUILD_DIR)/memtester-$(MEMTESTER_VERSION)
+@@ -21,11 +21,20 @@
+ 	$(SED) "s,cc,$(TARGET_CC)," $(MEMTESTER_DIR)/conf-*
+ 	touch $(MEMTESTER_DIR)/.unpacked
+ 
+-$(MEMTESTER_DIR)/$(MEMTESTER_BINARY): $(MEMTESTER_DIR)/.unpacked
++MEMTESTER_LIBTOOL_PATCH:=NO
++MEMTESTER_NAME:=memtester
++MEMTESTER_DIR_PREFIX:=package
++$(MEMTESTER_DIR)/.stamp_patched: NOHOSTPKG=MEMTESTER
++$(MEMTESTER_DIR)/.stamp_patched: PKG=MEMTESTER
++$(MEMTESTER_DIR)/.stamp_patched: $(MEMTESTER_DIR)/.unpacked
++
++$(MEMTESTER_DIR)/$(MEMTESTER_BINARY): $(MEMTESTER_DIR)/.stamp_patched
++	@$(call MESSAGE,"$(MEMTESTER_NAME) $(MEMTESTER_VERSION) Building")
+ 	$(MAKE) -C $(MEMTESTER_DIR)
+ 	$(STRIPCMD) $(MEMTESTER_DIR)/$(MEMTESTER_BINARY)
+ 
+ $(TARGET_DIR)/$(MEMTESTER_TARGET_BINARY): $(MEMTESTER_DIR)/$(MEMTESTER_BINARY)
++	@$(call MESSAGE,"$(MEMTESTER_NAME) $(MEMTESTER_VERSION) Installing to target")
+ 	$(INSTALL) -m 0755 -D $(MEMTESTER_DIR)/$(MEMTESTER_BINARY) $(TARGET_DIR)/$(MEMTESTER_TARGET_BINARY)
+ 
+ memtester: $(TARGET_DIR)/$(MEMTESTER_TARGET_BINARY)

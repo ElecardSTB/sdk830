@@ -1,0 +1,106 @@
+diff -rU5 linuxtv-dvb-apps-hg-03042008/util/scan/dump-zap.c linuxtv-dvb-apps-hg-03042008-fixed/util/scan/dump-zap.c
+--- linuxtv-dvb-apps-hg-03042008/util/scan/dump-zap.c	2008-04-03 16:08:09.000000000 +0200
++++ linuxtv-dvb-apps-hg-03042008-fixed/util/scan/dump-zap.c	2008-04-14 14:04:07.000000000 +0200
+@@ -67,45 +68,72 @@
+ };
+ 
+ 
+ void zap_dump_dvb_parameters (FILE *f, fe_type_t type, struct dvb_frontend_parameters *p, char polarity, int sat_number)
+ {
++if (p == NULL) { fprintf(stderr,"%s: p is null !\n",__FUNCTION__); return; }
+ 	switch (type) {
+ 	case FE_QPSK:
+ 		fprintf (f, "%i:", p->frequency / 1000);	/* channels.conf wants MHz */
+ 		fprintf (f, "%c:", polarity);
+ 		fprintf (f, "%d:", sat_number);
+ 		fprintf (f, "%i", p->u.qpsk.symbol_rate / 1000); /* channels.conf wants kBaud */
+ 		/*fprintf (f, "%s", fec_name[p->u.qpsk.fec_inner]);*/
+ 		break;
+ 
+ 	case FE_QAM:
++
+ 		fprintf (f, "%i:", p->frequency);
++
++if (p->inversion > 2) { fprintf(stderr,"%s: inversion !\n",__FUNCTION__); return; }
+ 		fprintf (f, "%s:", inv_name[p->inversion]);
++
+ 		fprintf (f, "%i:", p->u.qpsk.symbol_rate);
++
++if (p->u.qpsk.fec_inner > 9) { fprintf(stderr,"%s: u.qpsk.fec_inner !\n",__FUNCTION__); return; }
+ 		fprintf (f, "%s:", fec_name[p->u.qpsk.fec_inner]);
++
++if (p->u.qam.modulation > 8) { fprintf(stderr,"%s: u.qam.modulation !\n",__FUNCTION__); return; }
+ 		fprintf (f, "%s", qam_name[p->u.qam.modulation]);
+-		break;
+ 
++		break;
+ 	case FE_OFDM:
+ 		fprintf (f, "%i:", p->frequency);
++
++if (p->inversion > 2) { fprintf(stderr,"%s: inversion !\n",__FUNCTION__); return; }
+ 		fprintf (f, "%s:", inv_name[p->inversion]);
++
++if  (p->u.ofdm.bandwidth > 3) { fprintf(stderr,"%s: u.ofdm.bandwidth !\n",__FUNCTION__); return; }
+ 		fprintf (f, "%s:", bw_name[p->u.ofdm.bandwidth]);
++
++if  (p->u.ofdm.code_rate_HP > 9) { fprintf(stderr,"%s: u.ofdm.code_rate_HP !\n",__FUNCTION__); return; }
+ 		fprintf (f, "%s:", fec_name[p->u.ofdm.code_rate_HP]);
++
++if  (p->u.ofdm.code_rate_LP > 9) { fprintf(stderr,"%s: u.ofdm.code_rate_LP !\n",__FUNCTION__); return; }
+ 		fprintf (f, "%s:", fec_name[p->u.ofdm.code_rate_LP]);
++
++if  (p->u.ofdm.constellation > 8) { fprintf(stderr,"%s: u.ofdm.constellation !\n",__FUNCTION__); return; }
+ 		fprintf (f, "%s:", qam_name[p->u.ofdm.constellation]);
++if  (p->u.ofdm.transmission_mode > 2) { fprintf(stderr,"%s: u.ofdm.transmission_mode !\n", __FUNCTION__); return; }
+ 		fprintf (f, "%s:", mode_name[p->u.ofdm.transmission_mode]);
++
++if  (p->u.ofdm.guard_interval > 4) { fprintf(stderr,"%s: u.ofdm.guard_interval !\n",__FUNCTION__); return; }
+ 		fprintf (f, "%s:", guard_name[p->u.ofdm.guard_interval]);
++
++if  (p->u.ofdm.hierarchy_information > 4) { fprintf(stderr,"%s: u.ofdm.hierarchy_information !\n",__FUNCTION__); return; }
+ 		fprintf (f, "%s", hierarchy_name[p->u.ofdm.hierarchy_information]);
+ 		break;
+ 
+ 	case FE_ATSC:
+ 		fprintf (f, "%i:", p->frequency);
++
++if  (p->u.vsb.modulation > 8) { fprintf(stderr,"%s: u.vsb.modulation !\n",__FUNCTION__); return; }
+ 		fprintf (f, "%s", qam_name[p->u.vsb.modulation]);
+ 		break;
+ 
+ 	default:
++		fprintf(stderr,"%s : Error, unknown fe_type ! \n",__FUNCTION__);
+ 		;
+ 	};
+ }
+ 
+ void zap_dump_service_parameter_set (FILE *f,
+@@ -116,10 +144,12 @@
+ 				 int sat_number,
+ 				 uint16_t video_pid,
+ 				 uint16_t *audio_pid,
+ 				 uint16_t service_id)
+ {
++if (service_name == NULL) { fprintf(stderr,"%s: service_name is null !\n",__FUNCTION__); return; }
+ 	fprintf (f, "%s:", service_name);
+ 	zap_dump_dvb_parameters (f, type, p, polarity, sat_number);
+ 	fprintf (f, ":%i:%i:%i", video_pid, audio_pid[0], service_id);
+ 	fprintf (f, "\n");
++	fflush(f);
+ }
+diff -rU5 linuxtv-dvb-apps-hg-03042008/util/scan/scan.c linuxtv-dvb-apps-hg-03042008-fixed/util/scan/scan.c
+--- linuxtv-dvb-apps-hg-03042008/util/scan/scan.c	2008-04-14 14:19:14.000000000 +0200
++++ linuxtv-dvb-apps-hg-03042008-fixed/util/scan/scan.c	2008-04-14 14:17:15.000000000 +0200
+@@ -1720,11 +1720,11 @@
+ 
+ static int tune_initial (int frontend_fd, const char *initial)
+ {
+ 	FILE *inif=NULL;
+ 	unsigned int f=0, sr=0;
+-	char buf[200] = {0};
++	char buf[256] = {0};
+ 	char pol[20]= {0}, fec[20]= {0}, qam[20]= {0}, bw[20]= {0}, fec2[20]= {0}, mode[20]= {0}, guard[20]= {0}, hier[20]= {0};
+ 	struct transponder *t=NULL;
+ 
+ 	inif = fopen(initial, "r");
+ 	if (!inif) {

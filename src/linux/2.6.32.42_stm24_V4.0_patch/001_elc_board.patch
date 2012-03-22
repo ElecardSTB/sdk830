@@ -1,0 +1,101 @@
+--- linux-sh4-2.6.32.42_stm24_V4.0_orig/arch/sh/Makefile	2011-11-07 20:18:46.000000000 +0700
++++ linux-sh4-2.6.32.42_stm24_V4.0/arch/sh/Makefile	2011-11-07 20:24:40.000000000 +0700
+@@ -161,6 +161,7 @@
+ machdir-$(CONFIG_SH_ST_DTT5250)			+= mach-dtt5250
+ machdir-$(CONFIG_SH_ST_HDK5250)			+= mach-hdk5250
+ machdir-$(CONFIG_SH_ST_HDK7105)			+= mach-hdk7105
++machdir-$(CONFIG_SH_ELC_STB)			+= mach-elc
+ machdir-$(CONFIG_SH_ST_HDKH246)			+= mach-hdkh246
+ machdir-$(CONFIG_SH_ST_HDKH251)			+= mach-hdkh251
+ machdir-$(CONFIG_SH_ST_HDK7106)			+= mach-hdk7106
+--- linux-sh4-2.6.32.42_stm24_V4.0_orig/arch/sh/boards/Kconfig	2011-11-07 20:18:50.000000000 +0700
++++ linux-sh4-2.6.32.42_stm24_V4.0/arch/sh/boards/Kconfig	2011-11-07 20:27:22.000000000 +0700
+@@ -403,6 +403,15 @@
+ 	  Select HDK7105 if configuring for an
+ 	  STMicroelectronics STi7105 HDK Reference Board.
+ 
++config SH_ELC_STB
++	bool "Elecard : Elecard stb"
++	depends on CPU_SUBTYPE_STX7105
++	select SYS_SUPPORTS_PCI
++	default n
++	help
++	  Select Elecard if configuring for an
++	  Elecards stb boards.
++
+ config SH_ST_HDKH246
+ 	bool "HDKH246 : STi235/236/246 Reference boards"
+ 	depends on CPU_SUBTYPE_STX7105
+--- linux-sh4-2.6.32.42_stm24_V4.0_orig/drivers/mtd/nand/stm_nand_emi.c	2011-11-07 20:19:45.000000000 +0700
++++ linux-sh4-2.6.32.42_stm24_V4.0/drivers/mtd/nand/stm_nand_emi.c	2011-12-17 07:32:12.000000000 +0700
+@@ -484,7 +484,7 @@
+ 
+ #define GET_CLK_CYCLES(X, T)	(((X) + (T) - 1) / (T))
+ /* Configure EMI Bank for NAND access */
+-static int nand_config_emi(int bank, struct stm_nand_timing_data *td)
++static int nand_config_emi(int bank, struct stm_nand_timing_data *td, int wait_active_low)
+ {
+ 	struct clk *emi_clk;
+ 	uint32_t emi_t_ns;
+@@ -497,7 +497,6 @@
+ 	uint32_t iowr_start, iowr_end;
+ 	uint32_t rd_latch;
+ 	uint32_t bus_release;
+-	uint32_t wait_active_low;
+ 
+ 	printk(KERN_INFO NAME ": Configuring EMI Bank %d for NAND access\n",
+ 	       bank);
+@@ -526,7 +525,7 @@
+ 	iord_end = GET_CLK_CYCLES(td->rd_on, emi_t_ns) + 2;
+ 	rd_latch = GET_CLK_CYCLES(td->rd_on, emi_t_ns) + 2;
+ 	bus_release = GET_CLK_CYCLES(50, emi_t_ns);
+-	wait_active_low = 0;
++
+ 	wr_cycle = GET_CLK_CYCLES(td->wr_on + td->wr_off, emi_t_ns) + 3;
+ 	iowr_start = 0;
+ 	iowr_end = GET_CLK_CYCLES(td->wr_on, emi_t_ns) + 2;
+@@ -562,7 +561,7 @@
+  * Probe for the NAND device.
+  */
+ static struct stm_nand_emi * __init nand_probe_bank(
+-	struct stm_nand_bank_data *bank, int rbn_gpio,
++	struct stm_nand_bank_data *bank, int rbn_gpio, int wait_active_low,
+ 	const char* name)
+ {
+ 	struct stm_nand_emi *data;
+@@ -585,7 +584,7 @@
+ 	data->emi_size = (1 << 18) + 1;
+ 
+ 	/* Configure EMI Bank */
+-	if (nand_config_emi(data->emi_bank, bank->timing_data) != 0) {
++	if (nand_config_emi(data->emi_bank, bank->timing_data, wait_active_low) != 0) {
+ 		printk(KERN_ERR NAME ": Failed to configure EMI bank "
+ 		       "for NAND device\n");
+ 		goto out1;
+@@ -740,6 +739,7 @@
+ 	int rbn_gpio;
+ 	struct stm_nand_emi_group *group;
+ 	struct stm_nand_bank_data *bank;
++	int wait_active_low = pdata->wait_active_low;
+ 
+ 	group = kzalloc(sizeof(struct stm_nand_emi_group) +
+ 			(sizeof(struct stm_nand_emi *) * pdata->nr_banks),
+@@ -764,7 +764,7 @@
+ 
+ 	bank = pdata->banks;
+ 	for (n=0; n<pdata->nr_banks; n++) {
+-		group->banks[n] = nand_probe_bank(bank, rbn_gpio,
++		group->banks[n] = nand_probe_bank(bank, rbn_gpio, wait_active_low,
+ 						  dev_name(&pdev->dev));
+ 		bank++;
+ 	}
+--- linux-sh4-2.6.32.42_stm24_V4.0_orig/include/linux/stm/platform.h	2011-11-07 20:17:35.000000000 +0700
++++ linux-sh4-2.6.32.42_stm24_V4.0/include/linux/stm/platform.h	2011-12-17 07:49:09.000000000 +0700
+@@ -284,6 +284,7 @@
+ 	unsigned int nr_banks;
+ 	struct stm_nand_bank_data *banks;
+ 	int emi_rbn_gpio;
++	int wait_active_low;
+ };
+ 
+ struct stm_nand_config {

@@ -1,0 +1,4 @@
+#!/bin/bash
+
+make -C ${PRJROOT:?Error: PRJROOT not setted! Did you setup environment?} $@
+

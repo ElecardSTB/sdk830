@@ -1,0 +1,10 @@
+config BR2_PACKAGE_LINUXTV_DVB_APPS
+	bool "linuxtv-dvb-apps libraries"
+	default n
+	help
+		http://www.linuxtv.org
+
+config BR2_PACKAGE_LINUXTV_DVB_APPS_TOOLS
+	bool "Install dvb tools"
+	depends on BR2_PACKAGE_LINUXTV_DVB_APPS
+	default n

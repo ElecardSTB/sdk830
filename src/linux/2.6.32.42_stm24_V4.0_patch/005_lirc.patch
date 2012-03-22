@@ -1,0 +1,14 @@
+#Fix problem with requesting module in user space. This should do mdev, but there is some problem.
+
+--- linux-sh4-2.6.32.42_stm24_V4.0_orig/drivers/char/lirc/lirc_stm.c	2011-11-07 20:19:41.000000000 +0700
++++ linux-sh4-2.6.32.42_stm24_V4.0/drivers/char/lirc/lirc_stm.c	2011-11-07 20:30:49.000000000 +0700
+@@ -1576,7 +1576,8 @@
+ 		goto out_err;
+ 	}
+ 
+-	request_module("lirc_dev");
++//	request_module("lirc_dev");
++//printk("%s[%d]: ************\n", __FILE__, __LINE__);
+ 	if (lirc_register_driver(&lirc_stm_driver) < 0) {
+ 		pr_err(LIRC_STM_NAME ": driver registration failed\n");
+ 		lirc_buffer_free(&lirc_stm_rbuf);

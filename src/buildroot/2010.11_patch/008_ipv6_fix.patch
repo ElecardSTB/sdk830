@@ -1,0 +1,17 @@
+--- buildroot-2010.11_orig/toolchain/helpers.mk	2010-11-30 21:52:43.000000000 +0600
++++ buildroot-2010.11/toolchain/helpers.mk	2012-03-07 09:52:40.000000000 +0700
+@@ -152,12 +152,13 @@
+ 		exit -1; \
+ 	fi; \
+ 	$(call check_glibc_feature,BR2_LARGEFILE,Large file support) ;\
+-	$(call check_glibc_feature,BR2_INET_IPV6,IPv6 support) ;\
+ 	$(call check_glibc_feature,BR2_INET_RPC,RPC support) ;\
+ 	$(call check_glibc_feature,BR2_ENABLE_LOCALE,Locale support) ;\
+ 	$(call check_glibc_feature,BR2_USE_WCHAR,Wide char support) ;\
+ 	$(call check_glibc_feature,BR2_PROGRAM_INVOCATION,Program invocation support)
+ 
++#	$(call check_glibc_feature,BR2_INET_IPV6,IPv6 support) ;\
++
+ #
+ # Check the conformity of Buildroot configuration with regard to the
+ # uClibc configuration of the external toolchain, for a particular

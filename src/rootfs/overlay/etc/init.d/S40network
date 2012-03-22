@@ -1,0 +1,104 @@
+#!/bin/sh
+#
+# Start the network....
+#
+
+WAN=eth0
+LAN=br0
+
+case "$1" in
+  start)
+	echo -n "Starting network... "
+
+	modprobe rt2800usb &> /dev/null
+
+	brctl addbr br0
+	brctl setfd br0 0
+	if [ -z "`cat /proc/cmdline | grep /dev/nfs`" ]; then
+[% IF CONFIG_TESTSERVER_ENABLE -%]
+# Setting up bridge for test server
+		brctl addif br0 eth0
+		brctl addif br0 eth1
+		ifconfig eth0 0.0.0.0
+		ifconfig eth1 0.0.0.0
+		WAN=br0
+
+		LIMIT=45mbit
+# 		tc qdisc add dev eth0 root handle 1: htb
+# 		tc class add dev eth0 parent 1: classid 1:1 htb rate $LIMIT
+# 		tc filter add dev eth0 parent 1: protocol ip prio 1 u32 match ip dst 0/0 flowid 1:1
+# 
+# 		tc qdisc add dev eth1 root handle 1: htb
+# 		tc class add dev eth1 parent 1: classid 1:1 htb rate $LIMIT
+# 		tc filter add dev eth1 parent 1: protocol ip prio 1 u32 match ip dst 0/0 flowid 1:1
+		echo " traffic controll"
+
+#		ifconfig br0   192.168.101.1
+[% END -%]
+[% IF CONFIG_TESTTOOL_ENABLE -%]
+# Setting up bridge for test server
+		brctl addif br0 eth0
+		brctl addif br0 eth1
+		ifconfig eth0 0.0.0.0
+		ifconfig eth1 0.0.0.0
+		WAN=br0
+		ifconfig br0   192.168.101.1
+#		/sbin/ifup -a
+[% END -%]
+[% IF CONFIG_ELECD_ENABLE -%]
+		/sbin/ifup -a
+[% END -%]
+	else
+		# Get routes and nameservers from dhcp
+		udhcpc -n -i $WAN -s /opt/elecard/bin/udhcpc.nfs
+		test -d /sys/class/net/wlan0 && ifup wlan0
+		/sbin/ifup $LAN
+	fi
+	if brctl show | grep $WAN >/dev/null; then
+		IPTV_GW=$LAN
+	else
+		IPTV_GW=$WAN
+	fi
+	route add -net 224.0.0.0 netmask 240.0.0.0 $IPTV_GW
+
+	echo -n "telnet "
+	telnetd
+
+	if [ -f /var/etc/dhcpd.conf ]; then
+		echo -n "dhcpd "
+		touch /var/etc/dhcpd.leases
+		dhcpd -q -lf /var/etc/dhcpd.leases -cf /var/etc/dhcpd.conf $LAN
+	fi
+
+	if ! brctl show | grep $WAN > /dev/null; then
+		# Enable ip forwarding
+		echo 1 > /proc/sys/net/ipv4/ip_forward
+	fi
+	echo "done"
+
+	;;
+  stop)
+	echo -n "Stopping network... "
+	killall telnetd
+	killall dhcpd
+	killall udhcpc
+	iptables -t nat -F
+	echo 0 > /proc/sys/net/ipv4/ip_forward
+	if [ -z "`cat /proc/cmdline | grep /dev/nfs`" ]; then
+		ifdown -a
+	else
+		ifdown $LAN
+	fi
+	test -d /sys/class/net/wlan0 && ifdown wlan0
+	brctl delbr br0
+	;;
+  restart|reload)
+	"$0" stop
+	"$0" start
+	;;
+  *)
+	echo $"Usage: $0 {start|stop|restart}"
+	exit 1
+esac
+
+exit $?

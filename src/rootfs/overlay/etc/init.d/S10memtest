@@ -1,0 +1,56 @@
+#!/bin/sh
+#
+# Start the memory tester....
+#
+
+[% IF ! CONFIG_TESTSERVER_ENABLE -%]
+  [% SKIPFILE %]
+[% END -%]
+
+
+case "$1" in
+	start)
+
+[% IF CONFIG_TESTSERVER_ENABLE -%]
+#	if [ -n "`cat /proc/cmdline | grep runTests`" ]; then
+		echo "***************LOADING_OS_DONE***************"
+		echo "***************LOADING_OS_DONE***************"
+		echo "Starting memory tests..."
+		memtester 50M 1
+		if [ $? -ne "0" ]
+		then
+			echo "***************MEM_TEST_FAIL***************"
+			echo "***************MEM_TEST_FAIL***************"
+			exit
+		fi
+		
+#		memtester -p 0x48000000 128M 1
+		if [ $? -ne "0" ]
+		then
+			echo "***************MEM_TEST_FAIL***************"
+			echo "***************MEM_TEST_FAIL***************"
+			exit
+		fi
+		echo "***************MEM_TEST_SUCCESS***************"
+		echo "***************MEM_TEST_SUCCESS***************"
+		echo "done."
+[% END -%]
+
+		;;
+	stop)
+		echo -n "Stopping memory tester..."
+		killall memtester
+		killall memtester
+		echo "done."
+		;;
+	restart|reload)
+		"$0" stop
+		"$0" start
+		;;
+  *)
+	echo $"Usage: $0 {start|stop|restart}"
+	exit 1
+esac
+
+exit $?
+

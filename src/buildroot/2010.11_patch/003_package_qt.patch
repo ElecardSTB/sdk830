@@ -1,0 +1,51 @@
+--- buildroot-2010.11_orig/package/qt/qt.mk	2010-11-30 21:52:43.000000000 +0600
++++ buildroot-2010.11/package/qt/qt.mk	2012-03-07 09:52:40.000000000 +0700
+@@ -61,7 +61,8 @@
+ 
+ 
+ ### Pixel depths
+-QT_PIXEL_DEPTHS := # empty
++#QT_PIXEL_DEPTHS := # empty
++QT_PIXEL_DEPTHS := generic
+ ifeq ($(BR2_PACKAGE_QT_PIXEL_DEPTH_1),y)
+ QT_PIXEL_DEPTHS += 1
+ endif
+@@ -431,6 +432,7 @@
+ ifeq ($(BR2_PACKAGE_QT_QT3SUPPORT),y)
+ QT_LIBS+= qt-qt3support
+ endif
++QT_LIBS+= qt-declarative
+ 
+ QT_QMAKE_CONF:=$(QT_TARGET_DIR)/mkspecs/qws/linux-$(BR2_PACKAGE_QT_EMB_PLATFORM)-g++/qmake.conf
+ 
+@@ -499,7 +501,9 @@
+ 	$(call QT_QMAKE_SET,STRIP,$(TARGET_STRIP))
+ 	$(call QT_QMAKE_SET,CFLAGS,$(TARGET_SYSROOT_OPT) $(TARGET_CFLAGS))
+ 	$(call QT_QMAKE_SET,CXXFLAGS,$(TARGET_SYSROOT_OPT) $(TARGET_CXXFLAGS))
+-	$(call QT_QMAKE_SET,LFLAGS,$(TARGET_LDFLAGS))
++	$(call QT_QMAKE_SET,LFLAGS,$(TARGET_LDFLAGS) -Wl,-rpath-link,$(STAGING_DIR)/usr/lib)
++	$(SED) '/\# DirectFB*/aQT_LIBS_DIRECTFB = -L$(STAGING_DIR)/usr/lib -ldirect-1.4 -ldirectfb-1.4 -lfusion-1.4' $(QT_QMAKE_CONF)
++	$(SED) '/\# DirectFB*/aQT_CFLAGS_DIRECTFB = -I$(STAGING_DIR)/usr/include/directfb -D_REENTRANT' $(QT_QMAKE_CONF)
+ 	-[ -f $(QT_QCONFIG_FILE) ] && cp $(QT_QCONFIG_FILE) \
+ 		$(QT_TARGET_DIR)/$(QT_QCONFIG_FILE_LOCATION)
+ # Don't use TARGET_CONFIGURE_OPTS here, qmake would be compiled for the target
+@@ -526,6 +530,7 @@
+ 		-hostprefix $(STAGING_DIR)/usr \
+ 		-fast \
+ 		-no-rpath \
++		-declarative \
+ 	)
+ 	touch $@
+ 
+@@ -613,6 +618,11 @@
+ 	cp -dpf $(STAGING_DIR)/usr/lib/libQt3Support.so.* $(TARGET_DIR)/usr/lib/
+ endif
+ 
++qt-declarative: $(STAGING_DIR)/usr/lib/libQtCore.la
++ifeq ($(BR2_PACKAGE_QT_SHARED),y)
++	cp -dpf $(STAGING_DIR)/usr/lib/libQtDeclarative.so.* $(TARGET_DIR)/usr/lib/
++endif
++
+ $(TARGET_DIR)/usr/lib/libQtCore.so.4: $(STAGING_DIR)/usr/lib/libQtCore.la $(QT_LIBS)
+ 	# Strip all installed libs
+ ifeq ($(BR2_PACKAGE_QT_SHARED),y)

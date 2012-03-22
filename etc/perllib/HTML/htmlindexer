@@ -1,0 +1,31 @@
+#!/usr/bin/perl -w
+#
+#                             IPSTB Project
+#                   ---------------------------------
+#
+# Copyright (C) 2008 NXP B.V.,
+# All Rights Reserved.
+#
+# Filename: htmlindexer
+#
+# Creates an index of words in HTML files.
+#
+# Rev Date       Author      Comments
+#-------------------------------------------------------------------------------
+#   1 20081022   batelaan    Initial
+
+use strict;
+use HTML::Indexer;
+
+my $indexer = eval {HTML::Indexer->new(@ARGV)};
+if ($@) {
+  print STDERR $@, "\nOptions:\n";
+  print HTML::Indexer::options;
+  exit 1;
+}
+
+if ($indexer->run()) {
+  exit 0;
+} else {
+  exit 1;
+}

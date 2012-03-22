@@ -1,0 +1,15 @@
+#!/bin/sh
+
+PPP_RESOLV_CONF=/etc/ppp/resolv.conf
+
+if [ -n "$USEPEERDNS" -a -f $PPP_RESOLV_CONF ]; then
+	rm -f /var/etc/ppp/resolv.prev
+	if [ -f /etc/resolv.conf ]; then
+		cp /etc/resolv.conf /var/etc/ppp/resolv.prev
+		grep domain /var/etc/ppp/resolv.prev > /etc/resolv.conf
+		grep search /var/etc/ppp/resolv.prev >> /etc/resolv.conf
+		cat $PPP_RESOLV_CONF >> /etc/resolv.conf
+	else
+		cat $PPP_RESOLV_CONF > /etc/resolv.conf
+	fi
+fi

@@ -1,0 +1,10 @@
+diff -ru buildroot-2010.11_orig/package/makedevs/makedevs.c buildroot-2010.11/package/makedevs/makedevs.c
+--- buildroot-2010.11_orig/package/makedevs/makedevs.c	2010-11-30 21:52:43.000000000 +0600
++++ buildroot-2010.11/package/makedevs/makedevs.c	2012-03-17 10:56:15.000000000 +0700
+@@ -531,5 +531,6 @@
+ 	if (system("/bin/sync"))
+ 		bb_error_msg("sync failed, continuing anyway");
+ 
++	(void)ret;
+ 	return 0;
+ }

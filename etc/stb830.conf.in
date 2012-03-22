@@ -1,0 +1,60 @@
+#
+# Firmware pack generator config file
+#
+
+
+################################################
+# Firmware pack generator options
+#
+
+#ForceFileVersion = 1
+AlwaysUpdate = [%ENV.ALWAYSUPDATE%]
+
+
+################################################
+# Common firmware pack information
+#
+
+SystemID = [%ENV.SYSID%]
+SystemRevision = [%ENV.SYSREV_PKG%]
+OutputFile = [%ENV.OUTDIR%]/[%ENV.FWNAME%].efp
+
+
+################################################
+# Components descriptions
+#
+
+[% IF ! ENV.BUILD_WITHOUT_COMPONENTS_FW -%]
+
+# Bootloader (Boot)
+#ComponentID = bootloader
+#ComponentRevision = 1
+#FirmwareImage = /media/sda5/STM/STB830_st/src/uboot/bin/u-boot_111005_stb830.bin
+
+# Kernel (K1)
+ComponentID = kernel
+ComponentRevision = [%ENV.KERNELVER%]
+FirmwareImage = [%ENV.COMPDIR%]/kernel1
+
+# Root filesystem (rootfs1)
+ComponentID = rootfs
+ComponentRevision = [%ENV.ROOTFSVER%]
+FirmwareImage = [%ENV.COMPDIR%]/rootfs1
+
+# User filesystem
+#ComponentID = userfs
+#ComponentRevision = [%ENV.USERFSVER%]
+#FirmwareImage = [%ENV.COMPDIR%]/userfs.jffs2
+
+[% END -%]
+
+
+[% IF ENV.BUILD_SCRIPT_FW -%]
+
+# Script
+ComponentID = script
+ComponentRevision = [%ENV.SYSREV_PKG%]
+FirmwareImage = [%ENV.COMPDIR%]/script.tgz
+
+[% END -%]
+

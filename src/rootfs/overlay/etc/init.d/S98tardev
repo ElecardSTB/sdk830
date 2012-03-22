@@ -1,0 +1,29 @@
+#/bin/sh
+# -*- backup-inhibited: t -*-
+
+
+
+case "$1" in
+    start)
+    if [ -f /etc/dev.tar ]; then
+	# /dev tar archive already built
+#        echo -n "Using prebuilt /dev/..."
+        echo -n ""
+    else
+        # go in /dev directory in order to create tar archive from their
+        cd /dev
+        echo -n "BUILD TAR ARCHIVE FOR PRE-RETAIL TARGET..."
+        sleep 3
+        # build tar archive 
+        tar -c -f /etc/dev.tar *
+        echo "DONE"
+    fi
+    ;;
+    stop)
+    echo "Nothing to do"
+    ;;
+    *)
+    echo "Usage: $0 {start|stop}"
+    exit 1
+    ;;
+esac

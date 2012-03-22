@@ -1,0 +1,52 @@
+# Add files and/or directories to the list below that should be removed
+# by the rootfs.trim Makefile target.
+# Note: all files like this one that match *.trim.txt will be used by
+# the trim_rootfs.sh.
+
+[% IF ROOTFS -%]
+#For rootfs:
+
+[%ROOTFS%]/*trim.txt
+[%ROOTFS%]/Makefile
+[%ROOTFS%]/usr/bin/gdb
+[%ROOTFS%]/usr/bin/gdbserver
+
+[%ROOTFS%]/usr/share/locale/*
+
+[%ROOTFS%]/root/modules/stapi_core.ko
+[%ROOTFS%]/root/modules/stapi_ioctl.ko
+
+[%ROOTFS%]/usr/lib/libQt*.so*
+
+[%ROOTFS%]/opt/elecard/bin/lircd*
+[%ROOTFS%]/etc/init.d/S70lirc
+[%ROOTFS%]/opt/elecard/bin/checkUpdate.sh
+
+[% IF ! CONFIG_TESTSERVER_ENABLE -%]
+[%ROOTFS%]/opt/elecard/share/testchart_rgb565.gam
+[% END -%]
+
+[% END -%]
+
+
+[% IF INITRAMFS -%]
+# For initramfs:
+
+[%INITRAMFS%]/*trim.txt
+[%INITRAMFS%]/Makefile
+[%INITRAMFS%]/usr/bin/gdb
+[%INITRAMFS%]/usr/bin/gdbserver
+
+# libs
+[%INITRAMFS%]/usr/lib/libstdc++*
+[%INITRAMFS%]/lib/libcrypt*
+[%INITRAMFS%]/lib/libdl*
+[%INITRAMFS%]/lib/libgcc*
+[%INITRAMFS%]/lib/libm*
+[%INITRAMFS%]/lib/libnsl*
+[%INITRAMFS%]/lib/libnss_dns*
+#[%INITRAMFS%]/lib/libpthread*
+[%INITRAMFS%]/lib/libresolv*
+#[%INITRAMFS%]/lib/librt*
+[%INITRAMFS%]/lib/libutil*
+[% END -%]

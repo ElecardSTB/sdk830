@@ -1,0 +1,46 @@
+#!/bin/sh
+
+
+MOUNT_DIR="/var/etc"
+
+case "$1" in
+	start)
+		echo -n "Mounting user fs... "
+
+#		USERFS=`cat /proc/mtd | grep "\"User\"" | sed 's/^mtd\(.\):.*/mtd\1/'`
+		USERFS=`grep "\"User\"" /proc/mtd | sed 's/^mtd\(.\):.*/mtd\1/'`
+
+		if [ "$USERFS" ]; then
+			mount -o noatime,rw -t jffs2 $USERFS $MOUNT_DIR
+		fi
+
+		# Copy default configs if needed
+	    for FILE in `find /etc/defaults/* -print | sort`; do
+		DEST=/var/etc/${FILE#/etc/defaults/}
+		if [ -f $FILE -a ! -e $DEST ]; then
+		    echo "copy template file $DEST"
+		    cp $FILE $DEST
+		elif [ -d $FILE -a ! -e $DEST ]; then
+		    echo "create template dir $DEST"
+		    mkdir -p $DEST
+		fi
+	    done
+	    mkdir -p /var/etc/ppp
+
+#		echo -n "Starting userfs RC scripts... "
+#		[ -e /usr/local/etc/init.d/rcS ] && /usr/local/etc/init.d/rcS
+
+		echo "done"
+		;;
+		stop)
+		echo -n "Unmounting user fs... "
+
+		umount /user
+
+		echo "done"
+		;;
+	*)
+		echo "Usage: $0 {start|stop}"
+		exit 1
+		;;
+esac

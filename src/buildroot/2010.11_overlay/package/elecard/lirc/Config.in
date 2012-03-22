@@ -1,0 +1,39 @@
+config BR2_PACKAGE_LIRC
+	bool "lirc"
+	help
+          LIRC is a package that supports receiving and sending IR
+          signals of the most common IR remote controls. It contains a
+          daemon that decodes and sends IR signals, a mouse daemon
+          that translates IR signals to mouse movements and a couple
+          of user programs that allow to control your computer with a
+          remote control.
+
+          A list of supported hardware is available on the main page.
+
+	  http://www.lirc.org/
+
+if BR2_PACKAGE_LIRC
+
+choice
+	prompt "lirc drivers"
+	default BR2_PACKAGE_LIRC_ALL
+
+	help
+	  Select the drivers to build in lirc. There is 3 choices, all
+	  of them, one of them, none of them. By selecting 'one of
+	  them', you will have to select which one in the next item.
+
+	config BR2_PACKAGE_LIRC_ALL
+		bool "all"
+
+	config BR2_PACKAGE_LIRC_USERSPACE
+		bool "userspace"
+
+	config BR2_PACKAGE_LIRC_STM
+		bool "stm"
+
+	config BR2_PACKAGE_LIRC_NONE
+		bool "none"
+endchoice
+
+endif # BR2_PACKAGE_LIRC

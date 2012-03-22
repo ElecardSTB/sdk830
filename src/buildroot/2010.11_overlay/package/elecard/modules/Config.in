@@ -1,0 +1,5 @@
+config BR2_PACKAGE_ELECARD_MODULES
+	bool "Elecard modules"
+	help
+	  Elecard STB830 modules.
+

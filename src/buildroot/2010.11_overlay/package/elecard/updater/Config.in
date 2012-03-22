@@ -1,0 +1,26 @@
+config BR2_PACKAGE_UPDATER_HWCONFIG
+	bool "hwconfigManager"
+	help
+	  Elecards hwconfigManager.
+
+config BR2_PACKAGE_UPDATER
+	bool "updater"
+	select BR2_PACKAGE_UPDATER_HWCONFIG
+	help
+	  Elecards updater.
+
+
+config BR2_PACKAGE_UPDATER_USE_HTTP
+	bool "http support"
+	depends on BR2_PACKAGE_UPDATER
+	depends on BR2_PACKAGE_LIBCURL
+	help
+	  Support update via http.
+
+
+config BR2_PACKAGE_UPDATER_USE_SSL
+	bool "ssl support"
+	depends on BR2_PACKAGE_UPDATER
+	depends on BR2_PACKAGE_OPENSSL
+	help
+	  Support update with checking signatures.

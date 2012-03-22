@@ -1,0 +1,39 @@
+[% IF (ENV.STAPISDK_VERSION == "36.0") || (ENV.STAPISDK_VERSION == "36.2") -%]
+module-dir=/usr/lib/directfb-1.4
+[% ELSE -%]
+module-dir=/usr/lib/directfb-1.4.12
+[% END -%]
+
+#system=fbdev
+system=stgfbdev
+#no-vt
+#no-vt-switch
+#no-graphics-vt
+fbdev=/dev/fb0
+#no-cursor
+bg-none
+
+#disable-module=lirc
+#disable-module=keyboard
+#disable-module=ps2mouse
+
+#mode=720x576-50i
+#mode=1280x720-50
+mode=1920x1080-50
+
+#pixelformat=RGB16
+#pixelformat=ARGB1555
+#pixelformat=ARGB4444
+pixelformat=ARGB
+#pixelformat=RGB24
+
+#depth=16
+#depth=24
+#depth=32
+
+hardware
+
+desktop-buffer-mode=backvideo
+#desktop-buffer-mode=frontonly
+#desktop-buffer-mode=backsystem
+

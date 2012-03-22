@@ -1,0 +1,57 @@
+#!/bin/sh
+
+
+echo -e "\nStarting initramfs... "
+. /etc/profile
+
+/bin/mount -a
+/bin/mount -o remount,rw /
+#/bin/mount -t proc proc /proc
+
+
+. /etc/init.d/rcS start
+
+if [ -e /tmp/reboot ]; then
+	. /etc/init.d/rcS stop
+	reboot -f
+fi
+
+
+#change root
+NEWROOT=""
+if [ -n "`cat /proc/cmdline | grep "root=/dev/nfs"`" -a -z "" ]; then
+	NEWROOT=`cat /proc/cmdline | sed 's/.*nfsroot=\([^ ,]\+\).*/\1/'`
+	NFSOPT=`cat /proc/cmdline | sed 's/.*nfsroot=[^ ,]\+\(,*[^ ]*\).*/\1/'`
+	FSTYPE="nfs"
+	FSOPT="-o nolock,rw${NFSOPT}"
+elif [ -n "`cat /proc/cmdline | grep "root=/dev/mtdblock"`" ]; then
+	NEWROOT=`cat /proc/cmdline | sed 's/.*root=\(\/dev\/mtdblock[^ ]\+\).*/\1/'`
+	FSTYPE=`cat /proc/cmdline | sed 's/.*rootfstype=\([^ ]\+\).*/\1/'`
+	FSOPT="-o ro,noatime"
+fi
+
+
+if [ -n "$NEWROOT" ]; then
+	. /etc/init.d/rcS stop
+	umount -a
+	echo -n "Mount rootfs ${NEWROOT}, fs type ${FSTYPE}, with options \"$FSOPT\"... "
+	mount -t $FSTYPE $FSOPT $NEWROOT /mnt
+	if [ "$?" -eq "0" ]; then
+		echo "done"
+		echo "Switch root"
+		exec  switch_root /mnt /init
+	else
+		echo "ERROR!!! Cant mount rootfs!!"
+	fi
+
+#run some startup scripts
+	/bin/mount -a
+	for i in /etc/init.d/S[012]*; do
+		[ ! -f "$i" ] && continue
+		$i start
+	done
+fi
+
+#if we dont change root => initramfs login
+/bin/sh --login
+

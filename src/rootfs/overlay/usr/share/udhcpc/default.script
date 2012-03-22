@@ -1,0 +1,63 @@
+#!/bin/sh
+
+# udhcpc script edited by Tim Riker <Tim@Rikers.org>
+
+[ -z "$1" ] && echo "Error: should be called from udhcpc" && exit 1
+
+RESOLV_CONF="/etc/resolv.conf"
+[ -n "$broadcast" ] && BROADCAST="broadcast $broadcast"
+[ -n "$subnet" ] && NETMASK="netmask $subnet"
+
+WAN=eth0
+
+if wpa_cli -iwlan0 status >/dev/null; then
+	WAN=wlan0
+fi
+
+LAN=br0
+
+case "$1" in
+	deconfig)
+		if [ $interface = $LAN ]; then
+			SUBNET_PART=`ifconfig $LAN | grep 'inet addr:' | cut -d: -f2 | cut -d'.' -f1-3`
+			if [ -n $SUBNET_PART ]; then
+				echo "disabling nat for ${SUBNET_PART}.0/24"
+				iptables -t nat -D POSTROUTING -s ${SUBNET_PART}.0/24 -o eth0  -j MASQUERADE
+				iptables -t nat -D POSTROUTING -s ${SUBNET_PART}.0/24 -o wlan0 -j MASQUERADE
+			fi
+		fi
+		ifconfig $interface 0.0.0.0
+		;;
+
+	renew|bound)
+		ifconfig $interface $ip $BROADCAST $NETMASK
+
+		if [ -n "$router" ] ; then
+			echo "deleting routers"
+			while route del default gw 0.0.0.0 dev $interface ; do
+				:
+			done
+
+			for i in $router ; do
+				route add default gw $i dev $interface
+			done
+		fi
+
+		echo -n > $RESOLV_CONF
+		[ -n "$domain" ] && echo search $domain >> $RESOLV_CONF
+		for i in $dns ; do
+			echo adding dns $i
+			echo nameserver $i >> $RESOLV_CONF
+		done
+
+		if [ $interface = $LAN ] && ! brctl show | grep $WAN > /dev/null; then
+			SUBNET_PART=`ifconfig $LAN | grep 'inet addr:' | cut -d: -f2 | cut -d'.' -f1-3`
+			if [ -n $SUBNET_PART ]; then
+				echo "enabling nat for ${SUBNET_PART}.0/24"
+				iptables -t nat -A POSTROUTING -s ${SUBNET_PART}.0/24 -o $WAN -j MASQUERADE 
+			fi
+		fi
+		;;
+esac
+
+exit 0

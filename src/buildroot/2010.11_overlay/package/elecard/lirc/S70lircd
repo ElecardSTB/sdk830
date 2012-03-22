@@ -1,0 +1,24 @@
+#!/bin/sh
+
+LIRCD=/usr/sbin/lircd
+PID_FILE=/var/run/lircd.pid
+LIRCFLAGS="-o /dev/lircd -P $PID_FILE"
+
+case "$1" in
+    start)
+	echo -n "Starting daemon lircd: "
+        start-stop-daemon --start --quiet --pidfile $PID_FILE --exec $LIRCD -- $LIRCFLAGS
+        echo "done"
+	;;
+    stop)
+	echo -n "Shutting down daemon lircd: "
+	start-stop-daemon --stop --quiet --pidfile $PID_FILE --exec $LIRCD
+        echo "done"
+	;;
+    *)
+        echo "Usage: $0 {start|stop}"
+        exit 1
+	;;
+esac
+
+exit 0

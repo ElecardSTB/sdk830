@@ -1,0 +1,13 @@
+#############################################################
+#
+# Elecards package versions and ather envs
+#
+#############################################################
+
+ELECARD_UPLOAD_SERVER:=http://192.168.1.251/stb830_st/packages/
+
+UPDATER_PACK_VERSION:=12.03.14_12.51_8409ea4
+COMMONLIB_PACK_VERSION:=12.03.14_08.17_c34a74d
+ST2FX_PACK_VERSION:=12.03.20_11.48_6a10a3c
+STAPISDK_PACK_VERSION:=12.03.20_11.48_6a10a3c
+MODULES_ELECARD_PACK_VERSION:=12.03.20_10.02_6682bbd

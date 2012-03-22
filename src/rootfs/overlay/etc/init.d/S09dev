@@ -1,0 +1,59 @@
+#!/bin/sh
+#
+
+case "$1" in
+	start)
+
+		#mdev
+		mount -t tmpfs mdev /dev
+		#for mounting usb and sata
+		mount -t tmpfs tmpfs /mnt
+		#for mounting samba
+		mount -t tmpfs tmpfs /samba
+
+		echo /sbin/mdev > /proc/sys/kernel/hotplug
+		if [ -f /etc/dev.tar ]; then
+		  # Using prebuilt /dev/ archive in retail mode
+		  echo -n "Populating /dev using /etc/dev.tar..."
+		  cd /dev
+		  tar -x -f /etc/dev.tar
+		else
+		  # Using mdev
+		  echo -n "Populating /dev using mdev..."
+		  mdev -s || { echo "FAIL"; exit 1; }
+		fi
+
+		# Case mdev is used
+		if [ ! -f /etc/dev.tar ]; then
+		  mkdir /dev/pts /dev/shm /dev/mqueue
+		fi
+		mount -t devpts devpts /dev/pts
+		mount -t tmpfs tmpfs /dev/shm
+#		mount -t mqueue mqueue /dev/mqueue
+
+		if [ -f /etc/dev.tar ]; then
+			#If mdev is not used
+			#temp. TODO
+#			if [ -f /proc/bus/usb/001/002 ]; then
+			if [ -n "`lsusb | grep -v 0000`" ]; then
+				#ln -s /dev/sda1 /dev/removable
+				/bin/echo /sbin/mdev > /proc/sys/kernel/hotplug
+				mdev -s
+#				ln -s $MDEV /dev/removable
+			else
+				echo -n ""
+#				rm /dev/removable
+			fi
+		else
+			# Case mdev is used
+			ln -s /proc/self/fd /dev/fd
+		fi
+		echo "done"
+		;;
+  *)
+	echo $"Usage: $0 {start}"
+	exit 1
+esac
+
+
+

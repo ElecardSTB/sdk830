@@ -1,0 +1,441 @@
+#!/usr/bin/perl -w
+#
+#                             stb225 Project
+#                   ---------------------------------
+#
+# Copyright (C) 2007 NXP B.V.,
+# All Rights Reserved.
+#
+# Filename: prjfilter
+#
+# Filters text according to configuration settings.
+# See usage function for more explanations.
+#
+# Rev Date       Author      Comments
+#-------------------------------------------------------------------------------
+#   2 20070927   batelaan    Initial
+#   3 20071011   batelaan    Handle embedded quotes
+#   4 20071206   batelaan    Correct usage. Add ENV.<envvar> vars.
+#                            Add var=value on cmdline.
+
+use strict;
+use lib "$ENV{PRJROOT}/etc/perllib";
+use Template;
+use Cwd;
+my $origDir = getcwd;
+
+sub msg; sub warning; sub fatal;
+
+our $pgm = $0;
+our $debug = 0;
+
+our @configFiles;
+our @var_assignment_args;
+our $configFile; # current file being parsed.
+# prjconfig configuration variables hash:
+our %config = ('ENV' => \%ENV);
+our %configVarOrigin; # maps config var names to file:linenumber.
+
+our $warnDuplicates = 1;
+our $warnDuplicatesSameValue = 1;
+
+our $in; # from file or directory
+our $out; # to file or directory
+
+our $recurse = 1;
+
+our @templateOptions = qw(EVAL_PERL 1);
+our @manualCommand = qw(perldoc Template);
+
+# Perl regexp patterns matching file/dir names to exclude from copying
+our $excludeRX = '#.*|.*~|\.svn|CVS';
+
+our $templateText = <<'EOT';
+[% MACRO SKIPFILE PERL %]
+  $main::SKIPFILE = 1;
+[% END -%]
+[%- INCLUDE $prjfilter_in -%]
+EOT
+
+# Use options in env var PRJFILTEROPTS:
+if (exists $ENV{'PRJFILTEROPTS'}) {
+  unshift @ARGV, split ' ', $ENV{PRJFILTEROPTS};
+}
+
+sub usage {
+    print STDERR <<EOF;
+@_
+$pgm [<options>] [IN OUT]
+Filters input (stdin, file, or directory(tree) according to
+a configuration file (default: \$BUILDROOT/.prjconfig).
+
+Without arguments it converts stdin to stdout, otherwise IN and OUT
+should be both file names or directory names.
+OUT does not need to exist. Binary and non-plain files are just copied.
+
+Text input is filtered using the Perl Template Toolkit
+(see http://www.template-toolkit.org/ version $Template::VERSION).
+Toolkit options are: @templateOptions .
+
+To skip a file entirely from being output insert [% SKIPFILE %]
+in the file, e.g.
+[% IF CONFIG_SMALLRAM -%]
+  [% SKIPFILE %]
+[% END -%]
+This will remove the output file, even if it already existed.
+
+Config variable xxx is available as     : [%xxx%]
+Environment variable xxx is available as: [%ENV.xxx%]
+
+Options:
+  var=value       Assign variable a value.
+  -c FILE         Read config file. Multiple occurances are OK.
+  -d              Debug.
+  -h	          Help.
+  --man           Prints Template Toolkit manual page.
+  --no-recurse    Do not recurse on subdirectories of IN.
+  --no-warn-duplicates-same-value
+                  Do not warn about duplicates if the value is the same.
+  --no-warn-duplicates
+                  Do not warn about any duplicates.
+
+Additional features:
+  Environment variable PRJFILTEROPTS may contain options/arguments
+  that are parsed before the command line options.
+EOF
+  exit(scalar(@_) ? 1 : 0);
+}
+
+################################################################################
+# Parse @ARGV command line options and arguments.
+sub parseArgs {
+  my @args = ();
+  while (@ARGV) {
+    my $arg = shift @ARGV;
+    msg("Arg: \"$arg\"\n") if $debug;
+    if ($arg =~ /^-/) {
+      parseOption($arg);
+    } elsif ($arg =~ /^(\w+)=(.*)/) {
+      # handled later.
+      push @var_assignment_args, $arg
+    } else {
+      push @args, $arg;
+    }
+  }
+  usage("Incorrect number of arguments.") unless @args == 0 || @args == 2;
+  ($in, $out) = @args;
+}
+#-------------------------------------------------------------------------------
+# Handle an individual option.
+sub parseOption {
+  my ($opt) = @_;
+
+  if ($opt =~ /^-d(\d)?$/) {
+    $debug = defined($1) ? $1 : 1;
+  } elsif ($opt eq "-c") {
+    push @configFiles, nextArg($opt);
+  } elsif ($opt eq "--no-recurse") {
+    $recurse = 0;
+  } elsif ($opt eq "--no-warn-duplicates") {
+    $warnDuplicates = 0;
+  } elsif ($opt eq "--no-warn-duplicates-same-value") {
+    $warnDuplicatesSameValue = 0;
+  } elsif ($opt eq "--man") {
+    printManual();
+  } elsif (($opt eq "-h") || ($opt eq "-?") || ($opt eq "--help")) {
+    usage();
+  } else {
+    usage("Unknown option: \"$opt\"");
+  }
+}
+
+################################################################################
+# Return argument from @ARGV following current option.
+# Fatal error if no entries in @ARGV.
+sub nextArg {
+  my ($opt) = @_;
+  my $nextArg = shift @ARGV;
+  unless (defined $nextArg) {
+    fatal("Insufficient arguments after \"$opt\"");
+  }
+  $nextArg;
+}
+
+################################################################################
+# Prints the manual for the Template Toolkit module that we use.
+sub printManual {
+  # Since we manipulated @INC we need to pass this to the perldoc command:
+  $ENV{'PERL5LIB'} = join(':', @INC);
+
+  system(@manualCommand);
+  exit(0);
+}
+
+################################################################################
+# Reads all files specified by @configFiles, or $ENV{BUILDROOT}/.prjconfig
+# if none were specified.
+sub readConfigFiles {
+  if (@configFiles == 0) {
+    fatal("Environment variable BUILDROOT is undefined.") unless exists $ENV{'BUILDROOT'};
+    fatal("$!: Environment variable BUILDROOT is not a directory.") unless -d $ENV{'BUILDROOT'};
+    @configFiles = ("$ENV{BUILDROOT}/.prjconfig");
+  }
+  foreach my $configFile (@configFiles) {
+    readConfigFile($configFile);
+  }
+  if ($debug) {
+    foreach my $k (sort(keys %config)) {
+      msg sprintf(" %-40s = %s\n", $k, $config{$k});
+    }
+  }
+}
+
+################################################################################
+# Reads a single config file.
+sub readConfigFile {
+  $configFile = shift;
+  fatal("$configFile: $!") unless open(F, $configFile);
+  local $_;
+  while (<F>) {
+    #msg($_) if $debug;
+    next unless /\S/; # ignore blank lines
+    chomp;
+    s/=n$/=0/;
+    s/=y$/=1/;
+    s/=m$/='m'/;
+    if (/^(.+?)=(.*)/) {
+      my ($var, $value) = ($1, $2);
+      # Handle quoted strings:
+      if ($value =~ s/^"(.*)"$/$1/) {
+	$value =~ s/\\\"/\"/g; # embedded double quotes
+	$value =~ s/\\\\/\\/g; # embedded backslashes
+      }
+      configVarSet($var, $value);
+    } elsif (/^# (\S+) is not set/) {
+      configVarUnset($1);
+    } elsif (/^\#/) {
+      next;
+    } else {
+      fatal("$configFile:$.: Unrecognized line:\n$_\n");
+    }
+  }
+  close F;
+}
+
+################################################################################
+# Registers variable as having a certain value.
+sub configVarSet {
+  configVarCheck(@_);
+  my ($var, $value) = @_;
+  $config{$var} = $value;
+}
+
+################################################################################
+# Registers variable as being unset.
+sub configVarUnset {
+  configVarCheck(@_);
+  my ($var) = @_;
+  delete $config{$var};
+}
+
+################################################################################
+# Issues warnings about duplicate variables.
+sub configVarCheck {
+  my ($var, $value) = @_;
+  if (exists $config{$var}) {
+    my $old = $config{$var};
+    $old = '<NOT SET>' unless defined $old;
+    $value = '<NOT SET>' unless defined $value;
+    my $different = $old ne $value;
+    if ($warnDuplicates) {
+      warning("$configFile:$.:\n  Duplicate configuration variable $var:\n" .
+	      "    Last seen at $configVarOrigin{$var}\n") if ($warnDuplicatesSameValue || $different);
+      if ($different) {
+	warning("VALUE IS DIFFERENT!\n" .
+		"    Old value: $old\n" .
+		"    New value: $value\n"
+	  );
+      }
+    }
+  }
+  $configVarOrigin{$var} = "$configFile:$.";
+}
+
+################################################################################
+# Processes an input file, possibly containing templating instructions.
+# Print output to stdout if $out is not defined, or a file if it is.
+sub processTemplateFile {
+  my ($in, $out) = @_;
+  $main::SKIPFILE = 0;
+  my $templateProcessor = Template->new(
+    {
+      (defined $out ? ('OUTPUT', $out) : ()),
+      ABSOLUTE => 1,
+      RELATIVE => 1,
+      @templateOptions,
+    }) || fatal($Template::ERROR);
+
+  $config{'prjfilter_in'} = $in;
+  $templateProcessor->process(\$templateText, \%config) || fatal($templateProcessor->error());
+}
+
+################################################################################
+# Processes a file. If the file is binary or not a plain file,
+# then just copy it.
+# Otherwise process it as a (possible) template file.
+sub processFile {
+  my ($in, $out) = @_;
+  if (defined $out) {
+    fatal "Illegal (directory) output $out for input (non-directory) $in\n" if -d $out && !-l $out;
+    unlink $out; # in case it is a symbolic link
+    #if (($ENV{_TMSITE} eq "caen")and(-l $in)) {
+    #  $in = `\\ls -al $in | sed "s/.*-> //g"`;chomp($in);
+    #}
+    if (-l $in or !-f $in or -B $in) { # Not a plain text file, so do an archive copy
+      msg "$in\tNOT PLAIN TEXT; ARCHIVE COPY\n" if $debug;
+      my @cmd = ('cp', '-f', '-a', $in, $out);
+      if (system(@cmd) != 0) {
+	fatal "Copying returned an error: @cmd\n";
+      }
+      return;
+    }
+    msg "$in\tFILTER\n" if $debug;
+  }
+  processTemplateFile($in, $out);
+  if ((defined $out) && $debug) {
+    if (system('cmp', '-s', $in, $out)) {
+      msg "\tCHANGED\n";
+    }
+  }
+  if ($main::SKIPFILE) {
+    if (defined $out) {
+      msg "\tSKIP (deletes $out)\n" if $debug;
+      unlink $out or fatal("$!: cannot skip file $in by deleting $out\n");
+    } else {
+      warning "Cannot skip file if not writing to a file\n";
+    }
+  } else {
+    if (defined $out) { # Not STDIN:
+      if (-x $in) {
+	# Set execute file mode
+	my $in_mode = (lstat $in)[2] & 07777;
+	my $out_mode = (lstat $out)[2] & 07777;
+	if ($in_mode != $out_mode) {
+	  msg sprintf "\tchmod %o %s\n", $in_mode, $out if $debug;
+	  chmod($in_mode, $out) or fatal "$!: failed to chmod $out\n";
+	}
+      }
+    }
+  }
+}
+
+################################################################################
+# Processes an entry in a directory.
+# Skips it if we should exclude it (see $excludeRX).
+# If it is a directory, then calls processDir.
+# If it is a file, then calls processFile.
+sub processDirEntry {
+  my ($recurse, $name, $in, $out) = @_;
+  if ($name =~ /^($excludeRX)$/) {
+    msg "$in\tEXCLUDED\n" if $debug;
+    return;
+  }
+
+  # Only process existing or symbolic things
+  # (which may point to non-existing things)
+  if (-e $in or -l $in) {
+    # Real directories (not symlinks) are recursively processed:
+    if (-d $in and !-l $in) {
+      processDir($recurse, $in, $out) if $recurse;
+    } else {
+      # Anything else is processed as if a file:
+      processFile($in, $out);
+    }
+  } else {
+    fatal <<EOT;
+Illegal output $out for input $in.
+If input is a file, output should be a (possibly non-existant) file name.
+If input is a directory, output should be a (possibly non-existant) directory name.
+EOT
+  }
+}
+
+################################################################################
+# Processes all entries in a directory.
+# Calls processDirEntry for each entry in the directory.
+sub processDir {
+  my ($recurse, $in, $out) = @_;
+  chdir($in) || fatal "$!: cannot cd to $in\n";
+  my @names = sort (<.*>, <*>);
+  chdir $origDir;
+  msg "$in = DIRECTORY\n" if $debug;
+  unless (-d $out) {
+    fatal "Illegal (non-directory) output $out for input directory $in\n" if -e $out || -l $out;
+    unless (mkdir $out) {
+      fatal "$!: cannot create directory $out\n";
+    }
+  }
+  foreach my $name (@names) {
+    next if ($name eq '.' || $name eq '..');
+    processDirEntry($recurse, $name, "$in/$name", "$out/$name");
+  }
+}
+
+################################################################################
+# Issue a message to stderr.
+sub msg {
+  print STDERR "@_";
+}
+
+################################################################################
+# Issue a warning to stderr.
+sub warning {
+  msg "**WARNING: ", @_;
+}
+
+################################################################################
+# Issue a fatal message to stderr, and exit with an error code.
+sub fatal {
+  msg "**FATAL: ", @_, "\n";
+  exit 1;
+}
+
+################################################################################
+# The main program.
+
+parseArgs();
+readConfigFiles();
+
+# Process var=value command line arguments, after the config files
+# have been read, so one can override values.
+$. = 0;
+$configFile = "variable_assignment_argument";
+foreach my $arg (@var_assignment_args) {
+  $arg =~ /^(\w+)=(.*)/;
+  $.++;
+  configVarSet($1, $2);
+}
+
+if (defined($in) && -d $in && !-l $in) {
+  # Real directories (not symlinks) are recursively processed:
+  processDir($recurse, $in, $out);
+} elsif (defined($in) && (-e $in || -l $in)) {
+  # Anything else is processed as if a file:
+  processFile($in, $out);
+} elsif (!defined($in)) {
+  # Or we are doing stdin to stdout:
+  processFile(\*STDIN, $out);
+} else {
+  # Oops:
+  fatal <<'EOT';
+Illegal combination of IN and OUT arguments. Allowable is:
+IN                 | OUT
+------------------ | ----------------------------------
+unspecified        | unspecified
+existing filename  | existing or non-existing filename
+existing directory | existing or non-existing directory
+EOT
+}
+
+exit(0);
+################################################################################

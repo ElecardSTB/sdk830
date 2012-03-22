@@ -1,0 +1,65 @@
+--- linux-sh4-2.6.32.42_stm24_V4.0_orig/drivers/net/r8169.c	2011-11-07 20:20:00.000000000 +0700
++++ linux-sh4-2.6.32.42_stm24_V4.0/drivers/net/r8169.c	2011-11-07 20:29:46.000000000 +0700
+@@ -3315,7 +3315,7 @@
+ 					       &tp->RxPhyAddr);
+ 	if (!tp->RxDescArray)
+ 		goto err_free_tx_0;
+-
++//mdelay(1);
+ 	retval = rtl8169_init_ring(dev);
+ 	if (retval < 0)
+ 		goto err_free_rx_1;
+@@ -3367,8 +3367,9 @@
+ {
+ 	void __iomem *ioaddr = tp->mmio_addr;
+ 	u32 cfg = rtl8169_rx_config;
+-
++mdelay(1);
+ 	cfg |= (RTL_R32(RxConfig) & rtl_chip_info[tp->chipset].RxConfigMask);
++mdelay(1);
+ 	RTL_W32(RxConfig, cfg);
+ 
+ 	/* Set DMA burst size and Interframe Gap Time */
+@@ -3456,21 +3457,21 @@
+ 	struct rtl8169_private *tp = netdev_priv(dev);
+ 	void __iomem *ioaddr = tp->mmio_addr;
+ 	struct pci_dev *pdev = tp->pci_dev;
+-
++//udelay(30);
+ 	if (tp->mac_version == RTL_GIGA_MAC_VER_05) {
+ 		RTL_W16(CPlusCmd, RTL_R16(CPlusCmd) | PCIMulRW);
+ 		pci_write_config_byte(pdev, PCI_CACHE_LINE_SIZE, 0x08);
+ 	}
+-
++//udelay(30);
+ 	RTL_W8(Cfg9346, Cfg9346_Unlock);
+ 	if ((tp->mac_version == RTL_GIGA_MAC_VER_01) ||
+ 	    (tp->mac_version == RTL_GIGA_MAC_VER_02) ||
+ 	    (tp->mac_version == RTL_GIGA_MAC_VER_03) ||
+ 	    (tp->mac_version == RTL_GIGA_MAC_VER_04))
+ 		RTL_W8(ChipCmd, CmdTxEnb | CmdRxEnb);
+-
++//udelay(30);
+ 	RTL_W8(EarlyTxThres, EarlyTxThld);
+-
++//udelay(30);
+ 	rtl_set_rx_max_size(ioaddr, tp->rx_buf_sz);
+ 
+ 	if ((tp->mac_version == RTL_GIGA_MAC_VER_01) ||
+@@ -3489,7 +3490,7 @@
+ 	}
+ 
+ 	RTL_W16(CPlusCmd, tp->cp_cmd);
+-
++//udelay(30);
+ 	rtl8169_set_magic_reg(ioaddr, tp->mac_version);
+ 
+ 	/*
+@@ -4933,6 +4934,7 @@
+ 
+ 	spin_lock_irq(&tp->lock);
+ 
++	mdelay(1);
+ 	rtl8169_asic_down(ioaddr);
+ 
+ 	spin_unlock_irq(&tp->lock);

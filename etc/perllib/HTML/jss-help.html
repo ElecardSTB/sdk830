@@ -1,0 +1,64 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD HTML 4.01//EN" "http://www.w3.org/TR/html4/strict.dtd">
+<html>
+<head>
+<meta http-equiv="Content-Type" content="text/html;charset=UTF-8">
+<link href="stylesheet.css" rel="stylesheet" type="text/css">
+<title>JavaScript Search Engine Help</title>
+</head>
+<body>
+
+<h1>Searching This Collection</h1>
+<p>
+Type one or several words in the search field.
+The list of documents or pages that contain ALL the
+words in the list will be displayed.
+<p>
+If a pair of words is separated by the keyword "OR",
+the list of articles that contains either of the
+two words will be displayed.<br>
+Example: <tt>hello OR goodbye</tt>
+<p>
+If a word starts with "-", documents that do not
+contain the word will be displayed.<br>
+Example: <tt>hello -goodbye</tt><br>
+will display the documents that contain "hello", but not "goodbye".
+<p>
+A word consists of [a-zA-Z0-9_] characters.
+All words are converted to lowercase, so searching is case-insensitive.
+<p>
+The following are not indexed:
+if you enter any of these in your search query the search is aborted
+with an error message:
+<ul>
+<li>Numbers, including hexadecimal numbers.
+<li>Words of 2 or less characters.
+<li>A set of common English words that were considered not relevant.
+This reduces the size of the index data files.
+</ul>
+<p>
+The results will be sorted by relevance:
+<ol>
+<li>A list of files found using full word matching.
+<li>A list of additional files found using partial word matching.
+</ol>
+
+<h1>About This Search Engine</h1>
+<p>
+This Search Engine provides basic
+full-text search capability in a platform independent way.
+Because it is 100% JavaScript it runs in your web browser
+and requires no server-side scripts for web sites,
+and no software installation.
+<p>
+This particular implementation is based on the
+JavaScript Search Engine, by Yann LeCun &amp; Florin Nicsa
+(see <a href="http://jssindex.sourceforge.net/">http://jssindex.sourceforge.net/</a>).
+<br>
+Modifications that were made include:
+<ul>
+<li>The HTML file indexer was rewritten in Perl to prevent the need for installing
+the Lush package (see <a href="http://lush.sourceforge.net">http://lush.sourceforge.net/</a>).
+<li>The JavaScript code was modified to work without HTML frames.
+</ul>
+</body>
+</html>

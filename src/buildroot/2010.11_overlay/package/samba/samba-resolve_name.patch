@@ -1,0 +1,28 @@
+--- samba-3.3.16-orig/source/include/libsmbclient.h	2011-07-25 02:09:38.000000000 +0700
++++ samba-3.3.16/source/include/libsmbclient.h	2011-12-26 11:53:32.295383469 +0700
+@@ -2658,6 +2658,25 @@
+ #endif
+ 
+ /**@ingroup misc
++ Internal interface to resolve a name into an IP address.
++ Use this function if the string is either an IP address, DNS
++ or host name or NetBIOS name. This uses the name switch in the
++ smb.conf to determine the order of name resolution.
++ */
++#ifdef __cplusplus
++extern "C" {
++#endif
++bool resolve_name(const char *name,
++	struct sockaddr_storage *return_ss,
++	int name_type);
++#ifndef _PROTO_H_
++unsigned int smb_register_charset(struct charset_functions *funcs) ;
++#endif
++#ifdef __cplusplus
++}
++#endif
++
++/**@ingroup misc
+  * Set the users credentials globally so they can be used for DFS
+  * referrals. Probably best to use this function in the smbc_get_auth_data_fn
+  * callback.

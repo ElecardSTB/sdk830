@@ -1,0 +1,35 @@
+#!/bin/sh
+#
+
+if brctl show | grep eth0 >/dev/null; then
+	WAN="br0"
+else
+	WAN="eth0"
+fi
+
+case "$1" in
+    start)
+	if [ -f /etc/ppp/chap-secrets ]; then
+
+		USER=`cat /etc/ppp/chap-secrets | cut -d' ' -f1`
+
+		echo "user ${USER}"       >  /etc/ppp/peers/pppoe
+		echo "plugin rp-pppoe.so" >> /etc/ppp/peers/pppoe
+		echo "${WAN}"             >> /etc/ppp/peers/pppoe
+		echo "remotename pppoe"   >> /etc/ppp/peers/pppoe
+
+		route del default
+		echo "Connecting to PPPoE..."
+		pppd call pppoe
+		iptables -t nat -A POSTROUTING -o ppp0 -j MASQUERADE
+	fi
+	;;
+	stop)
+	iptables -t nat -D POSTROUTING -o ppp0 -j MASQUERADE
+	killall pppd 2>/dev/null
+	if killall -0 pppd 2>/dev/null; then
+		sleep 1
+	fi
+	killall -9 pppd 2>/dev/null
+	;;
+esac

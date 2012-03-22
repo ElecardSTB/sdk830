@@ -1,0 +1,23 @@
+#/bin/sh
+# switch leds on PromSvyaz board
+
+
+
+case "$1" in
+  start)
+    if [ -n "`cat /proc/cmdline | grep stb840_promSvyaz`" ]; then
+        echo "0" > /sys/class/leds/RED/brightness
+        echo "1" > /sys/class/leds/GREEN/brightness
+    fi
+    ;;
+  stop)
+    if [ -n "`cat /proc/cmdline | grep stb840_promSvyaz`" ]; then
+        echo "heartbeat" > /sys/class/leds/RED/trigger
+        echo "0" > /sys/class/leds/GREEN/brightness
+    fi
+    ;;
+  *)
+    echo "Usage: $0 {start|stop}"
+    exit 1
+    ;;
+esac

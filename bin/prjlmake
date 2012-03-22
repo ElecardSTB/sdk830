@@ -1,0 +1,19 @@
+#!/bin/bash
+
+DATE_LONG=`date +'%y.%m.%d_%H.%M.%S'`
+DATE_SHORT=${DATE_LONG%.??}
+LOG_NAME=${PRJROOT:?Error: PRJROOT not setted! Did you setup environment?}/logs/build_${DATE_SHORT}.log
+if [ -e $LOG_NAME ]; then
+	LOG_NAME=$PRJROOT/logs/build_${DATE_LONG}.log
+	if [ -e $LOG_NAME ]; then
+		echo "Warning $LOG_NAME exist. Log will be append to the file!!!"
+	fi
+fi
+
+# echo "DATE_LONG=$DATE_LONG"
+# echo "DATE_SHORT=$DATE_SHORT"
+# echo "LOG_NAME=$LOG_NAME"
+mkdir -p $PRJROOT/logs
+(time make -C $PRJROOT $@) 2>&1 | tee -a $LOG_NAME
+echo "Log file: $LOG_NAME"
+

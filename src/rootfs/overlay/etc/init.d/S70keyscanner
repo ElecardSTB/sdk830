@@ -1,0 +1,29 @@
+#!/bin/sh
+#
+# Start the keyscanner
+#
+
+case "$1" in
+  start)
+
+
+	echo "Starting keyscanner... "
+	insmod /lib/modules/STLinux-[%ENV.LINUX_VERSION%]/keyscanner.ko
+	if [ ! -c /dev/keypad ]; then
+		mknod /dev/keypad c 99 0
+	fi
+	;;
+  stop)
+	rmmod keyscanner
+	;;
+  restart|reload)
+	"$0" stop
+	"$0" start
+	;;
+  *)
+	echo $"Usage: $0 {start|stop|restart}"
+	exit 1
+esac
+
+exit $?
+

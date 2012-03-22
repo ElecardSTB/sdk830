@@ -1,0 +1,10 @@
+--- buildroot-2010.11_orig/package/ncurses/ncurses.mk	2010-11-30 21:52:43.000000000 +0600
++++ buildroot-2010.11/package/ncurses/ncurses.mk	2012-03-07 09:52:40.000000000 +0700
+@@ -40,7 +40,6 @@
+ 	--enable-echo \
+ 	--enable-const \
+ 	--enable-overwrite \
+-	--enable-broken_linker \
+ 	--disable-static
+ 
+ ifneq ($(BR2_ENABLE_DEBUG),y)

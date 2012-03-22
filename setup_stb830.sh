@@ -1,0 +1,1 @@
+./setups/setup_stb830.sh

@@ -1,0 +1,17 @@
+
+menu "Elecards packages"
+source "package/elecard/lirc/Config.in"
+source "package/elecard/compat-wireless/Config.in"
+source "package/elecard/linuxtv-dvb-apps/Config.in"
+
+source "package/elecard/updater/Config.in"
+
+source "package/elecard/stapisdk/Config.in"
+source "package/elecard/stmfb/Config.in"
+source "package/elecard/rootfs-apps/Config.in"
+
+source "package/elecard/modules/Config.in"
+source "package/elecard/modules-elecard/Config.in"
+
+source "package/elecard/commonlib/Config.in"
+endmenu

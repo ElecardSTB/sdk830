@@ -1,0 +1,12 @@
+config BR2_PACKAGE_STMFB
+	bool "stmfb"
+	default n
+	help
+	  Simple framebuffer driver for STMicroelectronics SoCs.
+	  stlinux24-host-stmfb-source and stlinux24-sh4-stmfb-firmware
+	  must be installed.
+
+config BR2_PACKAGE_STMFB_LOGO
+	bool "Elecard boot logo"
+	default y
+	depends on BR2_PACKAGE_STMFB

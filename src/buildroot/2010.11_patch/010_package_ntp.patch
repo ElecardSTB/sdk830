@@ -1,0 +1,66 @@
+--- buildroot-2010.11_orig/package/ntp/ntpd.etc.default	2010-11-30 21:52:43.000000000 +0600
++++ buildroot-2010.11/package/ntp/ntpd.etc.default	2012-03-07 09:52:40.000000000 +0700
+@@ -6,4 +6,4 @@
+ NTPDATE_OPTS="-t 5"
+ 
+ # Start the ntp daemon?
+-NTPD=yes
++NTPD=no
+--- buildroot-2010.11_orig/package/ntp/ntp.mk	2010-11-30 21:52:43.000000000 +0600
++++ buildroot-2010.11/package/ntp/ntp.mk	2012-03-07 09:52:40.000000000 +0700
+@@ -3,7 +3,7 @@
+ # ntp
+ #
+ #############################################################
+-NTP_VERSION = 4.2.6p2
++NTP_VERSION = 4.2.6p4
+ NTP_SOURCE = ntp-$(NTP_VERSION).tar.gz
+ NTP_SITE = http://www.eecis.udel.edu/~ntp/ntp_spool/ntp4/ntp-4.2
+ 
+@@ -24,6 +24,7 @@
+ 	$(SED) '/[[:space:](]rindex[[:space:]]*(/s/[[:space:]]*rindex[[:space:]]*(/ strrchr(/g' $(@D)/ntpd/*.c
+ endef
+ 
++NTP_INSTALL_FILES_y = ntpdate/ntpdate
+ NTP_INSTALL_FILES_$(BR2_PACKAGE_NTP_SNTP) += sntp/sntp
+ NTP_INSTALL_FILES_$(BR2_PACKAGE_NTP_NTP_KEYGEN) += util/ntp-keygen
+ NTP_INSTALL_FILES_$(BR2_PACKAGE_NTP_NTP_WAIT) += scripts/ntp-wait
+@@ -35,18 +36,18 @@
+ define NTP_INSTALL_TARGET_CMDS
+ 	install -m 755 $(@D)/ntpd/ntpd $(TARGET_DIR)/usr/sbin/ntpd
+ 	test -z "$(NTP_INSTALL_FILES_y)" || install -m 755 $(addprefix $(@D)/,$(NTP_INSTALL_FILES_y)) $(TARGET_DIR)/usr/bin/
+-	install -m 755 package/ntp/ntp.sysvinit $(TARGET_DIR)/etc/init.d/S49ntp
+-	@if [ ! -f $(TARGET_DIR)/etc/default/ntpd ]; then \
+-		install -m 755 -d $(TARGET_DIR)/etc/default ; \
+-		install -m 644 package/ntp/ntpd.etc.default $(TARGET_DIR)/etc/default/ntpd ; \
++	install -m 755 package/ntp/ntp.sysvinit $(TARGET_DIR)/etc/init.d/S85ntp
++	@if [ ! -f $(TARGET_DIR)/etc/defaults/ntpd ]; then \
++		install -m 755 -d $(TARGET_DIR)/etc/defaults ; \
++		install -m 644 package/ntp/ntpd.etc.default $(TARGET_DIR)/etc/defaults/ntpd ; \
+ 	fi
+ endef
+ 
+ define NTP_UNINSTALL_TARGET_CMDS
+ 	rm $(TARGET_DIR)/usr/sbin/ntpd
+ 	rm -f $(addprefix $(TARGET_DIR)/usr/bin/,$(NTP_INSTALL_FILES_y))
+-	rm $(TARGET_DIR)/etc/init.d/S49ntp
+-	rm $(TARGET_DIR)/etc/default/ntpd
++	rm $(TARGET_DIR)/etc/init.d/S85ntp
++	rm $(TARGET_DIR)/etc/defaults/ntpd
+ endef
+ 
+ NTP_POST_PATCH_HOOKS += NTP_PATCH_FIXUPS
+--- buildroot-2010.11_orig/package/ntp/ntp.sysvinit	2010-11-30 21:52:43.000000000 +0600
++++ buildroot-2010.11/package/ntp/ntp.sysvinit	2012-03-07 09:52:40.000000000 +0700
+@@ -13,9 +13,9 @@
+ test -x $DAEMON || exit 0
+ 
+ # Read config file if it is present.
+-if [ -r /etc/default/$NAME ]
++if [ -r /var/etc/$NAME ]
+ then
+-	. /etc/default/$NAME
++	. /var/etc/$NAME
+ fi
+ 
+ case "$1" in

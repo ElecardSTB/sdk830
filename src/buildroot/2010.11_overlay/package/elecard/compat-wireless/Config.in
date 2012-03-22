@@ -1,0 +1,4 @@
+config BR2_PACKAGE_COMPAT_WIRELESS
+	bool "compat-wireless"
+	help
+	  Stable kernel compat-wireless driver package.

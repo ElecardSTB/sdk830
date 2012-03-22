@@ -1,0 +1,40 @@
+#!/bin/sh
+#
+# insert stapisdk drivers
+#
+
+insmodSafe() {
+	if [ -e "$1" ]; then
+		insmod $1
+	fi
+}
+
+STAPISDK_ROOT=/root
+#STAPISDK_ROOT=/root_33.1
+
+case "$1" in
+  start)
+	if [ -f $STAPISDK_ROOT/modules/load_modules.sh ]; then
+		killall fb_logo 2>/dev/null
+		rmmod stmfb 2>/dev/null
+		rmmod stmcore-display-sti7105 2>/dev/null
+
+		source $STAPISDK_ROOT/modules/load_modules.sh
+		insmodSafe $STAPISDK_ROOT/modules/stpccrd_core.ko
+		insmodSafe $STAPISDK_ROOT/modules/stpccrd_ioctl.ko
+	fi
+	;;
+  stop)
+#Cant unload stapisdk modules.
+	echo "done."
+	;;
+  restart|reload)
+	"$0" stop
+	"$0" start
+	;;
+  *)
+	echo $"Usage: $0 {start|stop|restart}"
+	exit 1
+esac
+
+exit $?

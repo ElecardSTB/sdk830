@@ -1,0 +1,49 @@
+#!/bin/sh
+#
+# Start Elecard daemon
+#
+
+[% IF CONFIG_TESTSERVER_ENABLE -%]
+	[% SKIPFILE %]
+[% END -%]
+
+STAPISDK_ROOT=/root
+#STAPISDK_ROOT=/root_33.1
+APP=main_sdk7105_7105_ST40_LINUX_32BITS.out
+APP_PATH=$STAPISDK_ROOT/$APP
+#URL=udp://234.5.5.10:1239
+
+
+case "$1" in
+  start)
+	if [ -z "`cat /proc/cmdline | grep /dev/nfs`" ]; then
+		. /etc/profile
+[% IF CONFIG_TESTTOOL_ENABLE -%]
+#if defined testServer, this starts in /etc/inittab
+		$APP_PATH
+[% END -%]
+[% IF CONFIG_ELECD_ENABLE -%]
+		echo $APP_PATH $URL
+		$APP_PATH $URL >/var/log/elcd.log &
+		while [ ! -e /tmp/elcd.sock ]; do
+			usleep 100000
+		done
+		mainapp.sh &
+[% END -%]
+	fi
+
+	;;
+  stop)
+	killall $APP
+	echo "done."
+	;;
+  restart|reload)
+	"$0" stop
+	"$0" start
+	;;
+  *)
+	echo $"Usage: $0 {start|stop|restart}"
+	exit 1
+esac
+
+exit $?

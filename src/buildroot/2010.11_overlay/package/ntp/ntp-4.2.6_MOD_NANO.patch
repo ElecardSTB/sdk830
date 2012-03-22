@@ -1,0 +1,11 @@
+--- ntp/ntpd/ntp_loopfilter.c	2011-10-28 11:03:35.000000000 +0700
++++ ntp/ntpd/ntp_loopfilter.c	2011-10-28 11:05:47.044408093 +0700
+@@ -517,7 +517,7 @@
+ 			ntv.modes = MOD_STATUS;
+ 		} else {
+ #ifdef STA_NANO
+-			ntv.modes = MOD_BITS | MOD_NANO;
++			ntv.modes = MOD_BITS | STA_NANO;
+ #else /* STA_NANO */
+ 			ntv.modes = MOD_BITS;
+ #endif /* STA_NANO */

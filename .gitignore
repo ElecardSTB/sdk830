@@ -1,0 +1,10 @@
+*.[oa]
+*~
+build_stb830*/
+logs/
+distr/
+tarballs
+*.o.cmd
+*.ko.cmd
+*.mod.c
+*.ko

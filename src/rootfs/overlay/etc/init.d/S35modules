@@ -1,0 +1,40 @@
+#!/bin/sh
+#
+# Start install modules....
+#
+
+[% SKIPFILE %]
+
+
+case "$1" in
+  start)
+  
+	if [ -n "`uname -r | grep 2.6.32`" ]; then
+		STLINUX_PATH=STLinux-2.4
+	elif [ -n "`uname -r | grep 2.6.23`" ]; then
+		STLINUX_PATH=STLinux-2.3
+	fi
+
+	insmod /lib/modules/$STLINUX_PATH/rt3070sta.ko
+
+	;;
+  stop)
+ 
+	echo "unloading modules..."
+	rmmod r8169
+#	if [ -n "`cat /proc/cmdline | grep useNotOfficialRtlDrv`" ]; then
+#		rmmod mii
+#	fi
+	echo "done."
+	;;
+  restart|reload)
+	"$0" stop
+	"$0" start
+	;;
+  *)
+	echo $"Usage: $0 {start|stop|restart}"
+	exit 1
+esac
+
+exit $?
+
