@@ -66,10 +66,10 @@ $(TIMESTAMPS_DIR) $(COMPONENT_DIR) $(FIRMWARE_DIR) $(PACKAGES_DIR) $(TARBALLS_DI
 
 #	cd $(BUILDROOT) && rm -f images_initramfs initramfs images rootfs
 $(BUILDROOT)/initramfs:
-	ln -s packages/buildroot/output_initramfs/target $@
+	test -h $@ || ln -s packages/buildroot/output_initramfs/target $@
 
 $(BUILDROOT)/rootfs:
-	ln -s packages/buildroot/output_rootfs/target $@
+	test -h $@ || ln -s packages/buildroot/output_rootfs/target $@
 
 
 user=$(shell whoami)
