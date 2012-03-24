@@ -9,7 +9,7 @@ buildroot:
 	make -C ../buildroot rootfs
 
 $(COMPONENT_DIR)/rootfs1:
-	ln -s $(BUILDROOT)/packages/buildroot/output_rootfs/images/rootfs.jffs2 $@
+	test -h $@ || ln -s $(BUILDROOT)/packages/buildroot/output_rootfs/images/rootfs.jffs2 $@
 
 
 #TARGET_DIR variable should be seted by buildroot
