@@ -99,14 +99,15 @@ bri br_i buildroot_i initramfs:
 linux kernel:
 	make -C ./src/linux kernel_only
 
-stapisdk stsdk:
-	make -C ./src/stapisdk stapisdk
 
 ifeq ($(STB830_SDK),)
 packs: $(PACKAGES_DIR)
 	$(PRJROOT)/src/elecard/bin/genPackages.sh
+
+stapisdk stsdk:
+	make -C ./src/elecard/stapisdk stapisdk
 else
-packs:
+stapisdk stsdk packs:
 	@echo "You should run it in FULL build (not SDK)!"
 endif
 

@@ -14,6 +14,6 @@ fi
 # echo "DATE_SHORT=$DATE_SHORT"
 # echo "LOG_NAME=$LOG_NAME"
 mkdir -p $PRJROOT/logs
-(time make -C $PRJROOT $@) 2>&1 | tee -a $LOG_NAME
+(time make -C $PRJROOT "$@") 2>&1 | tee -a $LOG_NAME
 echo "Log file: $LOG_NAME"
 
