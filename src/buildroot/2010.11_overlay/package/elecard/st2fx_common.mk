@@ -17,7 +17,7 @@ ST_OBJS_DIR:=$(STSDKROOT)/apilib/lib/$(DVD_PLATFORM)_$(DVD_BACKEND)_$(ARCHITECTU
 #$(2)_LIBS=$(sort $(wildcard $(STSDKROOT)/apilib/lib/$(DVD_PLATFORM)_$(DVD_BACKEND)_$(ARCHITECTURE)$(DVD_CPU)_$(DVD_OS)_32BITS/$(3).so*))
 $(2)_HEADERS=$(sort $(wildcard $(STSDKROOT)/apilib/include/$(4)/*))
 
-$(2)_INSTALL_TS = $(BUILDROOT)/timestamps/.$(1)_installed $$($(2)_SOURCE_DIR)/.installed
+$(2)_INSTALL_TS = $(BUILD_DIR)/.$(1)_installed $$($(2)_SOURCE_DIR)/.installed
 
 
 $$($(2)_SOURCE_DIR)/.compiled:
