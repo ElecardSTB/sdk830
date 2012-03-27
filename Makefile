@@ -66,10 +66,10 @@ $(TIMESTAMPS_DIR) $(COMPONENT_DIR) $(FIRMWARE_DIR) $(PACKAGES_DIR) $(TARBALLS_DI
 
 #	cd $(BUILDROOT) && rm -f images_initramfs initramfs images rootfs
 $(BUILDROOT)/initramfs:
-	ln -s packages/buildroot/output_initramfs/target $@
+	test -h $@ || ln -s packages/buildroot/output_initramfs/target $@
 
 $(BUILDROOT)/rootfs:
-	ln -s packages/buildroot/output_rootfs/target $@
+	test -h $@ || ln -s packages/buildroot/output_rootfs/target $@
 
 
 user=$(shell whoami)
@@ -99,14 +99,15 @@ bri br_i buildroot_i initramfs:
 linux kernel:
 	make -C ./src/linux kernel_only
 
-stapisdk stsdk:
-	make -C ./src/stapisdk stapisdk
 
 ifeq ($(STB830_SDK),)
 packs: $(PACKAGES_DIR)
 	$(PRJROOT)/src/elecard/bin/genPackages.sh
+
+stapisdk stsdk:
+	make -C ./src/elecard/stapisdk stapisdk
 else
-packs:
+stapisdk stsdk packs:
 	@echo "You should run it in FULL build (not SDK)!"
 endif
 

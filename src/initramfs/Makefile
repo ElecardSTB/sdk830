@@ -8,7 +8,7 @@ all: check_overlays buildroot $(COMPONENT_DIR)/initramfs.cpio
 INITRAMFS_IMAGES_DIR=$(BUILDROOT)/packages/buildroot/output_initramfs/images
 
 $(COMPONENT_DIR)/initramfs.cpio:
-	ln -s $(INITRAMFS_IMAGES_DIR)/rootfs.cpio $@
+	test -h $@ || ln -s $(INITRAMFS_IMAGES_DIR)/rootfs.cpio $@
 
 buildroot:
 	make -C ../buildroot initramfs

@@ -37,6 +37,8 @@
 [%INITRAMFS%]/usr/bin/gdb
 [%INITRAMFS%]/usr/bin/gdbserver
 
+[%INITRAMFS%]/sbin/modprobe
+
 # libs
 [%INITRAMFS%]/usr/lib/libstdc++*
 [%INITRAMFS%]/lib/libcrypt*

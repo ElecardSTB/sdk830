@@ -47,6 +47,7 @@ typedef enum boardType_e {
 	eSTB840_PromSvyaz,
 	eSTB840_PromWad,
 	eSTB840_ch7162,
+	eSTB830_reference,
   
 } boardType_t;
 static boardType_t boardType = eSTB830;
@@ -68,6 +69,7 @@ extern int device_init_stb830(int ver);
 extern int device_init_stb840_promSvyaz(int ver);
 extern int device_init_stb840_promWad(int ver);
 extern int device_init_stb840_ch7162(int ver);
+extern int device_init_stb830_reference(int ver);
 
 
 struct boardDescr_s boardDescr[] __initdata = {
@@ -75,6 +77,7 @@ struct boardDescr_s boardDescr[] __initdata = {
   {eSTB840_PromSvyaz,	"stb840_promSvyaz",	device_init_stb840_promSvyaz},
   {eSTB840_PromWad,		"stb840_promWad",	device_init_stb840_promWad},
   {eSTB840_ch7162,		"stb840_ch7162",	device_init_stb840_ch7162},
+  {eSTB830_reference,	"stb830_reference",	device_init_stb830_reference},
 };
 
 

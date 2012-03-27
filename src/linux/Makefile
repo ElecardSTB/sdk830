@@ -28,7 +28,7 @@ $(KDIR)/arch/sh/boot/uImage: $(KDIR)/.config $(_ts_patchkernel) $(COMPONENT_DIR)
 
 
 $(COMPONENT_DIR)/kernel1:
-	ln -s $(KDIR)/arch/sh/boot/uImage $@
+	test -h $@ || ln -s $(KDIR)/arch/sh/boot/uImage $@
 
 kernel_only: $(KDIR)/.config $(_ts_patchkernel)
 	rm -f $(_ts_makekernel)
