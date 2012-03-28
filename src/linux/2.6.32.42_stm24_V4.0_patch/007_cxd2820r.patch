@@ -1,3 +1,19 @@
+--- linux-sh4-2.6.32.42_stm24_V4.0_orig/drivers/media/dvb/frontends/Kconfig	2001-08-20 15:36:15.000000000 +0700
++++ linux-sh4-2.6.32.42_stm24_V4.0/drivers/media/dvb/frontends/Kconfig	2012-03-22 17:43:26.688402275 +0700
+@@ -342,6 +342,13 @@
+ 	help
+ 	  Say Y when you want to support this frontend.
+ 
++config DVB_CXD2820R
++	tristate "Sony CXD2820R"
++	depends on DVB_CORE && I2C
++	default m if DVB_FE_CUSTOMISE
++	help
++	  Say Y when you want to support this frontend.
++
+ comment "DVB-C (cable) frontends"
+ 	depends on DVB_CORE
+ 
 --- linux-sh4-2.6.32.42_stm24_V4.0_orig/drivers/media/dvb/frontends/Makefile	2001-08-20 15:36:17.000000000 +0700
 +++ linux-sh4-2.6.32.42_stm24_V4.0/drivers/media/dvb/frontends/Makefile	2012-03-22 17:44:13.721963549 +0700
 @@ -9,6 +9,7 @@
