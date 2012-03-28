@@ -32,10 +32,17 @@
 #define CXD2820R_GPIO_L (0 << 2) /* output low */
 #define CXD2820R_GPIO_H (1 << 2) /* output high */
 
-#define CXD2820R_TS_SERIAL        0x08
-#define CXD2820R_TS_SERIAL_MSB    0x28
-#define CXD2820R_TS_PARALLEL      0x30
-#define CXD2820R_TS_PARALLEL_MSB  0x70
+#define CXD2820R_TS_SERIAL_DATA0  0x00
+#define CXD2820R_TS_SERIAL_DATA7  0x20
+#define CXD2820R_TS_SERIAL        0x00
+#define CXD2820R_TS_SERIAL_MSB    0x08
+
+#define CXD2820R_TS_PARALLEL      0x10
+#define CXD2820R_TS_PARALLEL_MSB  0x18
+
+// TSCLK active during TS not valid
+#define CXD2820R_TS_CLK_INACTIVE  0x00
+#define CXD2820R_TS_CLK_ACTIVE    0x80
 
 struct cxd2820r_config {
 	/* Demodulator I2C address.
