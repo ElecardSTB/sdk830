@@ -88,8 +88,10 @@ int cxd2820r_set_frontend_c(struct dvb_frontend *fe)
 		if (ret)
 			goto error;
 	} else
-#endif
 		if_freq = 0;
+#else
+	if_freq = priv->cfg.if_dvbc * 1000;
+#endif
 
 	dbg("%s: if_freq=%d", __func__, if_freq);
 

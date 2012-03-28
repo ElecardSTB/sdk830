@@ -129,8 +129,25 @@ int cxd2820r_set_frontend_t2(struct dvb_frontend *fe)
 		if (ret)
 			goto error;
 	} else
-#endif
 		if_freq = 0;
+#else
+	switch (c->bandwidth_hz) {
+	case 5000000:
+		if_freq = priv->cfg.if_dvbt2_5 * 1000;
+		break;
+	case 6000000:
+		if_freq = priv->cfg.if_dvbt2_6 * 1000;
+		break;
+	case 7000000:
+		if_freq = priv->cfg.if_dvbt2_7 * 1000;
+		break;
+	case 8000000:
+		if_freq = priv->cfg.if_dvbt2_8 * 1000;
+		break;
+	default:
+		return -EINVAL;
+	}
+#endif
 
 	dbg("%s: if_freq=%d", __func__, if_freq);
 

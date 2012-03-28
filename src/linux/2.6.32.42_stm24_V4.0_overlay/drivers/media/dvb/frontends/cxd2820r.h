@@ -23,6 +23,7 @@
 #define CXD2820R_H
 
 #include <linux/dvb/frontend.h>
+#include <linux/version.h>
 
 #define CXD2820R_GPIO_D (0 << 0) /* disable */
 #define CXD2820R_GPIO_E (1 << 0) /* enable */
@@ -62,6 +63,21 @@ struct cxd2820r_config {
 	 * Values: 0, 1
 	 */
 	bool spec_inv;
+
+#if (LINUX_VERSION_CODE < KERNEL_VERSION(3,2,0))
+	/* IFs for all used modes.
+	 * Default: none, must set
+	 * Values: <kHz>
+	 */
+	u16 if_dvbt_6;
+	u16 if_dvbt_7;
+	u16 if_dvbt_8;
+	u16 if_dvbt2_5;
+	u16 if_dvbt2_6;
+	u16 if_dvbt2_7;
+	u16 if_dvbt2_8;
+	u16 if_dvbc;
+#endif
 
 	/* GPIOs for all used modes.
 	 * Default: none, disabled
