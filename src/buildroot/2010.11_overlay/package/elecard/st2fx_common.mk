@@ -17,7 +17,7 @@ ST_OBJS_DIR:=$(STSDKROOT)/apilib/lib/$(DVD_PLATFORM)_$(DVD_BACKEND)_$(ARCHITECTU
 #$(2)_LIBS=$(sort $(wildcard $(STSDKROOT)/apilib/lib/$(DVD_PLATFORM)_$(DVD_BACKEND)_$(ARCHITECTURE)$(DVD_CPU)_$(DVD_OS)_32BITS/$(3).so*))
 $(2)_HEADERS=$(sort $(wildcard $(STSDKROOT)/apilib/include/$(4)/*))
 
-$(2)_INSTALL_TS = $(BUILDROOT)/timestamps/.$(1)_installed $$($(2)_SOURCE_DIR)/.installed
+$(2)_INSTALL_TS = $(BUILD_DIR)/.$(1)_installed $$($(2)_SOURCE_DIR)/.installed
 
 
 $$($(2)_SOURCE_DIR)/.compiled:
@@ -72,7 +72,7 @@ DIRECTFB_ST_MAIN_LIBS=	libdirectfb-$(ST2FX_DIRECTFB_VERSION)*.so* \
 
 #				libshm.so* \
 
-DIRECTFB_INSTALL_TS = $(BUILDROOT)/timestamps/.directfb_installed $$(DIRECTFB_ST_SOURCE_DIR)/.installed
+DIRECTFB_INSTALL_TS = $(BUILD_DIR)/.directfb_installed $$(DIRECTFB_ST_SOURCE_DIR)/.installed
 
 $$(DIRECTFB_ST_SOURCE_DIR)/.compiled:
 	$(MAKE) -C $$(DIRECTFB_ST_ST2FX_COMMON_DIR)

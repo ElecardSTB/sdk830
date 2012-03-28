@@ -205,8 +205,11 @@ static struct platform_device nand_device = {
 	},
 };
 
-
-
+static struct i2c_board_info __initdata rtc_i2c_board_info[] = {
+	{ //rtc Seico s35390a
+		I2C_BOARD_INFO("s35390a", 0x30),
+	},
+};
 
 static struct platform_device *hdk7105_devices[] __initdata = {
 //	&hdk7105_front_panel,
@@ -304,6 +307,7 @@ int __init device_init_stb840_ch7162(int ver)
 
 	platform_device_register(&nand_device);
 
+	i2c_register_board_info(1, rtc_i2c_board_info, ARRAY_SIZE(rtc_i2c_board_info));
 
 	return platform_add_devices(hdk7105_devices,
 			ARRAY_SIZE(hdk7105_devices));
