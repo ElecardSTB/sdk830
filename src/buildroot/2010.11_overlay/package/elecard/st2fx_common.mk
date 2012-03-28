@@ -72,7 +72,7 @@ DIRECTFB_ST_MAIN_LIBS=	libdirectfb-$(ST2FX_DIRECTFB_VERSION)*.so* \
 
 #				libshm.so* \
 
-DIRECTFB_INSTALL_TS = $(BUILDROOT)/timestamps/.directfb_installed $$(DIRECTFB_ST_SOURCE_DIR)/.installed
+DIRECTFB_INSTALL_TS = $(BUILD_DIR)/.directfb_installed $$(DIRECTFB_ST_SOURCE_DIR)/.installed
 
 $$(DIRECTFB_ST_SOURCE_DIR)/.compiled:
 	$(MAKE) -C $$(DIRECTFB_ST_ST2FX_COMMON_DIR)
