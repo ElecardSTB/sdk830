@@ -3,6 +3,8 @@ menu "Elecards packages"
 source "package/elecard/lirc/Config.in"
 source "package/elecard/compat-wireless/Config.in"
 source "package/elecard/linuxtv-dvb-apps/Config.in"
+source "package/elecard/pcsc-lite/Config.in"
+source "package/elecard/ccid/Config.in"
 
 source "package/elecard/updater/Config.in"
 

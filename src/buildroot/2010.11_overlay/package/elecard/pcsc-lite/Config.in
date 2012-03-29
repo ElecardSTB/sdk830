@@ -1,0 +1,8 @@
+config BR2_PACKAGE_PCSC_LITE
+	bool "pcsc-lite"
+	select BR2_PACKAGE_LIBUSB
+	help
+	  Middleware to access a smart card using SCard API (PC/SC).
+	  For more information, please visit:
+	  http://pcsclite.alioth.debian.org/pcsclite.html
+

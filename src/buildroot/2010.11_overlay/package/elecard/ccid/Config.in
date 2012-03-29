@@ -1,0 +1,15 @@
+config BR2_PACKAGE_CCID
+	bool "ccid"
+	select BR2_PACKAGE_PKG_CONFIG
+	select BR2_PACKAGE_LIBUSB
+	select BR2_PACKAGE_PCSC_LITE
+	help
+	  This package provides the source code for a generic USB CCID 
+	  (Chip/Smart Card Interface Device) driver and ICCD (Integrated Circuit(s) Card Devices)
+	  
+	  For more information, please visit the project page: 
+	  http://pcsclite.alioth.debian.org/ccid.html
+
+	  List of supported hardware:
+	  http://pcsclite.alioth.debian.org/ccid/section.html
+
