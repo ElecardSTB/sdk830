@@ -4,7 +4,8 @@
 #
 #############################################################
 
-ELECARD_UPLOAD_SERVER:=http://192.168.1.251/stb830_st/packages/
+#ELECARD_UPLOAD_SERVER:=http://192.168.1.251/stb830_st/packages/
+ELECARD_UPLOAD_SERVER:=ftp://93.91.165.233/incoming/sdk830_packs/
 
 UPDATER_PACK_VERSION:=12.03.24_08.37_e148f9c
 COMMONLIB_PACK_VERSION:=12.03.14_08.17_c34a74d
