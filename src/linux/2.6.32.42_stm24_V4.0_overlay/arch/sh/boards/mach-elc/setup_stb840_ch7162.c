@@ -36,8 +36,6 @@
 
 
 #define HDK7105_PIO_PHY_RESET stm_gpio(15, 5)
-#define HDK7105_GPIO_FLASH_WP stm_gpio(6, 4)
-
 
 
 static struct platform_device pdk7105_leds = {
@@ -296,14 +294,6 @@ int __init device_init_stb840_ch7162(int ver)
 
 	stx7105_configure_audio(&(struct stx7105_audio_config) {
 			.spdif_player_output_enabled = 1, });
-
-	/*
-	 * FLASH_WP is shared between between NOR and NAND FLASH.  However,
-	 * since NAND MTD has no concept of write-protect, we permanently
-	 * disable WP.
-	 */
-	gpio_request(HDK7105_GPIO_FLASH_WP, "FLASH_WP");
-	gpio_direction_output(HDK7105_GPIO_FLASH_WP, 1);
 
 	platform_device_register(&nand_device);
 
