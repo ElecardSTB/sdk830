@@ -12,6 +12,7 @@ _ts_commonscript := $(TIMESTAMPS_DIR)/.commonscript
 
 all: $(DIRS) $(_ts_commonscript) make_description make_components untar_rootfs
 firmware: $(DIRS) $(_ts_commonscript) make_description make_components make_firmware untar_rootfs
+firmware: MAKE_FIRMWARE=1
 
 
 maketools:
@@ -32,7 +33,7 @@ $(_ts_commonscript): $(COMMON_SCRIPT_FILES)
 
 make_description: $(DIRS)
 	$(call ECHO_MESSAGE,Generate firmware description:)
-	$(PRJROOT)/bin/genFirmwarePackConf.sh
+	INCREMENT_REVISION=$(MAKE_FIRMWARE) $(PRJROOT)/bin/genFirmwarePackConf.sh
 
 define CHECK_COMP_SIZE
 	@filesize=$$(stat -L -c%s $(1)); \

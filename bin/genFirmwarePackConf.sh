@@ -33,7 +33,6 @@ if [ ! "$UPD_CONFIG" ]; then
 	UPD_CONFIG=dev
 #	UPD_CONFIG=rel
 fi
-#echo "UPD_CONFIG=\"$UPD_CONFIG\""
 
 upd_config_rev=0
 if [ "$UPD_CONFIG" = "dev" ]; then
@@ -42,6 +41,9 @@ if [ "$UPD_CONFIG" = "dev" ]; then
 		echo "1" > $UPDATE_DIR/.development_revision
 	fi
 	upd_config_rev=`cat $UPDATE_DIR/.development_revision`
+	if [ -n "$INCREMENT_REVISION" ]; then
+		echo $(($upd_config_rev+1)) > $UPDATE_DIR/.development_revision
+	fi
 else if [ "$UPD_CONFIG" = "rel" ]; then
 	ALWAYSUPDATE=0
 	upd_config_rev=`cat $UPDATE_DIR/.release_revision`
@@ -100,7 +102,8 @@ if [ -z "$STB830_SDK" ]; then
 	echo " private-elecard-apps(src/elecard/apps)=$PRIVATE_ELECARD_APPS_GIT"
 fi
 
-BRANCH=`git branch 2>/dev/null | grep '^\* *' | sed 's/\* //'`
+getBranch ./
+BRANCH=$Return_Val
 #LANG=ENG
 LANG=
 
@@ -108,10 +111,7 @@ if [ -n "$BUILD_SCRIPT_FW" ]; then
 	COMPONENTS=script
 fi
 if [ "$BUILD_WITHOUT_COMPONENTS_FW" != "1" ]; then
-	if [ -n "$COMPONENTS" ]; then
-		COMPONENTS=${COMPONENTS}_
-	fi
-	COMPONENTS=${COMPONENTS}comps
+	COMPONENTS=${COMPONENTS:+${COMPONENTS}_}comps
 fi
 
 
@@ -128,7 +128,7 @@ addToFWNAME $COMPONENTS
 addToFWNAME $SHORT_COMMENT
 
 
-
+#create efp configuration file
 export ALWAYSUPDATE SYSID SYSREV_PKG FWNAME OUTDIR COMPDIR KERNELVER ROOTFSVER USERFSVER BUILD_SCRIPT_FW BUILD_WITHOUT_COMPONENTS_FW
 $PRJROOT/bin/prjfilter $PRJROOT/etc/stb830.conf.in $COMPDIR/stb830_efp.conf
 
@@ -143,7 +143,7 @@ printEnv() {
 # Create description file
 descFile=$COMPDIR/firmwareDesc
 echo "#Elecard STB Firmware Update Pack" > ${descFile}
-echo "#Firmware pack name:       " $FWNAME >> ${descFile}
+echo "#Firmware pack name:       " $FWNAME.efp >> ${descFile}
 echo "#Firmware Pack Ver(date):  " $SYSREV_PKG >> ${descFile}
 echo "#System id:                " $SYSID >> ${descFile}
 echo "#Build configuration:      " $UPD_CONFIG >> ${descFile}
@@ -187,11 +187,6 @@ if [ "$BUILD_WITHOUT_COMPONENTS_FW" != "1" ]; then
 	#echo "ENABLE_SECUREMEDIA="        $ENABLE_SECUREMEDIA >> ${descFile}
 fi
 
-
-
-if [ "$UPD_CONFIG" = "dev" ]; then
-	echo $(($upd_config_rev+1)) > $UPDATE_DIR/.development_revision
-fi
 
 popd 1>/dev/null
 exit 0
