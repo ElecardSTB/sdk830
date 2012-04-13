@@ -165,9 +165,12 @@ fi
 #create script tgz
 if [ -n "$BUILD_SCRIPT_FW" ]; then
 	rm -f $COMPDIR/script.tgz
-	pushd $SCRIPT_PATH/$BUILD_SCRIPT_FW
-	tar -czf $COMPDIR/script.tgz ./*
-	popd
+	if pushd $SCRIPT_PATH/$BUILD_SCRIPT_FW; then
+		tar -czf $COMPDIR/script.tgz ./*
+		popd
+	else
+		echo "ERROR! No such directrory: $SCRIPT_PATH/$BUILD_SCRIPT_FW"
+	fi
 fi
 
 
