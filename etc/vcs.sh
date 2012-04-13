@@ -55,6 +55,14 @@ STB830_vcs_get_version() {
 	getLastModificationVersion "$STB830_vcs_cmd" $*
 }
 
+getBranch() {
+	Return_Val=none
+	if pushd $1 1>/dev/null; then
+		Return_Val=`git branch | grep "^* " | cut -f 2 -d ' '`
+		popd 1>/dev/null
+	fi
+}
+
 # if [ -z "$STB830_SDK" ]; then
 # 	if [ -z "$STB820_vcs_cmd" ]; then
 # 		detectVCS $PRJROOT/src/apps/StbMainApp/

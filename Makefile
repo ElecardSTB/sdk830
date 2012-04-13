@@ -11,7 +11,7 @@ _ts_commonscript := $(TIMESTAMPS_DIR)/.commonscript
 .PHONY : all firmware maketools make_description make_components untar_rootfs clean br buildroot rootfs br_i buildroot_i initramfs linux kernel stapisdk stsdk
 
 all: $(DIRS) $(_ts_commonscript) make_description make_components untar_rootfs
-firmware: all make_firmware
+firmware: $(DIRS) $(_ts_commonscript) make_description make_components make_firmware untar_rootfs
 
 
 maketools:
@@ -20,7 +20,7 @@ maketools:
 
 COMMON_SCRIPT_FILES=$(sort $(wildcard ./src/script/*.sh))
 $(_ts_commonscript): $(COMMON_SCRIPT_FILES)
-	$(call ECHO_MASSAGE,Common scripts)
+	$(call ECHO_MESSAGE,Common scripts)
 	@echo "Scripts:"
 	@for i in $?; do \
 		is_script=`echo $$i | grep "script/.*.sh"`; \
@@ -31,10 +31,11 @@ $(_ts_commonscript): $(COMMON_SCRIPT_FILES)
 	touch $(_ts_commonscript)
 
 make_description: $(DIRS)
+	$(call ECHO_MESSAGE,Generate firmware description:)
 	$(PRJROOT)/bin/genFirmwarePackConf.sh
 
 define CHECK_COMP_SIZE
-	@filesize=$$(stat -c%s $(1)); \
+	@filesize=$$(stat -L -c%s $(1)); \
 	if [ $$filesize -gt $(3) ]; then \
 		echo "ERROR!!! $(1) $$filesize is greater than $(3) (partition size for 256MB NAND)"; \
 	else \
@@ -46,7 +47,7 @@ endef
 
 firmwarePackGenerator=$(BUILDROOT)/packages/buildroot/output_rootfs/host/usr/bin/firmwarePackGenerator
 make_firmware:
-	@echo "Creating firmware pack:"
+	$(call ECHO_MESSAGE,Creating firmware pack:)
 	$(firmwarePackGenerator) $(COMPONENT_DIR)/stb830_efp.conf
 	@echo "Creating symlink on latest firmware."
 	@fw_name=`grep "OutputFile = " $(COMPONENT_DIR)/stb830_efp.conf | sed s%.*/%%`; \
@@ -59,6 +60,11 @@ make_components: $(DIRS)
 ifneq "$(BUILD_WITHOUT_COMPONENTS_FW)" "1"
 	make -C src/linux
 	make -C src/rootfs
+endif
+ifneq ($(BUILD_SCRIPT_FW),)
+	$(call ECHO_MESSAGE,Creating script component:)
+	rm -f $(COMPONENT_DIR)/script.tgz
+	cd $(PRJROOT)/src/update/scripts/$(BUILD_SCRIPT_FW) && tar -czf $(COMPONENT_DIR)/script.tgz ./*
 endif
 
 $(TIMESTAMPS_DIR) $(COMPONENT_DIR) $(FIRMWARE_DIR) $(PACKAGES_DIR) $(TARBALLS_DIR):
@@ -81,6 +87,7 @@ UNTAR_ROOTFS_NFS 	 = \
 
 untar_rootfs:
 ifneq "$(BUILD_WITHOUT_COMPONENTS_FW)" "1"
+	$(call ECHO_MESSAGE,Untar rootfs for nfs share:)
 	$(if $(CONFIG_UNTAR_ROOTFS_FOR_NFS),$(call UNTAR_ROOTFS_NFS),)
 endif
 

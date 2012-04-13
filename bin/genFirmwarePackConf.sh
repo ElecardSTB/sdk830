@@ -2,14 +2,19 @@
 
 
 addToFWNAME() {
-		FWNAME=${FWNAME}${1:+.$1}
+	FWNAME=${FWNAME}${1:+.$1}
+}
+
+getLastCommit() {
+	STB830_vcs_get_version "$@"
+	getBranch $1
+	Return_Val=($Return_Val)$Return_Val2
 }
 
 CUR_DIR=$(dirname $0)
 UPDATE_DIR=$PRJROOT/src/update
 OUTDIR=$BUILDROOT/firmware
 COMPDIR=$BUILDROOT/comps
-SCRIPT_PATH=$PRJROOT/src/update/scripts
 
 
 source $CUR_DIR/../etc/checkEnvs.sh
@@ -55,30 +60,45 @@ SYSREV_PKG=${DATE#??}
 
 KERNELVER=0
 ROOTFSVER=0
-USERFSVER=0
-STBMAINAPPVER=0
+#USERFSVER=0
 FIRMWAREVER=0
 
+echo "Components last commit:"
 STB830_vcs_get_version src/linux src/initramfs src/elecard/updater
 KERNELVER=$Return_Val
 KERNELVER_GIT=$Return_Val2
-echo "KERNELVER_GIT=$KERNELVER_GIT"
+echo " KERNELVER_GIT=$KERNELVER_GIT"
 
 STB830_vcs_get_version src/rootfs src/apps src/modules src/elecard/stapisdk src/elecard/updater
 ROOTFSVER=$Return_Val
 ROOTFSVER_GIT=$Return_Val2
-echo "ROOTFSVER_GIT=$ROOTFSVER_GIT"
+echo " ROOTFSVER_GIT=$ROOTFSVER_GIT"
 
-STB830_vcs_get_version $PRJROOT/src/apps/StbMainApp
-STBMAINAPPVER=$Return_Val
-STBMAINAPPVER_GIT=$Return_Val2
-echo "STBMAINAPPVER_GIT=$STBMAINAPPVER_GIT"
 
-STB830_vcs_get_version $PRJROOT
+echo "Repositories last commit:"
+STB830_vcs_get_version ./
 FIRMWAREVER=$Return_Val
-FIRMWAREVER_GIT=$Return_Val2
-echo "FIRMWAREVER_GIT=$FIRMWAREVER_GIT"
+getBranch ./
+SDK830_GIT=($Return_Val)$Return_Val2
+echo " sdk_830=$SDK830_GIT"
 
+STB830_vcs_get_version src/apps
+getBranch src/apps
+ELECARD_APPS_GIT=($Return_Val)$Return_Val2
+echo " elecard-apps(src/apps)=$ELECARD_APPS_GIT"
+
+if [ -z "$STB830_SDK" ]; then
+	STB830_vcs_get_version src/elecard
+	getBranch src/elecard
+	PRIVATE_SDK830_GIT=($Return_Val)$Return_Val2
+	echo " sdk830-private(src/elecard)=$PRIVATE_SDK830_GIT"
+
+#Fix it when repo will be separated
+	STB830_vcs_get_version src/elecard/apps/COMMONLib src/elecard/apps/NETLib src/elecard/updater/firmwareCommon src/elecard/updater/hwconfigManager
+	getBranch src/elecard/apps/COMMONLib
+	PRIVATE_ELECARD_APPS_GIT=($Return_Val)$Return_Val2
+	echo " private-elecard-apps(src/elecard/apps)=$PRIVATE_ELECARD_APPS_GIT"
+fi
 
 BRANCH=`git branch 2>/dev/null | grep '^\* *' | sed 's/\* //'`
 #LANG=ENG
@@ -116,7 +136,7 @@ printEnv() {
 	if [ -n "${!1}" ]; then
 		echo "$1=${!1}" >> ${descFile}
 	else
-		echo "#$1" >> ${descFile}
+		echo "#$1 not defined" >> ${descFile}
 	fi
 }
 
@@ -134,44 +154,39 @@ echo "#STAPISDK version:         " $STAPISDK_VERSION >> ${descFile}
 # echo "#Output Standard:"        $STANDARD >> ${descFile}
 # echo "#Default System Serial:"  $SYSSER >> ${descFile}
 # echo "#Default MAC Address:"    $SYSMAC >> ${descFile}
-echo -e "\n\n" >> ${descFile}
+echo -e "\n" >> ${descFile}
 printEnv HOSTNAME
 printEnv DATE_READABLE
+printEnv STB830_SDK
 
 if [ -n "$BUILD_SCRIPT_FW" ]; then
-	echo "#Script:" >> ${descFile}
+	echo -e "\n#Script:" >> ${descFile}
 	printEnv BUILD_SCRIPT_FW
 fi
 
 if [ "$BUILD_WITHOUT_COMPONENTS_FW" != "1" ]; then
-	echo "#Components:" >> ${descFile}
-	printEnv KERNELVER_GIT
-	printEnv ROOTFSVER_GIT
-	printEnv STBMAINAPPVER_GIT
-	printEnv FIRMWAREVER_GIT
+	echo -e "\n#Components versions (gos to efp header):" >> ${descFile}
 	printEnv KERNELVER
 	printEnv ROOTFSVER
-	printEnv USERFSVER
-	printEnv STBMAINAPPVER
-	printEnv FIRMWAREVER
+#	printEnv USERFSVER
+	echo -e "#Components time and hash:" >> ${descFile}
+	printEnv KERNELVER_GIT
+	printEnv ROOTFSVER_GIT
+	echo -e "\n#Branch, time and hash of repositories:" >> ${descFile}
+	printEnv SDK830_GIT
+	printEnv ELECARD_APPS_GIT
+	if [ -z "$STB830_SDK" ]; then
+		printEnv PRIVATE_SDK830_GIT
+		printEnv PRIVATE_ELECARD_APPS_GIT
+	fi
+
+	echo -e "\n#Defines:" >> ${descFile}
 	printEnv ENABLE_VIDIMAX
 	# echo "#Signatures:"             `ls $UPDATER_DIR/certificates` >> ${descFile}
 	#echo "ENABLE_VERIMATRIX="         $ENABLE_VERIMATRIX >> ${descFile}
 	#echo "ENABLE_SECUREMEDIA="        $ENABLE_SECUREMEDIA >> ${descFile}
 fi
 
-
-
-#create script tgz
-if [ -n "$BUILD_SCRIPT_FW" ]; then
-	rm -f $COMPDIR/script.tgz
-	if pushd $SCRIPT_PATH/$BUILD_SCRIPT_FW; then
-		tar -czf $COMPDIR/script.tgz ./*
-		popd
-	else
-		echo "ERROR! No such directrory: $SCRIPT_PATH/$BUILD_SCRIPT_FW"
-	fi
-fi
 
 
 if [ "$UPD_CONFIG" = "dev" ]; then
