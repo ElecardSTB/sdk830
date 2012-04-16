@@ -142,6 +142,7 @@ $(ST2FX_DIR)/.unpacked: $(DL_DIR)/$(ST2FX_PACKAGE)
 
 $(ST2FX_DIR)/.installed: $(ST2FX_DIR)/.unpacked
 	for i in bmp freetype gif jpeg png tiff zlib; do cp -rf $(ST2FX_DIR)/include/$$i/* $(STAGING_DIR)/usr/include/; done
+	for i in package/elecard/pkgconfig/*.pc; do $(INSTALL) -D -m 0644 $$i $(STAGING_DIR)/usr/lib/pkgconfig; done
 	cd $(ST2FX_DIR)/include; for i in `ls | grep directfb`; do rm -rf $(STAGING_DIR)/usr/include/$$i; cp -rf $$i $(STAGING_DIR)/usr/include/; done
 	cp -rf $(ST2FX_DIR)/lib/sdk7105_7105_ST40_LINUX_32BITS/* $(STAGING_DIR)/usr/lib/
 	cp -rf $(ST2FX_DIR)/lib/sdk7105_7105_ST40_LINUX_32BITS/* $(TARGET_DIR)/usr/lib/
