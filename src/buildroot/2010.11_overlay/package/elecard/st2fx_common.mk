@@ -89,6 +89,9 @@ $$(DIRECTFB_INSTALL_TS): $$(DIRECTFB_ST_SOURCE_DIR)/.compiled
 	cp -dfr $(STSDKROOT)/apilib/include/directfb $(STAGING_DIR)/usr/include/directfb-$(ST2FX_DIRECTFB_VERSION)
 #	if [ ! -e $(STAGING_DIR)/usr/include/directfb ]; then ln -s directfb-$(ST2FX_DIRECTFB_VERSION) $(STAGING_DIR)/usr/include/directfb; fi
 	ln -s directfb-$(ST2FX_DIRECTFB_VERSION) $(STAGING_DIR)/usr/include/directfb
+	for i in package/elecard/pkgconfig/*.pc; do \
+		$(INSTALL) -D -m 0644 $$$$i $(STAGING_DIR)/usr/lib/pkgconfig; \
+	done
 	cd $$(DIRECTFB_ST_LIBS_DIR) && cp -df $$(DIRECTFB_ST_MAIN_LIBS) $(STAGING_DIR)/usr/lib
 	cd $$(DIRECTFB_ST_LIBS_DIR) && cp -dfr `find -name directfb-$(ST2FX_DIRECTFB_VERSION)* -type d` $(STAGING_DIR)/usr/lib
 	cd $$(DIRECTFB_ST_LIBS_DIR) && cp -df $$(DIRECTFB_ST_MAIN_LIBS) $(TARGET_DIR)/usr/lib

@@ -1,0 +1,13 @@
+prefix=/usr
+exec_prefix=/usr
+libdir=/usr/lib
+moduledir=/usr/lib/directfb-1.4.12
+moduledirname=directfb-1.4.12
+includedir=/usr/include
+
+Name: Direct
+Description: DirectFB base development library
+Version: 1.4.12
+Libs: -L${libdir} -ldirect-1.4 -lpthread
+Libs.private: -L${libdir} -ldl
+Cflags: -D_REENTRANT -I/usr/include/directfb
