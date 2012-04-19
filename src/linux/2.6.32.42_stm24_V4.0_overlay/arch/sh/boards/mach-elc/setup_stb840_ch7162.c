@@ -42,28 +42,27 @@ static struct platform_device pdk7105_leds = {
 	.name = "leds-gpio",
 	.id = 0,
 	.dev.platform_data = &(struct gpio_led_platform_data) {
-		.num_leds = 2,
+		.num_leds = 1,
 		.leds = (struct gpio_led[]) {
 			/* The schematics actually describes these PIOs
 			 * the other way round, but all tested boards
 			 * had the bi-colour LED fitted like below... */
 			{
 				.name = "GREEN", /* This is also frontpanel LED */
-				.gpio = stm_gpio(7, 0),
-				.active_low = 1,
-			},
-			{
-				.name = "RED",
-				.default_trigger = "heartbeat",
-				.gpio = stm_gpio(7, 1),
-				.active_low = 1,
-			},
+				.gpio = stm_gpio(11, 5),
+				.active_low = 0,
+			}
 		},
 	},
 };
 
 static struct tm1668_key hdk7105_front_panel_keys[] = {
-
+//	{0x????????, KEY_CHANNELUP,		"FP CH+"},
+	{0x00200000, KEY_CHANNELDOWN,	"FP CH-"},
+//	{0x????????, KEY_VOLUMEUP,		"FP VOL+"},
+	{0x00002000, KEY_VOLUMEDOWN,	"FP VOL-"},
+	{0x00800000, KEY_OK,			"FP OK"},
+	{0x00001000, KEY_MENU,			"FP MENU"},
 };
 
 #define TM1668_7_SEG_HEX_DIGITS_UZPS \
@@ -101,7 +100,8 @@ static struct platform_device hdk7105_front_panel = {
 		.gpio_dio = stm_gpio(11, 2),
 		.gpio_sclk = stm_gpio(11, 3),
 		.gpio_stb = stm_gpio(11, 4),
-		.config = tm1668_config_6_digits_12_segments,
+//		.config = tm1668_config_6_digits_12_segments,
+		.config = tm1668_config_7_digits_11_segments,
 
 		.keys_num = ARRAY_SIZE(hdk7105_front_panel_keys),
 		.keys = hdk7105_front_panel_keys,
@@ -110,7 +110,7 @@ static struct platform_device hdk7105_front_panel = {
 		.brightness = 4,
 		.characters_num = ARRAY_SIZE(hdk7105_front_panel_characters),
 		.characters = hdk7105_front_panel_characters,
-		.text = "UZPS",
+		.text = "dead",
 	},
 };
 
@@ -171,12 +171,11 @@ static struct stm_nand_timing_data nand_timing_data = {
 	.sig_hold		= 50,
 	.CE_deassert	= 0,
 	.WE_to_RBn		= 100,
-//	.wr_on			= 10,
 	.wr_on			= 15,
-	.wr_off			= 40,
-	.rd_on			= 10,
-	.rd_off			= 40,
-	.chip_delay		= 30,		/* in us */
+	.wr_off			= 60,
+	.rd_on			= 20,
+	.rd_off			= 60,
+	.chip_delay		= 40,		/* in us */
 };
 
 
@@ -210,8 +209,8 @@ static struct i2c_board_info __initdata rtc_i2c_board_info[] = {
 };
 
 static struct platform_device *hdk7105_devices[] __initdata = {
-//	&hdk7105_front_panel,
-//	&pdk7105_leds
+	&hdk7105_front_panel,
+	&pdk7105_leds
 };
 
 int __init device_init_stb840_ch7162(int ver)
