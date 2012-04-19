@@ -15,26 +15,6 @@ case "$1" in
 	brctl addbr br0
 	brctl setfd br0 0
 	if [ -z "`cat /proc/cmdline | grep /dev/nfs`" ]; then
-[% IF CONFIG_TESTSERVER_ENABLE -%]
-# Setting up bridge for test server
-		brctl addif br0 eth0
-		brctl addif br0 eth1
-		ifconfig eth0 0.0.0.0
-		ifconfig eth1 0.0.0.0
-		WAN=br0
-
-		LIMIT=45mbit
-# 		tc qdisc add dev eth0 root handle 1: htb
-# 		tc class add dev eth0 parent 1: classid 1:1 htb rate $LIMIT
-# 		tc filter add dev eth0 parent 1: protocol ip prio 1 u32 match ip dst 0/0 flowid 1:1
-# 
-# 		tc qdisc add dev eth1 root handle 1: htb
-# 		tc class add dev eth1 parent 1: classid 1:1 htb rate $LIMIT
-# 		tc filter add dev eth1 parent 1: protocol ip prio 1 u32 match ip dst 0/0 flowid 1:1
-		echo " traffic controll"
-
-#		ifconfig br0   192.168.101.1
-[% END -%]
 [% IF CONFIG_TESTTOOL_ENABLE -%]
 # Setting up bridge for test server
 		brctl addif br0 eth0
