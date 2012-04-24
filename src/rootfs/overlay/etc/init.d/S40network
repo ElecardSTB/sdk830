@@ -28,6 +28,7 @@ case "$1" in
 [% IF CONFIG_ELECD_ENABLE -%]
 		/sbin/ifup -a
 [% END -%]
+		:
 	else
 		# Get routes and nameservers from dhcp
 		udhcpc -n -i $WAN -s /opt/elecard/bin/udhcpc.nfs

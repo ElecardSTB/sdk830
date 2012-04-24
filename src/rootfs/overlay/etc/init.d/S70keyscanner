@@ -8,9 +8,14 @@ case "$1" in
 
 
 	echo "Starting keyscanner... "
-	insmod /lib/modules/STLinux-[%ENV.LINUX_VERSION%]/keyscanner.ko
+	MODULE=/lib/modules/STLinux-[%ENV.LINUX_VERSION%]/keyscanner.ko
+	test -e $MODULE && insmod $MODULE
 	if [ ! -c /dev/keypad ]; then
 		mknod /dev/keypad c 99 0
+	fi
+	if [ -n "`grep "board_name=stb840_ch7162" /proc/cmdline`" ]; then
+		MODULE=/lib/modules/STLinux-[%ENV.LINUX_VERSION%]/ct1628.ko
+		test -e $MODULE && insmod $MODULE
 	fi
 	;;
   stop)
