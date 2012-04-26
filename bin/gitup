@@ -1,0 +1,19 @@
+#!/bin/sh
+
+CUR_DIR=$(dirname $0)
+source $CUR_DIR/../etc/checkEnvs.sh
+
+pushd . 1>/dev/null
+for d in $PRJROOT $PRJROOT/src/apps; do
+	cd $d
+	echo "Updating $d"
+	git pull || exit
+done
+
+if [ -z "$STB830_SDK" ]; then
+	$PRJROOT/src/elecard/bin/gitup_priv
+fi
+
+echo "Done"
+
+popd 1>/dev/null
