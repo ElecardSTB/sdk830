@@ -31,6 +31,7 @@ $(MODULES_ELECARD_PACKAGE_DIR)/.unpacked: $(DL_DIR)/$(MODULES_ELECARD_PACKAGE)
 modules-elecard-install: $(MODULES_ELECARD_PACKAGE_DIR)/.unpacked
 	mkdir -p $(INSTALL_DIR)
 	install -m 644 -p $(MODULES_ELECARD_PACKAGE_DIR)/st_dvb/st_dvb.ko $(INSTALL_DIR)
+	install -m 644 -p $(MODULES_ELECARD_PACKAGE_DIR)/ct1628/ct1628.ko $(INSTALL_DIR)
 
 modules-elecard-dirclean modules-elecard-clean:
 	rm -rf $(MODULES_ELECARD_PACKAGE_DIR)
