@@ -13,6 +13,8 @@ echo -e "\nStarting initramfs... "
 
 if [ -e /tmp/reboot ]; then
 	. /etc/init.d/rcS stop
+	rmmod stmfb 2>/dev/null
+	rmmod stmcore-display-sti7105 2>/dev/null
 	reboot -f
 fi
 
