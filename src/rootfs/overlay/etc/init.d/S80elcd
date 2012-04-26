@@ -2,10 +2,13 @@
 #
 # Start Elecard daemon
 #
+# if defined testServer or testTool, this starts in /etc/inittab
+#
 
-[% IF CONFIG_TESTSERVER_ENABLE -%]
+[% IF ! CONFIG_ELECD_ENABLE -%]
 	[% SKIPFILE %]
 [% END -%]
+
 
 STAPISDK_ROOT=/root
 #STAPISDK_ROOT=/root_33.1
@@ -18,18 +21,12 @@ case "$1" in
   start)
 	if [ -z "`cat /proc/cmdline | grep /dev/nfs`" ]; then
 		. /etc/profile
-[% IF CONFIG_TESTTOOL_ENABLE -%]
-#if defined testServer, this starts in /etc/inittab
-		$APP_PATH
-[% END -%]
-[% IF CONFIG_ELECD_ENABLE -%]
 		echo $APP_PATH $URL
 		$APP_PATH $URL >/var/log/elcd.log &
 		while [ ! -e /tmp/elcd.sock ]; do
 			usleep 100000
 		done
 		mainapp.sh &
-[% END -%]
 	fi
 
 	;;

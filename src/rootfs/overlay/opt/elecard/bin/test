@@ -1,10 +1,10 @@
 #!/bin/sh
 #
-# Start elecard test server....
+# Start elecard test server or testtool.
 #
 
-[% IF ! CONFIG_TESTSERVER_ENABLE -%]
-  [% SKIPFILE %]
+[% IF CONFIG_ELECD_ENABLE -%]
+	[% SKIPFILE %]
 [% END -%]
 
 TESTSERVER=main_sdk7105_7105_ST40_LINUX_32BITS.out

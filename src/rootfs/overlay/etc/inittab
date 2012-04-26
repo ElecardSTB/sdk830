@@ -38,7 +38,7 @@ null::respawn:/sbin/syslogd -n -m 0
 null::respawn:/sbin/klogd -n
 #tty3::respawn:/usr/bin/tail -f /var/log/messages
 
-[% IF CONFIG_TESTSERVER_ENABLE -%]
+[% IF CONFIG_TESTSERVER_ENABLE || CONFIG_TESTTOOL_ENABLE -%]
 ::sysinit:-/opt/elecard/bin/test start
 [% END -%]
 ::respawn:-/bin/sh --login
