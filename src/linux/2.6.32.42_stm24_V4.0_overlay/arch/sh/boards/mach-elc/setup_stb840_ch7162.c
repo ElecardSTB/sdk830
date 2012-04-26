@@ -33,6 +33,7 @@
 
 #include <linux/stm/pio.h>
 #include <linux/i2c.h>
+//#include <linux/keyboard.h>
 
 
 #define HDK7105_PIO_PHY_RESET stm_gpio(15, 5)
@@ -42,13 +43,18 @@ static struct platform_device pdk7105_leds = {
 	.name = "leds-gpio",
 	.id = 0,
 	.dev.platform_data = &(struct gpio_led_platform_data) {
-		.num_leds = 1,
+		.num_leds = 2,
 		.leds = (struct gpio_led[]) {
 			/* The schematics actually describes these PIOs
 			 * the other way round, but all tested boards
 			 * had the bi-colour LED fitted like below... */
 			{
-				.name = "GREEN", /* This is also frontpanel LED */
+				.name = "LED1", /* This is also frontpanel LED */
+				.gpio = stm_gpio(11, 6),
+				.active_low = 0,
+			},
+			{
+				.name = "LED2", /* This is also frontpanel LED */
 				.gpio = stm_gpio(11, 5),
 				.active_low = 0,
 			}
@@ -57,44 +63,51 @@ static struct platform_device pdk7105_leds = {
 };
 
 static struct tm1668_key hdk7105_front_panel_keys[] = {
-//	{0x????????, KEY_CHANNELUP,		"FP CH+"},
-	{0x00200000, KEY_CHANNELDOWN,	"FP CH-"},
-//	{0x????????, KEY_VOLUMEUP,		"FP VOL+"},
-	{0x00002000, KEY_VOLUMEDOWN,	"FP VOL-"},
-	{0x00800000, KEY_OK,			"FP OK"},
-	{0x00001000, KEY_MENU,			"FP MENU"},
+// 	{0x01000000, K_UP,				"FP CH+"},
+// 	{0x00080000, K_DOWN,			"FP CH-"},
+// 	{0x00010000, K_RIGHT,			"FP VOL+"},
+// 	{0x00000800, K_LEFT,			"FP VOL-"},
+// 	{0x00020000, K_ENTER,			"FP OK"},
+// 	{0x00001000, K(KT_LATIN, ' '),	"FP MENU"},
+// 	{0x01000000, KEY_UP,	"FP CH+"}, //KEY_CHANNELUP
+// 	{0x00080000, KEY_DOWN,	"FP CH-"}, //KEY_CHANNELDOWN
+// 	{0x00010000, KEY_RIGHT,	"FP VOL+"}, //KEY_VOLUMEUP
+// 	{0x00000800, KEY_LEFT,	"FP VOL-"}, //KEY_VOLUMEDOWN
+// 	{0x00020000, KEY_OK,	"FP OK"},
+// 	{0x00001000, KEY_MENU,	"FP MENU"},
+	{0x01000000, KEY_UP,	"FP CH+"},
+	{0x00080000, KEY_DOWN,	"FP CH-"},
+	{0x00010000, KEY_RIGHT,	"FP VOL+"},
+	{0x00000800, KEY_LEFT,	"FP VOL-"},
+	{0x00020000, KEY_ENTER,	"FP OK"},
+	{0x00001000, KEY_SPACE,	"FP MENU"},
 };
+#define STRING2(x) #x
+#define STRING(x) STRING2(x)
+#pragma message STRING(KEY_UP) " " STRING(KEY_DOWN)
+#pragma message STRING(KEY_RIGHT) " " STRING(KEY_LEFT)
+#pragma message STRING(KEY_OK) " " STRING(KEY_MENU)
+#pragma message STRING(KEY_ENTER) " " STRING(KEY_SPACE)
 
-#define TM1668_7_SEG_HEX_DIGITS_UZPS \
-		{ '0', 0x03f }, \
-		{ '1', 0x006 }, \
-		{ '2', 0x05b }, \
-		{ '3', 0x04f }, \
-		{ '4', 0x066 }, \
-		{ '5', 0x06d }, \
-		{ '6', 0x07d }, \
-		{ '7', 0x007 }, \
-		{ '8', 0x07f }, \
-		{ '9', 0x06f }, \
-		{ 'a', 0x077 }, \
-		{ 'b', 0x07c }, \
-		{ 'c', 0x058 }, \
-		{ 'd', 0x05e }, \
-		{ 'e', 0x079 }, \
-		{ 'f', 0x071 }, \
-		{ 'U', 0x06e }, \
-		{ 'Z', 0x04f }, \
+#define TM1668_7_SEG_HEX_DIGITS_ELC \
+		{ 'U', 0x03e }, \
 		{ 'P', 0x037 }, \
-		{ 'S', 0x039 }
+		{ 'S', 0x039 }, \
+		{ 'H', 0x076 }, \
+		{ 'u', 0x01c }, \
+		{ 'y', 0x06e }
+
+/*		{ 'U', 0x06e }, \*/
 
 static struct tm1668_character hdk7105_front_panel_characters[] = {
-	TM1668_7_SEG_HEX_DIGITS_UZPS,
+	TM1668_7_SEG_HEX_DIGITS_ELC,
+	TM1668_7_SEG_HEX_DIGITS,
 	TM1668_7_SEG_HEX_DIGITS_WITH_DOT,
 	TM1668_7_SEG_SEGMENTS,
 };
 
 static struct platform_device hdk7105_front_panel = {
-	.name = "tm1668",
+	.name = "ct1628",
 	.id = -1,
 	.dev.platform_data = &(struct tm1668_platform_data) {
 		.gpio_dio = stm_gpio(11, 2),
