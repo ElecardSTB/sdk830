@@ -50,9 +50,9 @@ case "$1" in
 		fi
 		echo "done"
 		;;
-  *)
-	echo $"Usage: $0 {start}"
-	exit 1
+	*)
+		echo $"Usage: $0 {start}"
+		exit 1
 esac
 
 
