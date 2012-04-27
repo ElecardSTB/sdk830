@@ -1,6 +1,6 @@
 #!/bin/sh
 
-STMFB_PARAMS=display0=720x576-24@50i:3M:0:PAL:CVBS:CVBS
+STMFB_PARAMS=display0=1280x720-24@60:4M:0:PAL:YUV:RGB
 
 insmodSafe() {
 	local module=$1
