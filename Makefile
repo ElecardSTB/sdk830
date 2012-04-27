@@ -81,11 +81,12 @@ $(BUILDROOT)/rootfs:
 
 user=$(shell whoami)
 group=$(shell id -g)
-UNTAR_ROOTFS_NFS 	 = \
-	$(call ECHO_MESSAGE,Untar rootfs for nfs share:) \
-	mkdir -p $(BUILDROOT)/rootfs_nfs; \
-	sudo tar -xf $(BUILDROOT)/packages/buildroot/output_rootfs/images/rootfs.tar -C $(BUILDROOT)/rootfs_nfs; \
+define UNTAR_ROOTFS_NFS
+	$(call ECHO_MESSAGE,Untar rootfs for nfs share:);
+	mkdir -p $(BUILDROOT)/rootfs_nfs;
+	sudo tar -xf $(BUILDROOT)/packages/buildroot/output_rootfs/images/rootfs.tar -C $(BUILDROOT)/rootfs_nfs;
 	sudo chown -R $(user):$(group) $(BUILDROOT)/rootfs_nfs
+endef
 
 untar_rootfs:
 ifneq "$(BUILD_WITHOUT_COMPONENTS_FW)" "1"
