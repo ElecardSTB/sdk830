@@ -1,34 +1,35 @@
 #!/bin/sh
 #
-# Start the keyscanner
+# Start stb830 keyscanner
 #
+IS_STB830_ST=`grep stb830_st /proc/cmdline > /dev/null && echo 1`
 IS_STB840_CH7162=`grep stb840_ch7162 /proc/cmdline > /dev/null && echo 1`
 
 case "$1" in
-  start)
-
-
-	echo "Starting keyscanner... "
-	MODULE=/lib/modules/STLinux-[%ENV.LINUX_VERSION%]/keyscanner.ko
-	test -e $MODULE && insmod $MODULE
-	if [ ! -c /dev/keypad ]; then
-		mknod /dev/keypad c 99 0
-	fi
-	if [ -n "$IS_STB840_CH7162" ]; then
-		MODULE=/lib/modules/STLinux-[%ENV.LINUX_VERSION%]/ct1628.ko
-		test -e $MODULE && insmod $MODULE
-	fi
-	;;
-  stop)
-	rmmod keyscanner
-	;;
-  restart|reload)
-	"$0" stop
-	"$0" start
-	;;
-  *)
-	echo $"Usage: $0 {start|stop|restart}"
-	exit 1
+	start)
+		if [ -n "$IS_STB830_ST" ]; then
+			echo "Starting keyscanner... "
+			MODULE=/lib/modules/STLinux-[%ENV.LINUX_VERSION%]/keyscanner.ko
+			test -e $MODULE && insmod $MODULE
+			if [ ! -c /dev/keypad ]; then
+				mknod /dev/keypad c 99 0
+			fi
+		fi
+		if [ -n "$IS_STB840_CH7162" ]; then
+			MODULE=/lib/modules/STLinux-[%ENV.LINUX_VERSION%]/ct1628.ko
+			test -e $MODULE && insmod $MODULE
+		fi
+		;;
+	stop)
+		rmmod keyscanner
+		;;
+	restart|reload)
+		"$0" stop
+		"$0" start
+		;;
+	*)
+		echo $"Usage: $0 {start|stop|restart}"
+		exit 1
 esac
 
 exit $?
