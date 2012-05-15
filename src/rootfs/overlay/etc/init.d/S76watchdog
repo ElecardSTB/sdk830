@@ -2,6 +2,7 @@
 #
 # Start/stop watchdog.
 #
+[% SKIPFILE %]
 ls -la /dev/watchdog
 exit 0
 case "$1" in
