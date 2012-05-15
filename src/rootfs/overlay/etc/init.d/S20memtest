@@ -21,6 +21,7 @@ case "$1" in
 		then
 			echo "***************MEM_TEST_FAIL***************"
 			echo "***************MEM_TEST_FAIL***************"
+			touch /tmp/memtest_fail
 			exit
 		fi
 		
@@ -29,6 +30,7 @@ case "$1" in
 		then
 			echo "***************MEM_TEST_FAIL***************"
 			echo "***************MEM_TEST_FAIL***************"
+			touch /tmp/memtest_fail
 			exit
 		fi
 		echo "***************MEM_TEST_SUCCESS***************"
