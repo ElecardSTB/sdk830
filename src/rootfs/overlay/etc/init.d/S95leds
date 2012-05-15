@@ -2,6 +2,7 @@
 # switch leds on PromSvyaz board
 # run watch on stb840_ch7162 frontpanel
 
+
 IS_STB840_PROMSVYAZ=`grep stb840_promSvyaz /proc/cmdline > /dev/null && echo 1`
 IS_STB840_CH7162=`grep stb840_ch7162 /proc/cmdline > /dev/null && echo 1`
 
@@ -11,13 +12,21 @@ case "$1" in
 		if [ -n "$IS_STB840_PROMSVYAZ" ]; then
 			echo "0" > /sys/class/leds/RED/brightness
 			echo "1" > /sys/class/leds/GREEN/brightness
+			if [ -e /sys/devices/platform/tm1668/text ]; then
+				while :; do
+					date +%H%M8 > /sys/devices/platform/tm1668/text
+					sleep 1
+				done &
+			fi
 		fi
+[% IF ! CONFIG_TESTSERVER_ENABLE -%]
 		if [ -n "$IS_STB840_CH7162" -a -e /sys/devices/platform/ct1628/text ]; then
 			while :; do
-				date +%H%M_ > /sys/devices/platform/ct1628/text
+				date +%H%M8 > /sys/devices/platform/ct1628/text
 				sleep 1
 			done &
 		fi
+[% END -%]
 		;;
 	stop)
 		if [ -n "$IS_STB840_PROMSVYAZ" ]; then
