@@ -63,18 +63,6 @@ static struct platform_device pdk7105_leds = {
 };
 
 static struct tm1668_key hdk7105_front_panel_keys[] = {
-// 	{0x01000000, K_UP,				"FP CH+"},
-// 	{0x00080000, K_DOWN,			"FP CH-"},
-// 	{0x00010000, K_RIGHT,			"FP VOL+"},
-// 	{0x00000800, K_LEFT,			"FP VOL-"},
-// 	{0x00020000, K_ENTER,			"FP OK"},
-// 	{0x00001000, K(KT_LATIN, ' '),	"FP MENU"},
-// 	{0x01000000, KEY_UP,	"FP CH+"}, //KEY_CHANNELUP
-// 	{0x00080000, KEY_DOWN,	"FP CH-"}, //KEY_CHANNELDOWN
-// 	{0x00010000, KEY_RIGHT,	"FP VOL+"}, //KEY_VOLUMEUP
-// 	{0x00000800, KEY_LEFT,	"FP VOL-"}, //KEY_VOLUMEDOWN
-// 	{0x00020000, KEY_OK,	"FP OK"},
-// 	{0x00001000, KEY_MENU,	"FP MENU"},
 	{0x01000000, KEY_UP,	"FP CH+"},
 	{0x00080000, KEY_DOWN,	"FP CH-"},
 	{0x00010000, KEY_RIGHT,	"FP VOL+"},
@@ -82,22 +70,18 @@ static struct tm1668_key hdk7105_front_panel_keys[] = {
 	{0x00020000, KEY_ENTER,	"FP OK"},
 	{0x00001000, KEY_SPACE,	"FP MENU"},
 };
-#define STRING2(x) #x
-#define STRING(x) STRING2(x)
-#pragma message STRING(KEY_UP) " " STRING(KEY_DOWN)
-#pragma message STRING(KEY_RIGHT) " " STRING(KEY_LEFT)
-#pragma message STRING(KEY_OK) " " STRING(KEY_MENU)
-#pragma message STRING(KEY_ENTER) " " STRING(KEY_SPACE)
+
 
 #define TM1668_7_SEG_HEX_DIGITS_ELC \
 		{ 'U', 0x03e }, \
 		{ 'P', 0x037 }, \
 		{ 'S', 0x039 }, \
+		{ 't', 0x078 }, \
+		{ 'n', 0x054 }, \
 		{ 'H', 0x076 }, \
 		{ 'u', 0x01c }, \
 		{ 'y', 0x06e }
 
-/*		{ 'U', 0x06e }, \*/
 
 static struct tm1668_character hdk7105_front_panel_characters[] = {
 	TM1668_7_SEG_HEX_DIGITS_ELC,
@@ -123,7 +107,7 @@ static struct platform_device hdk7105_front_panel = {
 		.brightness = 4,
 		.characters_num = ARRAY_SIZE(hdk7105_front_panel_characters),
 		.characters = hdk7105_front_panel_characters,
-		.text = "dead",
+		.text = "b00t",
 	},
 };
 
