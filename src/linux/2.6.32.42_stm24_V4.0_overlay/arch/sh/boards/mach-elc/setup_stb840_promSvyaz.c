@@ -85,6 +85,7 @@ static struct tm1668_key hdk7105_front_panel_keys[] = {
 		{ 'd', 0x05e }, \
 		{ 'e', 0x079 }, \
 		{ 'f', 0x071 }, \
+		{ 't', 0x078 }, \
 		{ 'U', 0x06e }, \
 		{ 'Z', 0x04f }, \
 		{ 'P', 0x037 }, \
@@ -112,7 +113,7 @@ static struct platform_device hdk7105_front_panel = {
 		.brightness = 4,
 		.characters_num = ARRAY_SIZE(hdk7105_front_panel_characters),
 		.characters = hdk7105_front_panel_characters,
-		.text = "UZPS",
+		.text = "b00t",
 	},
 };
 
