@@ -210,9 +210,16 @@ static struct platform_device *hdk7105_devices[] __initdata = {
 	&pdk7105_leds
 };
 
+static void stb840_ch7162_power_off(void)
+{
+	stpio_request_set_pin(11, 0, "standby", STPIO_OUT, 1);
+}
+
 int __init device_init_stb840_ch7162(int ver)
 {
 	struct sysconf_field *sc;
+
+	pm_power_off = stb840_ch7162_power_off;
 
 	/* Set SPI Boot pads as inputs to avoid contention with SSC1 */
 	gpio_request(stm_gpio(15, 0), "SPI Boot CLK");

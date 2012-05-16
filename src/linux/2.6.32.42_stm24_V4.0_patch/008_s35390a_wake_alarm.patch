@@ -1,0 +1,151 @@
+--- linux-sh4-2.6.32.42_stm24_V4.0_orig/drivers/rtc/rtc-s35390a.c	2001-08-20 15:36:06.000000000 +0700
++++ linux-sh4-2.6.32.42_stm24_V4.0/drivers/rtc/rtc-s35390a.c	2012-05-16 13:54:50.090270942 +0700
+@@ -15,10 +15,15 @@
+ #include <linux/bitrev.h>
+ #include <linux/bcd.h>
+ #include <linux/slab.h>
++#include <linux/delay.h>
+ 
+ #define S35390A_CMD_STATUS1	0
+ #define S35390A_CMD_STATUS2	1
+ #define S35390A_CMD_TIME1	2
++#define S35390A_CMD_INT1	4
++#define S35390A_CMD_INT2	5
++#define S35390A_CMD_ADJUST  6
++#define S35390A_CMD_FREE    7
+ 
+ #define S35390A_BYTE_YEAR	0
+ #define S35390A_BYTE_MONTH	1
+@@ -30,9 +35,18 @@
+ 
+ #define S35390A_FLAG_POC	0x01
+ #define S35390A_FLAG_BLD	0x02
++#define S35390A_FLAG_INT2	0x04
++#define S35390A_FLAG_INT1	0x08
+ #define S35390A_FLAG_24H	0x40
+ #define S35390A_FLAG_RESET	0x80
+ #define S35390A_FLAG_TEST	0x01
++#define S35390A_FLAG_INT2AE 0x02
++#define S35390A_FLAG_INT2ME 0x04
++#define S35390A_FLAG_INT2FE 0x08
++#define S35390A_FLAG_32kE   0x10
++#define S35390A_FLAG_INT1AE 0x20
++#define S35390A_FLAG_INT1ME 0x40
++#define S35390A_FLAG_INT1FE 0x80
+ 
+ static const struct i2c_device_id s35390a_id[] = {
+ 	{ "s35390a", 0 },
+@@ -194,9 +208,98 @@
+ 	return s35390a_set_datetime(to_i2c_client(dev), tm);
+ }
+ 
++static int s35390a_clear_interrupt(struct s35390a *s35390a)
++{
++	char status = 0x0; // clear interrupt
++	int err = s35390a_set_reg(s35390a, S35390A_CMD_STATUS2, &status, sizeof(status));
++	mdelay(10);
++	s35390a_get_reg(s35390a, S35390A_CMD_STATUS1, &status, sizeof(status));
++	return err;
++}
++
++static int s35390a_get_alarm_time(struct i2c_client *client, struct rtc_wkalrm *alrm)
++{
++	struct s35390a *s35390a = i2c_get_clientdata(client);
++	int  err;
++	char buf[3];
++	char sts[1];
++	int i;
++
++	err = s35390a_get_reg(s35390a, S35390A_CMD_INT1, buf, sizeof(buf));
++	if (err < 0)
++		return err;
++	mdelay(10);
++
++	/* This chip returns the bits of each byte in reverse order */
++	for (i = 0; i < 3; ++i)
++		buf[i] = bitrev8(buf[i]);
++
++	if (buf[0]&0x80) alrm->time.tm_wday = bcd2bin(buf[0]&0x07);
++	if (buf[1]&0x80) alrm->time.tm_hour = s35390a_reg2hr(s35390a, buf[1]&0x7F);
++	if (buf[2]&0x80) alrm->time.tm_min  = bcd2bin(buf[2]&0x7F);
++
++	sts[0] = 0;
++	s35390a_get_reg(s35390a, S35390A_CMD_STATUS2, sts, sizeof(sts));
++	alrm->enabled = (sts[0] & S35390A_FLAG_INT1AE) == S35390A_FLAG_INT1AE;
++
++	alrm->pending = 0;
++	if (alrm->enabled)
++	{
++		sts[0] = 0;
++		s35390a_get_reg(s35390a, S35390A_CMD_STATUS1, sts, sizeof(sts));
++		alrm->pending = (sts[0] & S35390A_FLAG_INT1) == 0;
++	}
++
++	return 0;
++}
++
++static int s35390a_set_alarm_time(struct i2c_client *client, struct rtc_wkalrm *alrm)
++{
++	struct s35390a *s35390a = i2c_get_clientdata(client);
++	int err;
++	char buf[3];
++	char sts[1];
++
++	s35390a_clear_interrupt(s35390a);
++
++	// Enable INT1 alarm interrupt
++	mdelay(10);
++	sts[0] = S35390A_FLAG_INT1AE;
++	err = s35390a_set_reg(s35390a, S35390A_CMD_STATUS2, sts, sizeof(sts));
++	if (err < 0)
++		return err;
++	mdelay(10);
++
++	// Revert clock bits and set valid bit
++	buf[0] = 0; // ignore week day 
++//	buf[0] = bitrev8(bin2bcd(alrm->time.tm_wday))|0x01;
++	buf[1] = bitrev8(s35390a_hr2reg(s35390a, alrm->time.tm_hour))|0x01;
++	buf[2] = bitrev8(bin2bcd(alrm->time.tm_min))|0x01;
++
++	s35390a_set_reg(s35390a, S35390A_CMD_INT1, buf, sizeof(buf));
++	mdelay(10);
++
++	if (alrm->enabled == 0)
++		s35390a_clear_interrupt(s35390a);
++
++	return 0;
++}
++
++static int s35390a_rtc_set_alarm(struct device *dev, struct rtc_wkalrm *alrm)
++{
++	return s35390a_set_alarm_time(to_i2c_client(dev), alrm);
++}
++
++static int s35390a_rtc_read_alarm(struct device *dev, struct rtc_wkalrm *alrm)
++{
++	return s35390a_get_alarm_time(to_i2c_client(dev), alrm);
++}
++
+ static const struct rtc_class_ops s35390a_rtc_ops = {
+ 	.read_time	= s35390a_rtc_read_time,
+ 	.set_time	= s35390a_rtc_set_time,
++	.read_alarm	= s35390a_rtc_read_alarm,
++	.set_alarm	= s35390a_rtc_set_alarm,
+ };
+ 
+ static struct i2c_driver s35390a_driver;
+@@ -258,9 +361,14 @@
+ 	else
+ 		s35390a->twentyfourhour = 0;
+ 
++	if (s35390a_clear_interrupt(s35390a) < 0)
++		dev_warn(&client->dev, "failed to reset alarm clock\n");
++
+ 	if (s35390a_get_datetime(client, &tm) < 0)
+ 		dev_warn(&client->dev, "clock needs to be set\n");
+ 
++	device_set_wakeup_capable(&client->dev, 1);
++
+ 	s35390a->rtc = rtc_device_register(s35390a_driver.driver.name,
+ 				&client->dev, &s35390a_rtc_ops, THIS_MODULE);
+ 
