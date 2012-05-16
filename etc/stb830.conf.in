@@ -58,3 +58,8 @@ FirmwareImage = [%ENV.COMPDIR%]/script.tgz
 
 [% END -%]
 
+# Firmware Description
+ComponentID = description
+ComponentRevision = [%ENV.SYSREV_PKG%]
+FirmwareImage = [%ENV.COMPDIR%]/fwinfo.tgz
+

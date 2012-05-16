@@ -140,8 +140,11 @@ printEnv() {
 	fi
 }
 
+
 # Create description file
-descFile=$COMPDIR/firmwareDesc
+rm -rf $COMPDIR/fwinfo $COMPDIR/firmwareDesc
+mkdir $COMPDIR/fwinfo
+descFile=$COMPDIR/fwinfo/firmwareDesc
 echo "#Elecard STB Firmware Update Pack" > ${descFile}
 echo "#Firmware pack name:       " $FWNAME.efp >> ${descFile}
 echo "#Firmware Pack Ver(date):  " $SYSREV_PKG >> ${descFile}

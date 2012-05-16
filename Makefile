@@ -51,9 +51,8 @@ make_firmware:
 	$(call ECHO_MESSAGE,Creating firmware pack:)
 	$(firmwarePackGenerator) $(COMPONENT_DIR)/stb830_efp.conf
 	@echo "Creating symlink on latest firmware."
-	@fw_name=`grep "OutputFile = " $(COMPONENT_DIR)/stb830_efp.conf | sed s%.*/%%`; \
-		rm -f $(BUILDROOT)/firmware/STB830_last.efp; \
-		ln -s $${fw_name%?} $(BUILDROOT)/firmware/STB830_last.efp
+	@rm -f $(BUILDROOT)/firmware/STB830_last.efp;
+	@ln -s `grep "OutputFile = " $(COMPONENT_DIR)/stb830_efp.conf | sed 's%.*/\(.*\.efp\).*%\1%'` $(BUILDROOT)/firmware/STB830_last.efp
 	$(call CHECK_COMP_SIZE,$(COMPONENT_DIR)/kernel1,10485760,15728640)
 	$(call CHECK_COMP_SIZE,$(COMPONENT_DIR)/rootfs1,77594624,134217728)
 
@@ -67,6 +66,7 @@ ifneq ($(BUILD_SCRIPT_FW),)
 	rm -f $(COMPONENT_DIR)/script.tgz
 	cd $(PRJROOT)/src/update/scripts/$(BUILD_SCRIPT_FW) && tar -czf $(COMPONENT_DIR)/script.tgz ./*
 endif
+	cd $(COMPONENT_DIR)/fwinfo && tar -czf $(COMPONENT_DIR)/fwinfo.tgz ./*
 
 $(TIMESTAMPS_DIR) $(COMPONENT_DIR) $(FIRMWARE_DIR) $(PACKAGES_DIR) $(TARBALLS_DIR):
 	mkdir -p $@

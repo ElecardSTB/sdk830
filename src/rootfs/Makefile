@@ -16,10 +16,10 @@ $(COMPONENT_DIR)/rootfs1:
 TARGET_DIR?=$(BUILDROOT)/rootfs
 ROOTFS_OVERLAY_FILES=$(shell find ./overlay -not -regex ".*.svn.*" -type f)
 #This calls from buildroot
-overlays: $(ROOTFS_OVERLAY_FILES) $(COMPONENT_DIR)/firmwareDesc
+overlays: $(ROOTFS_OVERLAY_FILES) $(COMPONENT_DIR)/fwinfo/firmwareDesc
 	$(call ECHO_MESSAGE,Rootfs overlays)
 	prjfilter ./overlay $(TARGET_DIR) -c $(BUILDROOT)/.prjconfig
-	cp -f $(COMPONENT_DIR)/firmwareDesc $(TARGET_DIR)
+	cp -f $(COMPONENT_DIR)/fwinfo/firmwareDesc $(TARGET_DIR)
 	-cp -fr /opt/philips/sp7.2/stb810-SP7.2/build_256M_NOIP/rootfs/usr/share/zoneinfo $(TARGET_DIR)/usr/share
 
 clean:
