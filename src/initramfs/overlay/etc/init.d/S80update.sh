@@ -3,6 +3,8 @@
 # Start updater....
 #
 
+DEFAULT_HTTP_URL=http://192.168.0.1/STB830_last.efp
+
 #dummy wait for time when usb mass storage is appiear in system
 #this should be improved, and maybe moved to clientUpdater
 waitUSB() {
@@ -62,6 +64,8 @@ case "$1" in
 	UPDATERURL=`/opt/elecard/bin/hwconfigManager a 0 UPURL 2>/dev/null | grep "^VALUE:" | grep "tp://" | sed 's/.*: \(.*\)/\1/'`
 	if [ "$UPDATERURL" ]; then
 		UPDATER_FLAGS="$UPDATER_FLAGS -h $UPDATERURL"
+	else
+		UPDATER_FLAGS="$UPDATER_FLAGS -h $DEFAULT_HTTP_URL"
 	fi
 
 	eval NOUSB=`/opt/elecard/bin/hwconfigManager a 0 UPNOUSB 2>/dev/null | grep "^VALUE:" | sed 's/.*: \(.*\)/\1/'`
