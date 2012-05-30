@@ -15,6 +15,7 @@
 
 [%ROOTFS%]/root/modules/stapi_core.ko
 [%ROOTFS%]/root/modules/stapi_ioctl.ko
+[%ROOTFS%]/root/modules/companion_7105_audio_16bit.bin
 
 [%ROOTFS%]/usr/lib/libQt*.so*
 
