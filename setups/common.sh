@@ -98,7 +98,11 @@ elif [ "$STAPISDK_VERSION" = "35.0" -o "$STAPISDK_VERSION" = "35.1" ]; then
 elif [ "$STAPISDK_VERSION" = "36.0" -o "$STAPISDK_VERSION" = "36.2" ]; then
 	FULL_LINUX_VERSION=2.6.32.42_stm24_V4.0
 	KDIR=/opt/STM/STLinux-${LINUX_VERSION}/devkit/sources/kernel/linux-sh4-${FULL_LINUX_VERSION}
-	export MULTICOM_SOURCE=/opt/STM/MULTICOM/R4.0.5
+	export MULTICOM_SOURCE=/opt/STM/MULTICOM/multicom-4.0.5
+elif [ "$STAPISDK_VERSION" = "38.0" ]; then
+	FULL_LINUX_VERSION=2.6.32.57_stm24_V5.0
+	KDIR=/opt/STM/STLinux-${LINUX_VERSION}/devkit/sources/kernel/linux-sh4-${FULL_LINUX_VERSION}
+	export MULTICOM_SOURCE=/opt/STM/MULTICOM/multicom-4.0.5P2
 else
 	echo "ERROR: not setted linux version for $STAPISDK_VERSION!!!!"
 	return

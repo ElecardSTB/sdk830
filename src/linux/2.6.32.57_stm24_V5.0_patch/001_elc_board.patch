@@ -1,0 +1,28 @@
+--- linux-sh4-2.6.32.57_stm24_V5.0_orig/arch/sh/Makefile	2001-05-09 04:17:57.000000000 +0700
++++ linux-sh4-2.6.32.57_stm24_V5.0/arch/sh/Makefile	2012-05-25 20:01:06.856239540 +0700
+@@ -164,6 +164,7 @@
+ machdir-$(CONFIG_SH_ST_DTT5250)			+= mach-dtt5250
+ machdir-$(CONFIG_SH_ST_HDK5250)			+= mach-hdk5250
+ machdir-$(CONFIG_SH_ST_HDK7105)			+= mach-hdk7105
++machdir-$(CONFIG_SH_ELC_STB)			+= mach-elc
+ machdir-$(CONFIG_SH_ST_HDKH225)			+= mach-hdkh225
+ machdir-$(CONFIG_SH_ST_HDKH246)			+= mach-hdkh246
+ machdir-$(CONFIG_SH_ST_HDKH251)			+= mach-hdkh251
+--- linux-sh4-2.6.32.57_stm24_V5.0_orig/arch/sh/boards/Kconfig	2001-05-09 04:17:58.000000000 +0700
++++ linux-sh4-2.6.32.57_stm24_V5.0/arch/sh/boards/Kconfig	2012-05-25 20:02:20.256235651 +0700
+@@ -427,6 +427,15 @@
+ 	  Select HDK7105 if configuring for an
+ 	  STMicroelectronics STi7105 HDK Reference Board.
+ 
++config SH_ELC_STB
++	bool "Elecard : Elecard stb"
++	depends on CPU_SUBTYPE_STX7105
++	select SYS_SUPPORTS_PCI
++	default n
++	help
++	  Select Elecard if configuring for an
++	  Elecards stb boards.
++
+ config SH_ST_HDKH225
+ 	bool "HDKH225 : STiH225 HDK Reference board"
+ 	depends on CPU_SUBTYPE_STX7141

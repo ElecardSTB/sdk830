@@ -1,0 +1,29 @@
+--- linux-sh4-2.6.32.57_stm24_V5.0_orig/arch/sh/kernel/cpu/irq/ilc3.c	2001-05-09 04:17:57.000000000 +0700
++++ linux-sh4-2.6.32.57_stm24_V5.0/arch/sh/kernel/cpu/irq/ilc3.c	2012-05-25 20:10:28.380209791 +0700
+@@ -187,10 +187,10 @@
+ 		return;
+ 
+ 	atomic_inc(&irq_err_count);
++//SergA: disable too much debug messages
++//	printk(KERN_INFO "ILC: spurious interrupt demux %d\n", irq);
+ 
+-	printk(KERN_INFO "ILC: spurious interrupt demux %d\n", irq);
+-
+-	printk(KERN_DEBUG "ILC:  inputs   status  enabled    used\n");
++//	printk(KERN_DEBUG "ILC:  inputs   status  enabled    used\n");
+ 
+ 	for (idx = 0; idx < DIV_ROUND_UP(ilc->inputs_num, 32); ++idx) {
+ 		unsigned long status, enabled, used;
+@@ -201,9 +201,9 @@
+ 		for (priority = 0; priority < ilc->outputs_num; ++priority)
+ 			used |= ilc->priority[priority][idx];
+ 
+-		printk(KERN_DEBUG "ILC: %3d-%3d: %08lx %08lx %08lx"
+-				"\n", idx * 32, (idx * 32) + 31,
+-				status, enabled, used);
++//		printk(KERN_DEBUG "ILC: %3d-%3d: %08lx %08lx %08lx"
++//				"\n", idx * 32, (idx * 32) + 31,
++//				status, enabled, used);
+ 	}
+ }
+ 
