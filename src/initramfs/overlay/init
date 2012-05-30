@@ -55,6 +55,9 @@ if [ -n "$NEWROOT" ]; then
 	done
 fi
 
-#if we dont change root => initramfs login
-/bin/sh --login
+#if we didnt change root, then login
+TTY_NAME=`cat /proc/cmdline | grep console= | sed 's/.*console=\(ttyAS[0-9]\).*/\1/'`
+TTY_NAME=/dev/${TTY_NAME:-console}
+exec setsid sh -c "exec sh --login <$TTY_NAME >$TTY_NAME 2>&1"
+#/bin/sh --login
 
