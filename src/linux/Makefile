@@ -19,16 +19,13 @@ make_initramfs:
 
 config_kernel: $(KDIR)/.config
 
-make_kernel: $(KDIR)/.config make_initramfs $(KDIR)/arch/sh/boot/uImage $(COMPONENT_DIR)/kernel1
+make_kernel: $(KDIR)/.config make_initramfs $(KDIR)/arch/sh/boot/uImage
 $(KDIR)/arch/sh/boot/uImage: $(KDIR)/.config $(_ts_patchkernel) $(COMPONENT_DIR)/initramfs.cpio $(_ts_makekernel)
 	$(call ECHO_MESSAGE,Building kernel)
 	make -C $(KDIR) ARCH=sh CROSS_COMPILE=sh4-linux- uImage
+	rm -f $(COMPONENT_DIR)/kernel1; ln -s $(KDIR)/arch/sh/boot/uImage $(COMPONENT_DIR)/kernel1
 	touch $(_ts_makekernel)
 	touch $@
-
-
-$(COMPONENT_DIR)/kernel1:
-	test -h $@ || ln -s $(KDIR)/arch/sh/boot/uImage $@
 
 kernel_only: $(KDIR)/.config $(_ts_patchkernel)
 	rm -f $(_ts_makekernel)
