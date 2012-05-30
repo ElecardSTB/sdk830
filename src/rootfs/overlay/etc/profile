@@ -51,6 +51,7 @@ if [ "$PS1" ]; then
 	alias elcd='/root/main_sdk7105_7105_ST40_LINUX_32BITS.out -c'
 fi;
 export PS1="[\u@\h \w]\\$ "
+export MODULES_INSTALL_DIR=/root/modules
 source /root/modules/load_env.sh
 if [ -e /var/etc/proxy ]; then
 	export http_proxy=`cat /var/etc/proxy`
