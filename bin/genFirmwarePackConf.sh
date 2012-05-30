@@ -5,6 +5,14 @@ addToFWNAME() {
 	FWNAME=${FWNAME}${1:+.$1}
 }
 
+printEnv() {
+	if [ -n "${!1}" ]; then
+		echo "$1=${!1}" >> ${descFile}
+	else
+		echo "#$1 not defined" >> ${descFile}
+	fi
+}
+
 getLastCommit() {
 	STB830_vcs_get_version "$@"
 	getBranch $1
@@ -132,14 +140,6 @@ addToFWNAME $SHORT_COMMENT
 export ALWAYSUPDATE SYSID SYSREV_PKG FWNAME OUTDIR COMPDIR KERNELVER ROOTFSVER USERFSVER BUILD_SCRIPT_FW BUILD_WITHOUT_COMPONENTS_FW
 $PRJROOT/bin/prjfilter $PRJROOT/etc/stb830.conf.in $COMPDIR/stb830_efp.conf
 
-printEnv() {
-	if [ -n "${!1}" ]; then
-		echo "$1=${!1}" >> ${descFile}
-	else
-		echo "#$1 not defined" >> ${descFile}
-	fi
-}
-
 
 # Create description file
 rm -rf $COMPDIR/fwinfo $COMPDIR/firmwareDesc
@@ -161,11 +161,8 @@ echo -e "\n" >> ${descFile}
 printEnv HOSTNAME
 printEnv DATE_READABLE
 printEnv STB830_SDK
-
-if [ -n "$BUILD_SCRIPT_FW" ]; then
-	echo -e "\n#Script:" >> ${descFile}
-	printEnv BUILD_SCRIPT_FW
-fi
+printEnv BUILD_SCRIPT_FW
+printEnv BUILD_WITHOUT_COMPONENTS_FW
 
 if [ "$BUILD_WITHOUT_COMPONENTS_FW" != "1" ]; then
 	echo -e "\n#Components versions (gos to efp header):" >> ${descFile}
@@ -183,11 +180,19 @@ if [ "$BUILD_WITHOUT_COMPONENTS_FW" != "1" ]; then
 		printEnv PRIVATE_ELECARD_APPS_GIT
 	fi
 
-	echo -e "\n#Defines:" >> ${descFile}
-	printEnv ENABLE_VIDIMAX
+	source $BUILDROOT/.prjconfig
+	echo -e "\n#MainApp:" >> ${descFile}
+	printEnv CONFIG_ELECD_ENABLE
+	printEnv CONFIG_TESTSERVER_ENABLE
+	printEnv CONFIG_TESTTOOL_ENABLE
+
+	if [ -n "$CONFIG_ELECD_ENABLE" ]; then
+		echo -e "\n#StbMainApp defines:" >> ${descFile}
+		printEnv ENABLE_VIDIMAX
+		printEnv ENABLE_VERIMATRIX
+		printEnv ENABLE_SECUREMEDIA
+	fi
 	# echo "#Signatures:"             `ls $UPDATER_DIR/certificates` >> ${descFile}
-	#echo "ENABLE_VERIMATRIX="         $ENABLE_VERIMATRIX >> ${descFile}
-	#echo "ENABLE_SECUREMEDIA="        $ENABLE_SECUREMEDIA >> ${descFile}
 fi
 
 
