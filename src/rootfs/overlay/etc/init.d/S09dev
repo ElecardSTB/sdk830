@@ -10,7 +10,7 @@ case "$1" in
 			echo -n "Populating /dev using /etc/dev.tar..."
 			cd /dev
 			tar -xf /etc/dev.tar
-			[ -f /etc/dev.tar ] && tar -xf /etc/dev-stapi.tar 
+			[ -f /etc/dev-stapi.tar ] && tar -xf /etc/dev-stapi.tar 
 		else
 			# Using mdev, mdev -s already should be started into initramfs
 			mkdir -p /dev/pts /dev/shm /dev/mqueue
