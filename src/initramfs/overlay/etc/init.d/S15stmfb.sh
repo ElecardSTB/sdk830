@@ -14,7 +14,7 @@ case "$1" in
 		insmodSafe /lib/modules/STLinux-2.4/stmcore-display-sti7105.ko
 		insmodSafe /lib/modules/STLinux-2.4/stmfb.ko $STMFB_PARAMS
 
-		/opt/elecard/bin/fb_logo &
+		[ -e /dev/fb0 ] && (/opt/elecard/bin/fb_logo &)
 		echo "done"
 		;;
 	stop)
