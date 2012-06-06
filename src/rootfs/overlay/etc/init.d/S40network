@@ -15,17 +15,7 @@ case "$1" in
 	brctl addbr br0
 	brctl setfd br0 0
 	if [ -z "`cat /proc/cmdline | grep /dev/nfs`" ]; then
-[% IF CONFIG_TESTTOOL_ENABLE -%]
-# Setting up bridge for test server
-		brctl addif br0 eth0
-		brctl addif br0 eth1
-		ifconfig eth0 0.0.0.0
-		ifconfig eth1 0.0.0.0
-		WAN=br0
-		ifconfig br0   192.168.101.1
-#		/sbin/ifup -a
-[% END -%]
-[% IF CONFIG_ELECD_ENABLE -%]
+[% IF ! CONFIG_TESTSERVER_ENABLE -%]
 		/sbin/ifup -a
 [% END -%]
 		:
