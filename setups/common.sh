@@ -29,8 +29,13 @@ if [ "`basename $CONFIG`" != ".prjconfig" ]; then
 	fi
 else
 #check
-	if [ "`dirname $CONFIG`" != "$BUILDROOT" ]; then
-		echo "ERROR: `dirname $CONFIG` != $BUILDROOT"
+	BUILDROOT_REAL=`readlink -f $BUILDROOT`
+	CONFIG_DIR=`dirname $CONFIG`
+	if [ "$CONFIG_DIR" != "$BUILDROOT_REAL" ]; then
+		echo "BUILDROOT=$BUILDROOT"
+		echo "BUILDROOT_REAL=$BUILDROOT_REAL"
+		echo "CONFIG_DIR=$CONFIG_DIR"
+		echo "ERROR: CONFIG_DIR != BUILDROOT_REAL"
 		return
 	fi
 fi
