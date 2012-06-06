@@ -8,25 +8,17 @@ DEFAULT_HTTP_URL=http://192.168.0.1/STB830_last.efp
 #dummy wait for time when usb mass storage is appiear in system
 #this should be improved, and maybe moved to clientUpdater
 waitUSB() {
-
 	HAS_USB_MASS_STORAGE=`dmesg | grep "SCSI emulation for USB Mass Storage devices"`
 	if [ -z "$HAS_USB_MASS_STORAGE" ]; then
 		echo "There no usb mass storages! Skip waiting."
 		return
 	fi
-	
+
 	x=0
 	while [ $x -lt 6 ]; do
-
-		if [ $x -ne 0 ]; then
-			sleep 1
-		fi
-
-		if [ -n "`mount | grep "/mnt/sd[a-z]"`" ]; then
-			break;
-		fi
+		[ $x -ne 0 ] && sleep 1
+		[ -n "`mount | grep "/mnt/sd[a-z]"`" ] && break
 		let x+=1
-
 	done
 	echo "x=$x"
 }
@@ -38,12 +30,13 @@ case "$1" in
 
 	echo -n "Check and set STATE flag in HW-Config ... "
 	UPDATER_FLAGS=""
-	eval LASTSTATE=`/opt/elecard/bin/hwconfigManager h 0 STATE 2>/dev/null | grep "^VALUE:" | sed 's/.*: \(.*\)/$((0x\1))/'`
-#echo "LASTSTATE=\"$LASTSTATE\""
+#	eval LASTSTATE=`/opt/elecard/bin/hwconfigManager h 0 STATE 2>/dev/null | grep "^VALUE:" | sed 's/.*: \(.*\)/$((0x\1))/'`
+	LASTSTATE=`/opt/elecard/bin/hwconfigManager h 0 STATE 2>/dev/null | grep "^VALUE:" | cut -d ' ' -f 2`
 	if [ -z "$LASTSTATE" ]; then
 		echo "Not found. Assuming failure"
 		LASTSTATE=1
 	else
+		let LASTSTATE=0x$LASTSTATE
 		if [ "$LASTSTATE" != "0" ]; then
 			echo "Non-zero. Must be failure"
 		else
@@ -53,22 +46,22 @@ case "$1" in
 	fi
 	/opt/elecard/bin/hwconfigManager s 0 STATE 1 2>&1 1>/dev/null
 
-	eval UPDATERFLAGS=`/opt/elecard/bin/hwconfigManager h 0 UPFLAG 2>/dev/null | grep "^VALUE:" | sed 's/.*: \(.*\)/$((0x\1%10))/'`
-	if [ "$UPDATERFLAGS" ]; then
-		if [ "$UPDATERFLAGS" != "0" ]; then
-			echo "Use extended timeout value for network update..."
-			UPDATER_FLAGS="-w$UPDATERFLAGS $UPDATER_FLAGS"
-		fi
+#	UPDATERFLAGS=`/opt/elecard/bin/hwconfigManager h 0 UPFLAG 2>/dev/null | grep "^VALUE:" | sed 's/.*: \(.*\)/$((0x\1%10))/'`
+	UPDATERFLAGS=`/opt/elecard/bin/hwconfigManager h 0 UPFLAG 2>/dev/null | grep "^VALUE:" | cut -d ' ' -f 2`
+	let UPDATERFLAGS=0x${UPDATERFLAGS:-0}%10
+	if [ "$UPDATERFLAGS" != "0" ]; then
+		echo "Use extended timeout value for network update..."
+		UPDATER_FLAGS="-w$UPDATERFLAGS $UPDATER_FLAGS"
 	fi
 
-	UPDATERURL=`/opt/elecard/bin/hwconfigManager a 0 UPURL 2>/dev/null | grep "^VALUE:" | grep "tp://" | sed 's/.*: \(.*\)/\1/'`
+	UPDATERURL=`/opt/elecard/bin/hwconfigManager a 0 UPURL 2>/dev/null | grep "^VALUE:.*tp://" | cut -d ' ' -f 2`
 	if [ "$UPDATERURL" ]; then
 		UPDATER_FLAGS="$UPDATER_FLAGS -h $UPDATERURL"
 	else
 		UPDATER_FLAGS="$UPDATER_FLAGS -h $DEFAULT_HTTP_URL"
 	fi
 
-	eval NOUSB=`/opt/elecard/bin/hwconfigManager a 0 UPNOUSB 2>/dev/null | grep "^VALUE:" | sed 's/.*: \(.*\)/\1/'`
+	eval NOUSB=`/opt/elecard/bin/hwconfigManager a 0 UPNOUSB 2>/dev/null | grep "^VALUE:" | cut -d ' ' -f 2`
 	if [ "$NOUSB" ]; then
 		if [ "$NOUSB" != "0" ]; then
 			echo "Disable USB update"
@@ -77,7 +70,7 @@ case "$1" in
 		fi
 	fi
 
-	eval NOMUL=`/opt/elecard/bin/hwconfigManager a 0 UPNOMUL 2>/dev/null | grep "^VALUE:" | sed 's/.*: \(.*\)/\1/'`
+	eval NOMUL=`/opt/elecard/bin/hwconfigManager a 0 UPNOMUL 2>/dev/null | grep "^VALUE:" | cut -d ' ' -f 2`
 	if [ "$NOMUL" ]; then
 		if [ "$NOMUL" != "0" ]; then
 			echo "Disable multicast update"
