@@ -16,6 +16,7 @@ case "$1" in
 
 		if [ -z "`cat /proc/cmdline | grep /dev/nfs`" ]; then
 			. /etc/profile
+			echo "Starting testServer..."
 			$STAPISDK_ROOT/$TESTSERVER 0</dev/console
 		fi
 
