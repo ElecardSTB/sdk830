@@ -3,13 +3,22 @@
 # Start the network....
 #
 
-
 interfacesFile=/var/etc/interfaces
 
 parseInterface() {
 	interface=$1
 	interfacesFileOut=$2
 	echo -e "\n# $interface" >> $interfacesFileOut
+	if [ ! -e $interfacesFile ]; then
+		cat >> $interfacesFileOut << EOF
+auto $interface
+iface $interface inet static
+  address 192.168.0.101
+  netmask 255.255.255.0
+  broadcast +
+EOF
+		return
+	fi
 	match=0
 	if grep -q "addif br0 $interface" $interfacesFile; then
 		cat $interfacesFile | while read LINE ; do
@@ -41,13 +50,13 @@ parseInterface() {
 	fi
 }
 
-
+[ -n "`ifconfig -a | grep eth1`" ] && HAS_ETH1=y
 
 case "$1" in
 	start)
-		UPDATERURL=`/opt/elecard/bin/hwconfigManager a 0 UPURL 2>/dev/null | grep "^VALUE:" | grep "tp://" | sed 's/.*: \(.*\)/\1/'`
-		eval NOMUL=`/opt/elecard/bin/hwconfigManager a 0 UPNOMUL 2>/dev/null | grep "^VALUE:" | sed 's/.*: \(.*\)/\1/'`
-		if [ -z "$UPDATERURL" -a "$NOMUL" -a $NOMUL -ne 0 ]; then
+		UPDATERURL=`/opt/elecard/bin/hwconfigManager a 0 UPURL 2>/dev/null | grep "^VALUE:.*tp://" | cut -d ' ' -f 2`
+		NOMUL=`/opt/elecard/bin/hwconfigManager a 0 UPNOMUL 2>/dev/null | grep "^VALUE:" | cut -d ' ' -f 2`
+		if [ -z "$UPDATERURL" -a "${NOMUL:-0}" != "0" ]; then
 			echo "URL not setted and multicast update disabled, so skip network start!!!"
 			exit 0;
 		fi
@@ -56,16 +65,17 @@ case "$1" in
 
 		echo "" > /tmp/interfaces_eth
 		parseInterface eth0 /tmp/interfaces_eth
-		parseInterface eth1 /tmp/interfaces_eth
-		if [ -z "`cat /proc/cmdline | grep /dev/nfs`" ]; then
+		[ -n "$HAS_ETH1" ] && parseInterface eth1 /tmp/interfaces_eth
+		if [ -z "$ROOTFS_NFS" ]; then
 			/sbin/ifup -i /tmp/interfaces_eth eth0
-			if [ "$eth0" != "br0" -o "$eth1" != "br0" ]; then
+#			if [ "$eth0" != "br0" -o "$eth1" != "br0" ]; then
+			if [ -n "$HAS_ETH1" -a "$eth1" != "br0" ]; then
 				/sbin/ifup -i /tmp/interfaces_eth eth1
 			fi
 		else
 			# Get routes and nameservers from dhcp
 			udhcpc -n -i eth0 -s /opt/elecard/bin/udhcpc.nfs
-			/sbin/ifup -i /tmp/interfaces_eth eth1
+			[ -n "$HAS_ETH1" ] && /sbin/ifup -i /tmp/interfaces_eth eth1
 		fi
 
 		route add -net 224.0.0.0 netmask 240.0.0.0 eth0
@@ -81,10 +91,10 @@ case "$1" in
 		echo -n "Stopping network... "
 		killall udhcpc
 	#	iptables -t nat -F
-		if [ -z "`cat /proc/cmdline | grep /dev/nfs`" ]; then
+		if [ -z "$ROOTFS_NFS" ]; then
 			ifdown -i /tmp/interfaces_eth -a
 		else
-			ifdown -i /tmp/interfaces_eth eth1
+			[ -n "$HAS_ETH1" ] && ifdown -i /tmp/interfaces_eth eth1
 		fi
 
 		;;
