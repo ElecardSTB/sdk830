@@ -1,15 +1,11 @@
 #/bin/sh
 # -*- backup-inhibited: t -*-
 
-
+[% SKIPFILE %]
 
 case "$1" in
     start)
-    if [ -f /etc/dev.tar ]; then
-	# /dev tar archive already built
-#        echo -n "Using prebuilt /dev/..."
-        echo -n ""
-    else
+    if [ -n "`cat /proc/cmdline | grep /dev/nfs`" -a ! -f /etc/dev.tar ]; then
         # go in /dev directory in order to create tar archive from their
         cd /dev
         echo -n "BUILD TAR ARCHIVE FOR PRE-RETAIL TARGET..."

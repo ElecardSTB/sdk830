@@ -1,0 +1,49 @@
+#!/bin/sh
+
+# Start/stop mounting rootfs from nand
+
+SCRIPT_TS=/tmp/${0##*/}.ts
+
+checkMount() {
+	[ -n "`mount | grep /rootfs`" ] && return 0
+	return 1
+}
+
+case "$1" in
+	start)
+		if [ -e $SCRIPT_TS ]; then
+			i=0
+			while [ -e $SCRIPT_TS ]; do
+				usleep 10000
+				[ $i -gt 1000 ] && exit 1
+				let i=$i+1
+			done
+			checkMount
+			exit $?
+		fi
+		[ -z "$ROOTFS_NAND" ] && exit 1
+		checkMount && exit 0
+
+		touch $SCRIPT_TS
+#		echo "Starting mounting rootfs..."
+		echo -n "Mount rootfs ${NEWROOT}, fs type ${FSTYPE}, with options \"${FSOPT}\"... "
+		mount -t $FSTYPE $FSOPT $NEWROOT $ROOTFS_MOUNT
+		RET=$?
+		echo "done 'mounting rootfs'"
+		rm $SCRIPT_TS
+		exit $RET
+
+		;;
+	stop)
+		if [ -e $SCRIPT_TS ]; then
+			pid=`ps | grep "${0##*/} start" | (read p other; echo $p)`
+			killall $pid
+			rm $SCRIPT_TS
+		fi
+		checkMount && echo "unmounting rootfs"; umount $ROOTFS_MOUNT
+		;;
+	*)
+		echo "Usage: $0 {start|stop}"
+		exit 1
+		;;
+esac

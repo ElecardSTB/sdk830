@@ -3,11 +3,25 @@
 
 echo -e "\nStarting initramfs... "
 . /etc/profile
-
 /bin/mount -a
-/bin/mount -o remount,rw /
-#/bin/mount -t proc proc /proc
 
+NEWROOT=""
+if [ -n "`cat /proc/cmdline | grep "root=/dev/mtdblock"`" ]; then
+	export ROOTFS_NAND=1
+	export NEWROOT=`cat /proc/cmdline | sed 's/.*root=\(\/dev\/mtdblock[^ ]\+\).*/\1/'`
+	export FSTYPE=`cat /proc/cmdline | sed 's/.*rootfstype=\([^ ]\+\).*/\1/'`
+	export FSOPT="-o ro,noatime"
+elif [ -n "`cat /proc/cmdline | grep "root=/dev/nfs"`" ]; then
+	export ROOTFS_NFS=1
+	export NEWROOT=`cat /proc/cmdline | sed 's/.*nfsroot=\([^ ,]\+\).*/\1/'`
+	export NFSOPT=`cat /proc/cmdline | sed 's/.*nfsroot=[^ ,]\+\(,*[^ ]*\).*/\1/'`
+	export FSTYPE="nfs"
+	export FSOPT="-o nolock,rw${NFSOPT}"
+fi
+if [ -n "$NEWROOT" ]; then
+	export ROOTFS_MOUNT=/rootfs
+	mkdir -p $ROOTFS_MOUNT
+fi
 
 . /etc/init.d/rcS start
 
@@ -20,39 +34,34 @@ if [ -e /tmp/reboot ]; then
 fi
 
 
-#change root
-NEWROOT=""
-if [ -n "`cat /proc/cmdline | grep "root=/dev/nfs"`" -a -z "" ]; then
-	NEWROOT=`cat /proc/cmdline | sed 's/.*nfsroot=\([^ ,]\+\).*/\1/'`
-	NFSOPT=`cat /proc/cmdline | sed 's/.*nfsroot=[^ ,]\+\(,*[^ ]*\).*/\1/'`
-	FSTYPE="nfs"
-	FSOPT="-o nolock,rw${NFSOPT}"
-elif [ -n "`cat /proc/cmdline | grep "root=/dev/mtdblock"`" ]; then
-	NEWROOT=`cat /proc/cmdline | sed 's/.*root=\(\/dev\/mtdblock[^ ]\+\).*/\1/'`
-	FSTYPE=`cat /proc/cmdline | sed 's/.*rootfstype=\([^ ]\+\).*/\1/'`
-	FSOPT="-o ro,noatime"
-fi
-
-
 if [ -n "$NEWROOT" ]; then
-	. /etc/init.d/rcS stop
-	umount -a
-	echo -n "Mount rootfs ${NEWROOT}, fs type ${FSTYPE}, with options \"$FSOPT\"... "
-	mount -t $FSTYPE $FSOPT $NEWROOT /mnt
-	if [ "$?" -eq "0" ]; then
-		echo "done"
+	if [ -n "$ROOTFS_NAND" ]; then
+		/etc/init.d/S10rootfs.bg start
+	else
+		echo "Mount rootfs ${NEWROOT}, fs type ${FSTYPE}, with options \"${FSOPT}\"... "
+		mount -t $FSTYPE $FSOPT $NEWROOT $ROOTFS_MOUNT
+	fi
+	if [ $? -eq 0 -a -e $ROOTFS_MOUNT/init ]; then
+#		. /etc/init.d/rcS stop
+		unset ROOTFS_NAND ROOTFS_NFS NEWROOT FSTYPE FSOPT
+		mount --move /proc $ROOTFS_MOUNT/proc
+		mount --move /sys $ROOTFS_MOUNT/sys
+		mount --move /tmp $ROOTFS_MOUNT/tmp
+		mount --move /mnt $ROOTFS_MOUNT/mnt
+		mount --move /dev $ROOTFS_MOUNT/dev
+		mount --move /var/etc $ROOTFS_MOUNT/var/etc
 		echo "Switch root"
-		exec  switch_root /mnt /init
+		exec  switch_root $ROOTFS_MOUNT /init
 	else
 		echo "ERROR!!! Cant mount rootfs!!"
 	fi
 
 #run some startup scripts
-	/bin/mount -a
-	for i in /etc/init.d/S[012]*; do
-		[ ! -f "$i" ] && continue
-		$i start
-	done
+#	/bin/mount -a
+#	for i in /etc/init.d/S[012]*; do
+#		[ ! -f "$i" ] && continue
+#		$i start
+#	done
 fi
 
 #if we didnt change root, then login

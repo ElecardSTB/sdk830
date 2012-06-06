@@ -1,9 +1,8 @@
 #!/bin/sh
-
-
 # Start/stop all init scripts in /etc/init.d
 # executing them in numerical order.
 #
+
 LIST=
 if [ "$1" = "start" ]; then
 	LIST=`ls /etc/init.d/S??*`
@@ -16,22 +15,26 @@ fi
 
 for i in $LIST;do
 
-     # Ignore dangling symlinks (if any).
-     [ ! -f "$i" ] && continue
+	# Ignore dangling symlinks (if any).
+	[ ! -f "$i" ] && continue
 
-     case "$i" in
+	case "$i" in
 	*.sh)
-	    # Source shell script for speed.
-	    (
-		trap - INT QUIT TSTP
-		set $1
-		. $i
-	    )
-	    ;;
+		# Source shell script for speed.
+		(
+			trap - INT QUIT TSTP
+			set $1
+			. $i
+		)
+		;;
+	*.bg)
+		# bg extension, run in background.
+		$i $1 &
+		;;
 	*)
-	    # No sh extension, so fork subprocess.
-	    $i $1
-	    ;;
-    esac
+		# No sh extension, so fork subprocess.
+		$i $1
+		;;
+	esac
 done
 

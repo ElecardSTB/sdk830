@@ -13,17 +13,11 @@
 # action    == one of sysinit, respawn, askfirst, wait, and once
 # process   == program to run
 
-null::sysinit:/bin/echo -e "\n/bin/console\n" >  /bin/console
-null::sysinit:/bin/echo -e "\n/bin/ttyAS0\n" >  /bin/ttyAS0
-
 # Startup the system
-null::sysinit:/bin/mount -o remount,rw /
-null::sysinit:/bin/mount -t proc proc /proc
-null::sysinit:/bin/mkdir -p /dev/pts
-null::sysinit:/bin/mount -a
+#all mounts should be done in initamfs
 null::sysinit:/bin/hostname -F /etc/hostname
 # now run any rc scripts
-::sysinit:/etc/init.d/rcS
+::sysinit:/etc/init.d/rcS start
 
 # Set up a couple of getty's
 #tty1::respawn:/sbin/getty 38400 tty1
@@ -39,7 +33,7 @@ null::respawn:/sbin/klogd -n
 #tty3::respawn:/usr/bin/tail -f /var/log/messages
 
 [% IF CONFIG_TESTSERVER_ENABLE || CONFIG_TESTTOOL_ENABLE -%]
-::sysinit:-/opt/elecard/bin/test start
+::sysinit:/opt/elecard/bin/test start
 [% END -%]
 ::respawn:-/bin/sh --login
 

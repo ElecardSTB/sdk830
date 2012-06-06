@@ -7,11 +7,9 @@
   [% SKIPFILE %]
 [% END -%]
 
-
 case "$1" in
 	start)
 
-[% IF CONFIG_TESTSERVER_ENABLE -%]
 #	if [ -n "`cat /proc/cmdline | grep runTests`" ]; then
 		echo "***************LOADING_OS_DONE***************"
 		echo "***************LOADING_OS_DONE***************"
@@ -24,8 +22,9 @@ case "$1" in
 			touch /tmp/memtest_fail
 			exit
 		fi
-		
+
 #		memtester -p 0x48000000 128M 1
+#		memtester -p 0x48000000 64M 1
 		if [ $? -ne "0" ]
 		then
 			echo "***************MEM_TEST_FAIL***************"
@@ -36,8 +35,6 @@ case "$1" in
 		echo "***************MEM_TEST_SUCCESS***************"
 		echo "***************MEM_TEST_SUCCESS***************"
 		echo "done."
-[% END -%]
-
 		;;
 	stop)
 		echo -n "Stopping memory tester..."

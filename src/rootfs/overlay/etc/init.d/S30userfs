@@ -5,14 +5,14 @@ MOUNT_DIR="/var/etc"
 
 case "$1" in
 	start)
-		echo -n "Mounting user fs... "
+		#userfs should be already mounted into initramfs
+# 		echo -n "Mounting user fs... "
 
-#		USERFS=`cat /proc/mtd | grep "\"User\"" | sed 's/^mtd\(.\):.*/mtd\1/'`
-		USERFS=`grep "\"User\"" /proc/mtd | sed 's/^mtd\(.\):.*/mtd\1/'`
-
-		if [ "$USERFS" ]; then
-			mount -o noatime,rw -t jffs2 $USERFS $MOUNT_DIR
-		fi
+# 		USERFS=`grep "\"User\"" /proc/mtd | sed 's/^mtd\(.\):.*/mtd\1/'`
+# 
+# 		if [ "$USERFS" ]; then
+# 			mount -o noatime,rw -t jffs2 $USERFS $MOUNT_DIR
+# 		fi
 
 		# Copy default configs if needed
 	    for FILE in `find /etc/defaults/* -print | sort`; do
@@ -30,12 +30,12 @@ case "$1" in
 #		echo -n "Starting userfs RC scripts... "
 #		[ -e /usr/local/etc/init.d/rcS ] && /usr/local/etc/init.d/rcS
 
-		echo "done"
+# 		echo "done"
 		;;
-		stop)
+	stop)
 		echo -n "Unmounting user fs... "
 
-		umount /user
+		umount $MOUNT_DIR
 
 		echo "done"
 		;;
