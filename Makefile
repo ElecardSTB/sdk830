@@ -57,7 +57,7 @@ make_firmware:
 	$(call CHECK_COMP_SIZE,$(COMPONENT_DIR)/rootfs1,77594624,134217728)
 
 make_components: $(DIRS)
-ifneq "$(BUILD_WITHOUT_COMPONENTS_FW)" "1"
+ifneq ($(BUILD_WITHOUT_COMPONENTS_FW),1)
 	make -C src/linux
 	make -C src/rootfs
 endif
@@ -66,7 +66,26 @@ ifneq ($(BUILD_SCRIPT_FW),)
 	rm -f $(COMPONENT_DIR)/script.tgz
 	cd $(PRJROOT)/src/update/scripts/$(BUILD_SCRIPT_FW) && tar -czf $(COMPONENT_DIR)/script.tgz ./*
 endif
+#	rm -rf $(COMPONENT_DIR)/fwinfo/signatures
+ifneq ($(BUILD_SIGN_WITH),)
+	$(call ECHO_MESSAGE,Sign components with $(BUILD_SIGN_WITH).pem key)
+	mkdir -p $(COMPONENT_DIR)/fwinfo/signatures
+	for i in $(BUILD_SIGN_WITH); do mkdir -p $(COMPONENT_DIR)/fwinfo/signatures/$$i; done
+ifneq ($(BUILD_WITHOUT_COMPONENTS_FW),1)
+	for i in $(BUILD_SIGN_WITH); do \
+		for j in kernel rootfs; do \
+			openssl dgst -sign $(PRJROOT)/src/update/keys/private/$$i.pem -out $(COMPONENT_DIR)/fwinfo/signatures/$$i/$$j.sha1 -sha1 $(COMPONENT_DIR)/$${j}1; \
+		done; \
+	done
+endif
+ifneq ($(BUILD_SCRIPT_FW),)
+	for i in $(BUILD_SIGN_WITH); do \
+		openssl dgst -sign $(PRJROOT)/src/update/keys/private/$$i.pem -out $(COMPONENT_DIR)/fwinfo/signatures/$$i/script.sha1 -sha1 $(COMPONENT_DIR)/script.tgz; \
+	done
+endif
+endif
 	cd $(COMPONENT_DIR)/fwinfo && tar -czf $(COMPONENT_DIR)/fwinfo.tgz ./*
+
 
 $(TIMESTAMPS_DIR) $(COMPONENT_DIR) $(FIRMWARE_DIR) $(PACKAGES_DIR) $(TARBALLS_DIR):
 	mkdir -p $@

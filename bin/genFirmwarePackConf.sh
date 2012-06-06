@@ -115,9 +115,9 @@ BRANCH=$Return_Val
 #LANG=ENG
 LANG=
 
-if [ -n "$BUILD_SCRIPT_FW" ]; then
-	COMPONENTS=script
-fi
+[ -n "$BUILD_SCRIPT_FW" ] && COMPONENTS=script
+[ -n "$BUILD_SIGN_WITH" ] && SIGN=sign
+
 # Comps effect on firmware pack size, so skip adding "comps" to efp name.
 # if [ "$BUILD_WITHOUT_COMPONENTS_FW" != "1" ]; then
 # 	COMPONENTS=${COMPONENTS:+${COMPONENTS}_}comps
@@ -133,6 +133,7 @@ addToFWNAME $DATE
 addToFWNAME $LANG
 addToFWNAME $HOSTNAME
 addToFWNAME $COMPONENTS
+addToFWNAME $SIGN
 addToFWNAME $SHORT_COMMENT
 
 
@@ -192,8 +193,15 @@ if [ "$BUILD_WITHOUT_COMPONENTS_FW" != "1" ]; then
 		printEnv ENABLE_VERIMATRIX
 		printEnv ENABLE_SECUREMEDIA
 	fi
+
+	echo -e "\n#Build-in rootfs open keys:" >> ${descFile}
+	printEnv BUILD_ADD_KEYS_TO_FW
 	# echo "#Signatures:"             `ls $UPDATER_DIR/certificates` >> ${descFile}
 fi
+
+echo -en "\n\n" >> ${descFile}
+echo -e "#Components signed with:" >> ${descFile}
+printEnv BUILD_SIGN_WITH
 
 
 popd 1>/dev/null
