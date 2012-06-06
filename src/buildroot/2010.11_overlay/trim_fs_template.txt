@@ -20,8 +20,12 @@
 [%ROOTFS%]/usr/lib/libQt*.so*
 
 [%ROOTFS%]/opt/elecard/bin/lircd*
-[%ROOTFS%]/etc/init.d/S70lirc
 [%ROOTFS%]/opt/elecard/bin/checkUpdate.sh
+
+#uneeded startup scripts
+[%ROOTFS%]/etc/init.d/S70lirc
+[%ROOTFS%]/etc/init.d/S91smb
+
 
 [% IF ! CONFIG_TESTSERVER_ENABLE -%]
 [%ROOTFS%]/opt/elecard/share/testchart_rgb565.gam
@@ -52,4 +56,9 @@
 [%INITRAMFS%]/lib/libresolv*
 #[%INITRAMFS%]/lib/librt*
 [%INITRAMFS%]/lib/libutil*
+
+#uneeded startup scripts
+[%ROOTFS%]/etc/init.d/S20urandom
+[%ROOTFS%]/etc/init.d/S40network
+
 [% END -%]
