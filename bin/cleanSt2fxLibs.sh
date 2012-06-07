@@ -2,6 +2,7 @@
 
 source $(dirname $0)/../etc/checkEnvs.sh
 
+ROOTFS_BUILD_DIR=$BUILDROOT/packages/buildroot/output_rootfs/build
 USR_LIB_SO_LIBS=" \
 			libbmp.so* \
 			libdirect-*.so* \
@@ -30,3 +31,4 @@ pushd $ROOTFS/usr/lib && rm -fr $USR_LIB_SO_LIBS && popd
 echo "Cleaning staging rootfs_nfs ${ROOTFS}_nfs"
 pushd ${ROOTFS}_nfs/usr/lib && rm -fr $USR_LIB_SO_LIBS && popd
 
+rm -f $ROOTFS_BUILD_DIR/.*_installed
