@@ -12,11 +12,11 @@ $(COMPONENT_DIR)/rootfs1:
 	test -h $@ || ln -s $(BUILDROOT)/packages/buildroot/output_rootfs/images/rootfs.jffs2 $@
 
 
+#This calls from buildroot
 #TARGET_DIR variable should be seted by buildroot
 TARGET_DIR?=$(BUILDROOT)/rootfs
 KEYS_DIR=$(TARGET_DIR)/config.firmware/keys
 ROOTFS_OVERLAY_FILES=$(shell find ./overlay -not -regex ".*.svn.*" -type f)
-#This calls from buildroot
 overlays: $(ROOTFS_OVERLAY_FILES) $(COMPONENT_DIR)/fwinfo/firmwareDesc
 	$(call ECHO_MESSAGE,Rootfs overlays)
 	prjfilter ./overlay $(TARGET_DIR) -c $(BUILDROOT)/.prjconfig
