@@ -12,7 +12,7 @@ _ts_configkernel=$(KDIR)/.ts_configlinux $(TIMESTAMPS_DIR)/.configlinux
 _ts_patchkernel=$(KDIR)/.ts_patchlinux $(TIMESTAMPS_DIR)/.patchlinux
 _ts_makekernel=$(KDIR)/.ts_makelinux $(TIMESTAMPS_DIR)/.makelinux
 
-.PHONY: build_initramfs build config clean kernel_only
+.PHONY: build_initramfs build config clean kernel_only unpack
 
 all: build
 
@@ -47,6 +47,9 @@ $(KDIR)/.config:
 	$(call CONFEDIT_INIT,$(KDIR),$(KERNEL_CONFIG))
 	$(call CONFEDIT_SET_STRING,$(KDIR),CONFIG_INITRAMFS_SOURCE,$(COMPONENT_DIR)/initramfs.cpio)
 	$(call CONFEDIT_EXECUTE,$(KDIR))
+	make -C $(KDIR) ARCH=sh CROSS_COMPILE=sh4-linux- modules_prepare
+#first time modules_prepare modify config, so copy it again:
+	$(call CONFEDIT_EXECUTE,$(KDIR))
 	touch $(_ts_makekernel)
 	touch $@
 
@@ -55,13 +58,6 @@ $(_ts_makekernel):
 
 $(_ts_configkernel):
 	touch $(_ts_configkernel)
-
-
-clean::
-	$(call ECHO_MESSAGE,Cleaning kernel)
-	rm -f $(_ts_makekernel)
-	make -C $(KDIR) ARCH=sh CROSS_COMPILE=sh4-linux- clean
-
 
 $(_ts_unpackkernel):
 	$(call ECHO_MESSAGE,Downloading kernel)
@@ -72,10 +68,11 @@ $(_ts_unpackkernel):
 	rm -rf $(BUILDROOT)/packages/opt
 	touch $(_ts_unpackkernel)
 
-$(downloadkernel_file):
-	
-	
-
 unpack: $(_ts_unpackkernel)
-#download: $(downloadkernel_file)
+
+
+clean::
+	$(call ECHO_MESSAGE,Cleaning kernel)
+	rm -f $(_ts_makekernel)
+	make -C $(KDIR) ARCH=sh CROSS_COMPILE=sh4-linux- clean
 
