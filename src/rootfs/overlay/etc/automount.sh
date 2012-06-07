@@ -75,7 +75,11 @@ else
 		do
 			echo "try ${MDEV} ${fs} on ${mount_base}/${mountpoint}"
 			if [ $fs = vfat ]; then
+[% IF CONFIG_TESTSERVER_ENABLE -%]
 				MOUNT_OPTS=",codepage=866,iocharset=utf8,errors=continue"
+[% ELSE -%]
+				MOUNT_OPTS=",codepage=866,iocharset=utf8,errors=remount-ro"
+[% END -%]
 			else
 				MOUNT_OPTS=
 			fi
