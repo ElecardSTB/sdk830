@@ -3,6 +3,8 @@
 source $(dirname $0)/../etc/checkEnvs.sh
 
 ROOTFS_BUILD_DIR=$BUILDROOT/packages/buildroot/output_rootfs/build
+STAGINGDIR=${STAGINGDIR:-$BUILDROOT/packages/buildroot/output_rootfs/staging}
+ROOTFS=${ROOTFS:-$BUILDROOT/rootfs}
 USR_LIB_SO_LIBS=" \
 			libbmp.so* \
 			libdirect-*.so* \
