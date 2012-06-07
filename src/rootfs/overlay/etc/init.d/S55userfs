@@ -1,4 +1,0 @@
-#!/bin/sh
-
-#skip it, becase this moved to S30userfs
-[% SKIPFILE %]
