@@ -26,6 +26,7 @@ build: $(KDIR)/.config build_initramfs $(KDIR)/arch/sh/boot/uImage
 $(KDIR)/arch/sh/boot/uImage: $(KDIR)/.config $(_ts_patchkernel) $(COMPONENT_DIR)/initramfs.cpio $(_ts_makekernel)
 	$(call ECHO_MESSAGE,Building kernel)
 	make -C $(KDIR) ARCH=sh CROSS_COMPILE=sh4-linux- uImage
+#	make -C $(KDIR) ARCH=sh CROSS_COMPILE=sh4-linux- INSTALL_MOD_PATH=$(BUILDROOT)/rootfs modules modules_install
 	rm -f $(COMPONENT_DIR)/kernel1; ln -s $(KDIR)/arch/sh/boot/uImage $(COMPONENT_DIR)/kernel1
 	touch $(_ts_makekernel)
 	touch $@
@@ -36,12 +37,7 @@ kernel_only: $(KDIR)/.config $(_ts_patchkernel)
 
 
 $(eval $(call createPatchOverlayScriptTarget,$(_ts_patchkernel),$(FULL_LINUX_VERSION),$(KDIR),kernel,))
-
-ifneq ($(STLINUX_SELF_DOWNLOAD),)
-$(KDIR)/.config: $(_ts_unpackkernel)
-endif
-$(KDIR)/.config: $(KERNEL_CONFIG) $(_ts_configkernel)
-$(KDIR)/.config:
+$(KDIR)/.config: $(_ts_unpackkernel) $(KERNEL_CONFIG) $(_ts_configkernel)
 	$(call ECHO_MESSAGE,Configuring kernel)
 	@echo $(KERNEL_CONFIG)
 	$(call CONFEDIT_INIT,$(KDIR),$(KERNEL_CONFIG))

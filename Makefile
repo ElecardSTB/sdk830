@@ -6,12 +6,12 @@ include $(BUILDROOT)/.prjconfig
 
 DIRS := $(FIRMWARE_DIR) $(TIMESTAMPS_DIR) $(COMPONENT_DIR) $(BUILDROOT)/initramfs $(BUILDROOT)/rootfs
 _ts_commonscript := $(TIMESTAMPS_DIR)/.commonscript
+pre_targets = $(DIRS) scripts
 
+.PHONY : all firmware maketools make_description make_components untar_rootfs clean br buildroot rootfs br_i buildroot_i initramfs linux kernel stapisdk stsdk scripts
 
-.PHONY : all firmware maketools make_description make_components untar_rootfs clean br buildroot rootfs br_i buildroot_i initramfs linux kernel stapisdk stsdk
-
-all: $(DIRS) $(_ts_commonscript) make_description make_components untar_rootfs
-firmware: $(DIRS) $(_ts_commonscript) make_description make_components make_firmware untar_rootfs
+all: $(pre_targets) make_description make_components untar_rootfs
+firmware: $(pre_targets) make_description make_components make_firmware untar_rootfs
 firmware: MAKE_FIRMWARE=1
 
 
@@ -31,7 +31,9 @@ $(_ts_commonscript): $(COMMON_SCRIPT_FILES)
 	done
 	touch $(_ts_commonscript)
 
-make_description: $(DIRS)
+scripts: $(_ts_commonscript)
+
+make_description: $(pre_targets)
 	$(call ECHO_MESSAGE,Generate firmware description:)
 	INCREMENT_REVISION=$(MAKE_FIRMWARE) $(PRJROOT)/bin/genFirmwarePackConf.sh
 
@@ -56,7 +58,7 @@ make_firmware:
 	$(call CHECK_COMP_SIZE,$(COMPONENT_DIR)/kernel1,10485760,15728640)
 	$(call CHECK_COMP_SIZE,$(COMPONENT_DIR)/rootfs1,77594624,134217728)
 
-make_components: $(DIRS)
+make_components: $(pre_targets)
 ifneq ($(BUILD_WITHOUT_COMPONENTS_FW),1)
 	make -C src/linux
 	make -C src/rootfs
@@ -117,25 +119,25 @@ clean:
 	echo "clean"
 
 
-br buildroot rootfs:
+br buildroot rootfs: $(pre_targets)
 	make -C ./src/rootfs
 
-bri br_i buildroot_i initramfs:
+bri br_i buildroot_i initramfs: $(pre_targets)
 	make -C ./src/buildroot initramfs_rm_make_ts
 	make -C ./src/initramfs
 
-linux kernel:
+linux kernel: $(pre_targets)
 	make -C ./src/linux kernel_only
 
 
 ifeq ($(STB830_SDK),)
-packs: $(PACKAGES_DIR)
+packs: $(pre_targets) $(PACKAGES_DIR)
 	$(PRJROOT)/src/elecard/bin/genPackages.sh
 
-stapisdk stsdk:
+stapisdk stsdk: $(pre_targets)
 	make -C ./src/elecard/stapisdk stapisdk
 else
-stapisdk stsdk packs:
+stapisdk stsdk packs: $(pre_targets)
 	@echo "You should run it in FULL build (not SDK)!"
 endif
 

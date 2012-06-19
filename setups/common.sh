@@ -69,11 +69,29 @@ else
 fi
 
 export STAPISDK_VERSION=$CONFIG_STAPISDK_VERSION
+#FULL_LINUX_VERSION2 - version for downloading from ftp://ftp.stlinux.com
+if [ "$STAPISDK_VERSION" = "35.0" -o "$STAPISDK_VERSION" = "35.1" ]; then
+#	FULL_LINUX_VERSION2=2.6.32.28_stm24_V3.0-207
+	FULL_LINUX_VERSION2=2.6.32.42_stm24_V4.0-208
+	STAPISDK_MULTICOM_VERSION=4.0.5
+elif [ "$STAPISDK_VERSION" = "36.0" -o "$STAPISDK_VERSION" = "36.2" ]; then
+	FULL_LINUX_VERSION2=2.6.32.42_stm24_V4.0-208
+	STAPISDK_MULTICOM_VERSION=4.0.5
+elif [ "$STAPISDK_VERSION" = "38.0" ]; then
+	FULL_LINUX_VERSION2=2.6.32.57_stm24_V5.0-210
+	STAPISDK_MULTICOM_VERSION=4.0.5P2
+else
+# if [ "$STAPISDK_VERSION" = "30.0" ]; then
+# 	FULL_LINUX_VERSION=2.3
+	echo "ERROR: not setted linux version for $STAPISDK_VERSION!!!!"
+	return
+#	exit 1
+fi
+export FULL_LINUX_VERSION2 STAPISDK_MULTICOM_VERSION
+
+make -C $PRJROOT scripts
 if [ -z "$STB830_SDK" ]; then
-	export STSDKROOT=/opt/STM/stapisdk-$STAPISDK_VERSION
-	if [ `echo $STAPISDK_VERSION | tr . 0` -ge 3800 ]; then
-		export STSDKROOT=$BUILDROOT/packages/stapisdk-$STAPISDK_VERSION
-	fi
+	export STSDKROOT=$BUILDROOT/packages/stapisdk-$STAPISDK_VERSION
 	make -C $PRJROOT/src/elecard/stapisdk check_stapisdk
 
 	#setup STAPISDK environment
@@ -94,35 +112,13 @@ if [ -z "$STB830_SDK" ]; then
 		export DVD_DISPLAY_HD=$CONFIG_DVD_DISPLAY_HD
 	fi
 else
+#LINUX_VERSION - this variable sets in stapisdk`s setenv.sh
 	export LINUX_VERSION=2.4
 fi
 
-#LINUX_VERSION - this variable sets in setenv.sh
-KDIR=/opt/STM/STLinux-${LINUX_VERSION}/devkit/sources/kernel/linux-sh4
-if [ "$STAPISDK_VERSION" = "30.0" ]; then
-	FULL_LINUX_VERSION=2.3
-elif [ "$STAPISDK_VERSION" = "35.0" -o "$STAPISDK_VERSION" = "35.1" ]; then
-#	FULL_LINUX_VERSION=2.6.32.28_stm24_V3.0
-	FULL_LINUX_VERSION=2.6.32.42_stm24_V4.0
-	KDIR=/opt/STM/STLinux-${LINUX_VERSION}/devkit/sources/kernel/linux-sh4-${FULL_LINUX_VERSION}
-elif [ "$STAPISDK_VERSION" = "36.0" -o "$STAPISDK_VERSION" = "36.2" ]; then
-	FULL_LINUX_VERSION=2.6.32.42_stm24_V4.0
-	KDIR=/opt/STM/STLinux-${LINUX_VERSION}/devkit/sources/kernel/linux-sh4-${FULL_LINUX_VERSION}
-	export MULTICOM_SOURCE=/opt/STM/MULTICOM/multicom-4.0.5
-elif [ "$STAPISDK_VERSION" = "38.0" ]; then
-	export STLINUX_SELF_DOWNLOAD=1
-	#FULL_LINUX_VERSION2 - version for downloading from ftp://ftp.stlinux.com
-	export FULL_LINUX_VERSION2=2.6.32.57_stm24_V5.0-210
-	FULL_LINUX_VERSION=${FULL_LINUX_VERSION2%-*}
-	KDIR=$BUILDROOT/packages/linux-sh4-$FULL_LINUX_VERSION
-	export MULTICOM_SOURCE=$BUILDROOT/packages/multicom-4.0.5P2
-else
-	echo "ERROR: not setted linux version for $STAPISDK_VERSION!!!!"
-	return
-#	exit 1
-#	FULL_LINUX_VERSION=2.3
-fi
-export FULL_LINUX_VERSION KDIR
+export FULL_LINUX_VERSION=${FULL_LINUX_VERSION2%-*}
+export KDIR=$BUILDROOT/packages/linux-sh4-$FULL_LINUX_VERSION
+export MULTICOM_SOURCE=$BUILDROOT/packages/multicom-$STAPISDK_MULTICOM_VERSION
 
 export STAGINGDIR=$BUILDROOT/packages/buildroot/output_rootfs/staging
 export ROOTFS=$BUILDROOT/rootfs
