@@ -1,0 +1,15 @@
+#!/bin/sh
+
+
+
+./edcfg /var/etc/elecard/elcd.conf set VIDEO_MODE 1080p60
+./edcfg /config/StbMainApp/settings.conf set 3D_MONITOR 1
+
+
+echo -n "UPD script set resolution " > /dev/console
+./edcfg /var/etc/elecard/elcd.conf get VIDEO_MODE > /dev/console
+
+echo -n "UPD script set header3D switched on" > /dev/console
+./edcfg /config/StbMainApp/settings.conf get 3D_MONITOR > /dev/console
+
+
