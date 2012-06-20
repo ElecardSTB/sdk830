@@ -9,6 +9,7 @@ fi
 
 case "$1" in
     start)
+	mkdir /var/etc/ppp 2>/dev/null
 	if [ -f /etc/ppp/chap-secrets ]; then
 
 		USER=`cat /etc/ppp/chap-secrets | cut -d' ' -f1`
@@ -18,7 +19,8 @@ case "$1" in
 		echo "${WAN}"             >> /etc/ppp/peers/pppoe
 		echo "remotename pppoe"   >> /etc/ppp/peers/pppoe
 
-		route del default
+		while route del default 2>/dev/null; do :; done
+
 		echo "Connecting to PPPoE..."
 		pppd call pppoe
 		iptables -t nat -A POSTROUTING -o ppp0 -j MASQUERADE
@@ -31,5 +33,7 @@ case "$1" in
 		sleep 1
 	fi
 	killall -9 pppd 2>/dev/null
+	# Renew dhcp to restore default gw
+	killall -USR1 udhcpc
 	;;
 esac

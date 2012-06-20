@@ -32,21 +32,27 @@ case "$1" in
 	renew|bound)
 		ifconfig $interface $ip $BROADCAST $NETMASK
 
+		if ! killall -0 pppd || [ $interface = "ppp0" ]; then
+
 		if [ -n "$router" ] ; then
 			echo "deleting routers"
 			while route del default gw 0.0.0.0 dev $interface ; do
 				:
 			done
 
-			for i in $router ; do
+			for i in $router; do
 				route add default gw $i dev $interface
 			done
+		fi
+
+		else
+			echo "ppp enabled, ignoring default gateway $router"
 		fi
 
 		echo -n > $RESOLV_CONF
 		[ -n "$domain" ] && echo search $domain >> $RESOLV_CONF
 		for i in $dns ; do
-			echo adding dns $i
+			echo "adding dns $i"
 			echo nameserver $i >> $RESOLV_CONF
 		done
 
