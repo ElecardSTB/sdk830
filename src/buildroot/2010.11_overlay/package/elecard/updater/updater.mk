@@ -55,7 +55,7 @@ updater-hwconfig-install:
 	install -m 755 -p $(UPDATER_DIR)/hwconfig/hwconfig_stb830.conf $(TARGET_DIR)/etc/hwconfig.conf
 
 updater-install: updater-hwconfig
-	install -m 755 -p $(UPDATER_DIR)/clientUpdater2/sh4/clientUpdater $(TARGET_DIR)/opt/elecard/bin/
+	install -m 755 -p $(UPDATER_DIR)/clientUpdater2/sh4/clientUpdater_$(FS_TYPE) $(TARGET_DIR)/opt/elecard/bin/clientUpdater
 
 updater-uninstall:
 	rm -f $(TARGET_DIR)/opt/elecard/bin/hwconfigManager $(TARGET_DIR)/opt/elecard/bin/clientUpdater $(TARGET_DIR)/etc/hwconfig_stb830.conf
