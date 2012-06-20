@@ -25,7 +25,8 @@ case "$1" in
 		    mkdir -p $DEST
 		fi
 	    done
-	    mkdir -p /var/etc/ppp
+
+		mount -t tmpfs tmpfs /samba
 
 #		echo -n "Starting userfs RC scripts... "
 #		[ -e /usr/local/etc/init.d/rcS ] && /usr/local/etc/init.d/rcS
