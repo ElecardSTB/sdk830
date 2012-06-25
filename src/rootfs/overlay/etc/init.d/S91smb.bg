@@ -18,6 +18,8 @@ mkdir -p /var/lock/subsys
 RETVAL=0
 
 start() {
+#SergA: sleep a litle
+	sleep 3
 	echo -n "Starting SMB services: "
 #	smbd -D
 	RETVAL=$?
