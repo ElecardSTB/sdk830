@@ -41,3 +41,4 @@ $(eval $(call GENTARGETS,package/elecard,compat-wireless))
 
 #trick, set dependence to kernel config
 $(COMPAT_WIRELESS_TARGET_BUILD): $(KDIR)/.config
+$(COMPAT_WIRELESS_TARGET_INSTALL_TARGET): $(KDIR)/.config
