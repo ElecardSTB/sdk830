@@ -1,0 +1,8 @@
+#!/bin/sh
+
+kill `cat /var/run/udhcpc.wlan0.pid` 2>/dev/null
+killall hostapd 2>/dev/null
+killall wpa_supplicant 2>/dev/null
+rm -rf /var/run/wpa_supplicant
+
+exit 0

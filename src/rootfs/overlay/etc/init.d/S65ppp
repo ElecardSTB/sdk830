@@ -7,6 +7,8 @@ else
 	WAN="eth0"
 fi
 
+export PATH=$PATH:/opt/elecard/bin
+
 case "$1" in
     start)
 	mkdir /var/etc/ppp 2>/dev/null
@@ -23,11 +25,18 @@ case "$1" in
 
 		echo "Connecting to PPPoE..."
 		pppd call pppoe
-		iptables -t nat -A POSTROUTING -o ppp0 -j MASQUERADE
+
+		SUBNET=`ifcfg get lan subnet`
+		if [ -n "$SUBNET" ]; then
+			SUBNET="-s $SUBNET";
+		fi
+		iptables -t nat -A POSTROUTING -o ppp0 $SUBNET -j MASQUERADE
+		iptables -t mangle -I FORWARD -p tcp --tcp-flags SYN,RST SYN -j TCPMSS --clamp-mss-to-pmtu
 	fi
 	;;
 	stop)
 	iptables -t nat -D POSTROUTING -o ppp0 -j MASQUERADE
+	iptables -t mangle -D FORWARD -p tcp --tcp-flags SYN,RST SYN -j TCPMSS --clamp-mss-to-pmtu
 	killall pppd 2>/dev/null
 	if killall -0 pppd 2>/dev/null; then
 		sleep 1

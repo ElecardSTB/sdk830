@@ -1,0 +1,104 @@
+#!/bin/sh
+#
+
+WPA_SUPPLICANT_CONF=/var/etc/wpa_supplicant.conf
+HOSTAPD_CONF=/var/etc/hostapd.conf
+DEFAULT_LANIP=192.168.111.1
+WAN_CONFIG_FILE=/var/etc/ifcfg-wan
+LAN_CONFIG_FILE=/var/etc/ifcfg-lan
+WLAN_CONFIG_FILE=/var/etc/ifcfg-wlan0
+
+usage()
+{
+echo "Usage:"
+echo "  $0 config"
+echo "  $0 get <eth0|wlan|ppp> OPTION"
+echo "  $0 set <eth0|wlan|ppp> OPTION VALUE"
+echo
+echo "Options:"
+echo "  IPADDR"
+echo "  NETMASK"
+echo "  DEFAULT_GATEWAY"
+echo "  BOOTPROTO"
+}
+
+config()
+{
+LAN_IP=`edcfg $LAN_CONFIG_FILE get IPADDR`
+if [ -z "$LAN_IP" ]; then
+	LAN_IP=$DEFAULT_LANIP
+fi
+SUBNET_PART=`echo $LAN_IP | cut -d'.' -f1-3`
+
+echo "auto lo"
+echo "iface lo inet loopback"
+echo
+# TODO check eth1 and setup bridge
+if [ `edcfg $WLAN_CONFIG_FILE get WAN_MODE` = 1 ]; then
+	echo "auto wlan0"
+	if [ `edcfg $WLAN_CONFIG_FILE get BOOTPROTO` = "static" ]; then
+		echo "iface wlan0 inet static"
+		echo "  address `edcfg $WLAN_CONFIG_FILE get IPADDR`"
+		MASK=`edcfg $WLAN_CONFIG_FILE get IPADDR`
+		test -n "$MASK" && echo "  netmask $MASK"
+		GW=`edcfg $WLAN_CONFIG_FILE get DEFAULT_GATEWAY`
+		test -n "$GW"   && echo "  gateway $GW"
+	else
+		echo "iface wlan0 inet dhcp"
+	fi
+	echo "  pre-up wpa_supplicant -Dnl80211 -iwlan0 -c $WPA_SUPPLICANT_CONF -B"
+	echo
+	echo "auto eth0"
+	echo "iface eth0 inet static"
+	echo "  address $LAN_IP"
+	echo "  netmask 255.255.255.0"
+	echo "  pre-up iptables -t nat -A POSTROUTING -s $SUBNET_PART.0/24 -o wlan0 -j MASQUERADE"
+	echo "  post-down iptables -t nat -D POSTROUTING -s $SUBNET_PART.0/24 -o wlan0 -j MASQUERADE || true"
+	echo
+else
+	echo "auto eth0"
+	if [ `edcfg $WAN_CONFIG_FILE get BOOTPROTO` = "static" ]; then
+		echo "iface eth0 inet static"
+		echo "  address `edcfg $WAN_CONFIG_FILE get IPADDR`"
+		MASK=`edcfg $WAN_CONFIG_FILE get IPADDR`
+		test -n "$MASK" && echo "  netmask $MASK"
+		GW=`edcfg $WAN_CONFIG_FILE get DEFAULT_GATEWAY`
+		test -n "$GW"   && echo "  gateway $GW"
+	else
+		echo "iface eth0 inet dhcp"
+	fi
+	echo
+	echo "auto wlan0"
+	echo "iface wlan0 inet static"
+	echo "  address $LAN_IP"
+	echo "  netmask 255.255.255.0"
+	echo "  pre-up hostapd $HOSTAPD_CONF -B"
+	echo "  pre-up iptables -t nat -A POSTROUTING -s $SUBNET_PART.0/24 -o eth0 -j MASQUERADE"
+	echo "  post-down iptables -t nat -D POSTROUTING -s $SUBNET_PART.0/24 -o eth0 -j MASQUERADE || true"
+	echo
+fi
+}
+
+case "$1" in
+	get)
+		case "$3" in
+			subnet)
+			SUBNET_PART=`edcfg $LAN_CONFIG_FILE get IPADDR | cut -d'.' -f1-3`
+			test -n "$SUBNET_PART" && echo "$SUBNET_PART.0/24"
+			;;
+			*) edcfg /var/etc/ifcfg-$2 get $3
+			;;
+		esac
+		exit $?
+	;;
+	set)
+		edcfg /var/etc/ifcfg-$2 set $3 $4
+		exit $?
+	;;
+	config)
+	config
+	;;
+	*)
+	usage
+	;;
+esac

@@ -1,3 +1,5 @@
+[% SKIPFILE %]
+
 # Configure Loopback
 auto lo
 iface lo inet loopback

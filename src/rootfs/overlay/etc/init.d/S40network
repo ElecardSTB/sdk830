@@ -3,8 +3,15 @@
 # Start the network....
 #
 
+export PATH=$PATH:/opt/elecard/bin
+
+if [ `edcfg /var/etc/ifcfg-wlan0 get WAN_MODE` = "1" ]; then
+WAN=wlan0
+LAN=eth0
+else
 WAN=eth0
-LAN=br0
+LAN=wlan0
+fi
 
 case "$1" in
   start)
@@ -12,19 +19,25 @@ case "$1" in
 
 	modprobe rt2800usb &> /dev/null
 
+    if [ -d /sys/class/net/eth1 ]; then
+	LAN=br0
 	brctl addbr br0
 	brctl setfd br0 0
+    fi
 	if [ -z "`cat /proc/cmdline | grep /dev/nfs`" ]; then
 [% IF ! CONFIG_TESTSERVER_ENABLE -%]
 		/sbin/ifup -a
 [% END -%]
 		:
 	else
+		if [ "$WAN" = eth0 ]; then
 		# Get routes and nameservers from dhcp
 		udhcpc -n -i $WAN -s /opt/elecard/bin/udhcpc.nfs
 		test -d /sys/class/net/wlan0 && ifup wlan0
 		/sbin/ifup $LAN
+		fi
 	fi
+
 	if brctl show | grep $WAN >/dev/null; then
 		IPTV_GW=$LAN
 	else
@@ -61,7 +74,7 @@ case "$1" in
 		ifdown $LAN
 	fi
 	test -d /sys/class/net/wlan0 && ifdown wlan0
-	brctl delbr br0
+	brctl delbr br0 2>/dev/null
 	;;
   restart|reload)
 	"$0" stop
