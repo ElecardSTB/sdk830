@@ -49,7 +49,7 @@ EOF
 
 . /opt/elecard/bin/need_network.sh
 [ "$NETWORK_NEED" ] || exit 1
-[ -n "`ifconfig -a | grep eth1`" ] && HAS_ETH1=y
+[ -d /sys/class/net/eth1 ] && HAS_ETH1=y
 
 case "$1" in
 	start)
