@@ -23,12 +23,11 @@ if [ -n "$NEWROOT" ]; then
 	mkdir -p $ROOTFS_MOUNT
 fi
 
+
 . /etc/init.d/rcS start
 
 if [ -e /tmp/reboot ]; then
 	. /etc/init.d/rcS stop
-	rmmod stmfb 2>/dev/null
-	rmmod stmcore-display-sti7105 2>/dev/null
 	umount -a
 	reboot -f
 fi
@@ -43,13 +42,14 @@ if [ -n "$NEWROOT" ]; then
 	fi
 	if [ $? -eq 0 -a -e $ROOTFS_MOUNT/init ]; then
 #		. /etc/init.d/rcS stop
-		unset ROOTFS_NAND ROOTFS_NFS NEWROOT FSTYPE FSOPT
+		/etc/init.d/S40network.sh stop
 		mount --move /proc $ROOTFS_MOUNT/proc
 		mount --move /sys $ROOTFS_MOUNT/sys
 		mount --move /tmp $ROOTFS_MOUNT/tmp
 		mount --move /mnt $ROOTFS_MOUNT/mnt
 		mount --move /dev $ROOTFS_MOUNT/dev
 		mount --move /var/etc $ROOTFS_MOUNT/var/etc
+		unset ROOTFS_NAND ROOTFS_NFS NEWROOT FSTYPE FSOPT NETWORK_NEED
 		echo "Switch root"
 		exec  switch_root $ROOTFS_MOUNT /init
 	else

@@ -12,10 +12,7 @@ parseInterface() {
 	if [ ! -e $interfacesFile ]; then
 		cat >> $interfacesFileOut << EOF
 auto $interface
-iface $interface inet static
-  address 192.168.0.101
-  netmask 255.255.255.0
-  broadcast +
+iface $interface inet dhcp
 EOF
 		return
 	fi
@@ -50,6 +47,8 @@ EOF
 	fi
 }
 
+. /opt/elecard/bin/need_network.sh
+[ "$NETWORK_NEED" ] || exit 1
 [ -n "`ifconfig -a | grep eth1`" ] && HAS_ETH1=y
 
 case "$1" in
@@ -89,14 +88,15 @@ case "$1" in
 		;;
 	stop)
 		echo -n "Stopping network... "
-		killall udhcpc
-	#	iptables -t nat -F
+
 		if [ -z "$ROOTFS_NFS" ]; then
 			ifdown -i /tmp/interfaces_eth -a
 		else
+			killall udhcpc
 			[ -n "$HAS_ETH1" ] && ifdown -i /tmp/interfaces_eth eth1
 		fi
-
+		rm -f /tmp/interfaces_eth
+		echo "done"
 		;;
 	restart|reload)
 		"$0" stop

@@ -15,14 +15,15 @@ waitUSB() {
 	fi
 
 	x=0
-	while [ $x -lt 6 ]; do
-		[ $x -ne 0 ] && sleep 1
+	while [ $x -lt 30 ]; do
+		[ $x -ne 0 ] && usleep 200000
 		[ -n "`mount | grep "/mnt/sd[a-z]"`" ] && break
 		let x+=1
 	done
 	echo "x=$x"
 }
 
+. /opt/elecard/bin/need_network.sh
 
 case "$1" in
   start)
@@ -44,43 +45,45 @@ case "$1" in
 			UPDATER_FLAGS="-c $UPDATER_FLAGS"
 		fi
 	fi
+
 	/opt/elecard/bin/hwconfigManager s 0 STATE 1 2>&1 1>/dev/null
+	if [ "$NETWORK_NEED" ]; then
+	#	UPDATERFLAGS=`/opt/elecard/bin/hwconfigManager h 0 UPFLAG 2>/dev/null | grep "^VALUE:" | sed 's/.*: \(.*\)/$((0x\1%10))/'`
+		UPDATERFLAGS=`/opt/elecard/bin/hwconfigManager h 0 UPFLAG 2>/dev/null | grep "^VALUE:" | cut -d ' ' -f 2`
+		let UPDATERFLAGS=0x${UPDATERFLAGS:-0}%10
+		if [ "$UPDATERFLAGS" != "0" ]; then
+			echo "Use extended timeout value for network update..."
+			UPDATER_FLAGS="-w$UPDATERFLAGS $UPDATER_FLAGS"
+		fi
 
-#	UPDATERFLAGS=`/opt/elecard/bin/hwconfigManager h 0 UPFLAG 2>/dev/null | grep "^VALUE:" | sed 's/.*: \(.*\)/$((0x\1%10))/'`
-	UPDATERFLAGS=`/opt/elecard/bin/hwconfigManager h 0 UPFLAG 2>/dev/null | grep "^VALUE:" | cut -d ' ' -f 2`
-	let UPDATERFLAGS=0x${UPDATERFLAGS:-0}%10
-	if [ "$UPDATERFLAGS" != "0" ]; then
-		echo "Use extended timeout value for network update..."
-		UPDATER_FLAGS="-w$UPDATERFLAGS $UPDATER_FLAGS"
-	fi
+		UPDATERURL=`/opt/elecard/bin/hwconfigManager a 0 UPURL 2>/dev/null | grep "^VALUE:.*tp://" | cut -d ' ' -f 2`
+		if [ "$UPDATERURL" ]; then
+			UPDATER_FLAGS="$UPDATER_FLAGS -h $UPDATERURL"
+		else
+			UPDATER_FLAGS="$UPDATER_FLAGS -h $DEFAULT_HTTP_URL"
+		fi
 
-	UPDATERURL=`/opt/elecard/bin/hwconfigManager a 0 UPURL 2>/dev/null | grep "^VALUE:.*tp://" | cut -d ' ' -f 2`
-	if [ "$UPDATERURL" ]; then
-		UPDATER_FLAGS="$UPDATER_FLAGS -h $UPDATERURL"
+		eval NOMUL=`/opt/elecard/bin/hwconfigManager a 0 UPNOMUL 2>/dev/null | grep "^VALUE:" | cut -d ' ' -f 2`
+		if [ "$NOMUL" ]; then
+			if [ "$NOMUL" != "0" ]; then
+				echo "Disable multicast update"
+				UPDATER_FLAGS="-n $UPDATER_FLAGS"
+			fi
+		fi
 	else
-		UPDATER_FLAGS="$UPDATER_FLAGS -h $DEFAULT_HTTP_URL"
+		#disable multicast, and dont set http url
+		UPDATER_FLAGS="-n $UPDATER_FLAGS"
 	fi
 
 	eval NOUSB=`/opt/elecard/bin/hwconfigManager a 0 UPNOUSB 2>/dev/null | grep "^VALUE:" | cut -d ' ' -f 2`
-	if [ "$NOUSB" ]; then
-		if [ "$NOUSB" != "0" ]; then
-			echo "Disable USB update"
-			UPDATER_FLAGS="-u $UPDATER_FLAGS"
-			DONTWAITUSB=1
-		fi
-	fi
-
-	eval NOMUL=`/opt/elecard/bin/hwconfigManager a 0 UPNOMUL 2>/dev/null | grep "^VALUE:" | cut -d ' ' -f 2`
-	if [ "$NOMUL" ]; then
-		if [ "$NOMUL" != "0" ]; then
-			echo "Disable multicast update"
-			UPDATER_FLAGS="-n $UPDATER_FLAGS"
-		fi
+	if [ "${NOUSB:-0}" != "0" ]; then
+		echo "Disable USB update"
+		UPDATER_FLAGS="-u $UPDATER_FLAGS"
+	else
+		waitUSB
 	fi
 
 	/opt/elecard/bin/hwconfigManager u
-
-	waitUSB
 
 	echo "UPDATER_FLAGS=\"$UPDATER_FLAGS\""
 	/opt/elecard/bin/clientUpdater $UPDATER_FLAGS

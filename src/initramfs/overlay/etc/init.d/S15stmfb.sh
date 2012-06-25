@@ -19,8 +19,8 @@ case "$1" in
 		;;
 	stop)
 		while killall fb_logo; do :;done
-		# rmmod stmfb
-		# rmmod stmcore-display-sti7105
+		rmmod stmfb
+		rmmod stmcore-display-sti7105
 		;;
 	*)
 		echo "Usage: $0 {start|stop}"
