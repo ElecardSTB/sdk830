@@ -59,7 +59,7 @@
 [%INITRAMFS%]/lib/libutil*
 
 #uneeded startup scripts
-[%ROOTFS%]/etc/init.d/S20urandom
-[%ROOTFS%]/etc/init.d/S40network
+[%INITRAMFS%]/etc/init.d/S20urandom
+[%INITRAMFS%]/etc/init.d/S40network
 
 [% END -%]
