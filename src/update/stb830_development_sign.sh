@@ -1,7 +1,7 @@
 #!/bin/sh
 
 source $(dirname $0)/../../etc/checkEnvs.sh
-
+source $PRJROOT/src/update/build_post.sh
 
 UPD_CONFIG=dev
 #ENABLE_VIDIMAX=1
@@ -20,4 +20,4 @@ BUILD_ADD_KEYS_TO_FW=elecard
 #Comment that add to firmware pack name
 #SHORT_COMMENT="something"
 
-. $(dirname $0)/build_post.sh
+make -C $PRJROOT firmware

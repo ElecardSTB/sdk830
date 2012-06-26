@@ -1,6 +1,7 @@
 #!/bin/sh
 
 source $(dirname $0)/../../etc/checkEnvs.sh
+source $PRJROOT/src/update/build_post.sh
 
 BUILD_SCRIPT_FW=3d_firmware
 
@@ -9,8 +10,6 @@ UPD_CONFIG=dev
 
 #Comment that add to firmware pack name
 SHORT_COMMENT=3D
-
-export UPD_CONFIG ENABLE_VIDIMAX BUILD_SCRIPT_FW BUILD_WITHOUT_COMPONENTS_FW SHORT_COMMENT
 
 export ENABLE_3DRENDERING=1
 
