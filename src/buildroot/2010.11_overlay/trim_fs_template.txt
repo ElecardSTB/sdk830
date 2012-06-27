@@ -27,6 +27,10 @@
 [%ROOTFS%]/etc/init.d/S55userfs
 [%ROOTFS%]/etc/init.d/S91smb
 
+#We uses compat wirless modules instead applicable kernel modules mac80211 cfg80211. So trim this.
+[%ROOTFS%]/lib/modules/*/kernel/net/mac80211
+[%ROOTFS%]/lib/modules/*/kernel/net/wireless
+[%ROOTFS%]/lib/modules/*/kernel/net/bluetooth
 
 [% IF ! CONFIG_TESTSERVER_ENABLE -%]
 [%ROOTFS%]/opt/elecard/share/testchart_rgb565.gam
