@@ -381,8 +381,8 @@ TSSET=mkdir -p $(TSDIR); /bin/touch $(call TSFILE,$(1))
 TSUNSET=rm -f $(call TSFILE,$(1))
 
 ifneq "$(TSDIR)" ""
-  clean::
-	$(Q)rm -rf $(TSDIR); mkdir -p $(TSDIR)
+#  clean::
+#	$(Q)rm -rf $(TSDIR); mkdir -p $(TSDIR)
 endif
 
 # Define: OBJ_TARGETSETUP
