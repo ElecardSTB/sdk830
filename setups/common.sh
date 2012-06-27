@@ -91,26 +91,7 @@ export FULL_LINUX_VERSION2 STAPISDK_MULTICOM_VERSION
 
 make -C $PRJROOT scripts
 if [ -z "$STB830_SDK" ]; then
-	export STSDKROOT=$BUILDROOT/packages/stapisdk-$STAPISDK_VERSION
-	make -C $PRJROOT/src/elecard/stapisdk unpack
-
-	#setup STAPISDK environment
-	source $STSDKROOT/bin/setenv.sh $BOARD_CONFIG_NAME
-
-	export LIBCURL=1
-	export CURLROOT=$STSDKROOT/opensource/curl
-
-	export LINUX_SERVERDIR=$BUILDROOT/rootfs
-	export KTARGET=$LINUX_SERVERDIR/root
-	export DEBUG=0
-
-	if [ -n "$CONFIG_DVD_FRONTEND_TUNER" ]; then
-		export DVD_FRONTEND_TUNER=$CONFIG_DVD_FRONTEND_TUNER
-	fi
-
-	if [ -n "$CONFIG_DVD_DISPLAY_HD" ]; then
-		export DVD_DISPLAY_HD=$CONFIG_DVD_DISPLAY_HD
-	fi
+	. $PRJROOT/src/elecard/setups/common.sh
 else
 #LINUX_VERSION - this variable sets in stapisdk`s setenv.sh
 	export LINUX_VERSION=2.4
