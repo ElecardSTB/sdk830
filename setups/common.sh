@@ -92,7 +92,7 @@ export FULL_LINUX_VERSION2 STAPISDK_MULTICOM_VERSION
 make -C $PRJROOT scripts
 if [ -z "$STB830_SDK" ]; then
 	export STSDKROOT=$BUILDROOT/packages/stapisdk-$STAPISDK_VERSION
-	make -C $PRJROOT/src/elecard/stapisdk check_stapisdk
+	make -C $PRJROOT/src/elecard/stapisdk unpack
 
 	#setup STAPISDK environment
 	source $STSDKROOT/bin/setenv.sh $BOARD_CONFIG_NAME
@@ -124,7 +124,6 @@ export STAGINGDIR=$BUILDROOT/packages/buildroot/output_rootfs/staging
 export ROOTFS=$BUILDROOT/rootfs
 export INITRAMFS=$BUILDROOT/initramfs
 
-
 addToEnv() {
 	if ! echo ${!1} | grep -E "(^|:)$2(:|$)" > /dev/null; then
 		if [ -z "${!1}" ]; then
@@ -139,6 +138,24 @@ addToEnv PERLLIB $PRJROOT/etc/perllib
 if [ -n "$STB830_SDK" ]; then
 	addToEnv PATH /opt/STM/STLinux-${LINUX_VERSION}/devkit/sh4/bin
 fi
+
+
+#Check if stapisdk version is changed from last time
+TIMESTAMPS_DIR=$BUILDROOT/timestamps
+STAPISDK_VERSION_FILE=$TIMESTAMPS_DIR/stapisdk_ver
+[ -e $TIMESTAMPS_DIR ] || mkdir -p $TIMESTAMPS_DIR
+[ -e $STAPISDK_VERSION_FILE ] || touch $STAPISDK_VERSION_FILE
+STAPISDK_VERSION_PREV=`cat $STAPISDK_VERSION_FILE`
+if [ "$STAPISDK_VERSION" != "$STAPISDK_VERSION_PREV" ]; then
+#if version is changed, clean st2fx libraries and kernel modules
+	echo -e "\nSTAPISDK version changed from $STAPISDK_VERSION_PREV to $STAPISDK_VERSION."
+	echo -e "So remove st2fx libraries and kernel modules!\n"
+	$PRJROOT/bin/cleanSt2fxLibs.sh
+	rm -rf $ROOTFS/lib/modules/*
+	rm -f $TIMESTAMPS_DIR/.configlinux
+	echo "$STAPISDK_VERSION" > $STAPISDK_VERSION_FILE
+fi
+
 
 #unset variables that came from source $BUILDROOT/.prjconfig
 #unset `set | grep "^CONFIG_" | cut -f 1 -d =`
