@@ -26,7 +26,6 @@ build: $(KDIR)/.config build_initramfs $(KDIR)/arch/sh/boot/uImage
 $(KDIR)/arch/sh/boot/uImage: $(KDIR)/.config $(_ts_patchkernel) $(COMPONENT_DIR)/initramfs.cpio $(_ts_makekernel)
 	$(call ECHO_MESSAGE,Building kernel)
 	make -C $(KDIR) ARCH=sh CROSS_COMPILE=sh4-linux- uImage
-#	make -C $(KDIR) ARCH=sh CROSS_COMPILE=sh4-linux- INSTALL_MOD_PATH=$(BUILDROOT)/rootfs modules modules_install
 	rm -f $(COMPONENT_DIR)/kernel1; ln -s $(KDIR)/arch/sh/boot/uImage $(COMPONENT_DIR)/kernel1
 	touch $(_ts_makekernel)
 	touch $@
