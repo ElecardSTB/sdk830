@@ -20,6 +20,8 @@ $(_ts_makekernelmodules): $(_ts_makekernel)
 	make -C $(KDIR) ARCH=sh CROSS_COMPILE=sh4-linux- INSTALL_MOD_PATH=$(ROOTFS) modules
 	touch $@
 
+$(_ts_makekernel):
+
 clean:
 	$(call ECHO_MESSAGE,Cleaning elecard drivers)
 	make -C ./keyscanner clean
