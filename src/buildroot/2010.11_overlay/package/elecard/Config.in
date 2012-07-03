@@ -1,5 +1,6 @@
 
 menu "Elecards packages"
+source "package/elecard/accel-pptp/Config.in"
 source "package/elecard/lirc/Config.in"
 source "package/elecard/compat-wireless/Config.in"
 source "package/elecard/linuxtv-dvb-apps/Config.in"
