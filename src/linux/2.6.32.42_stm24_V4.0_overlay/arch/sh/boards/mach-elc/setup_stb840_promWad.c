@@ -55,9 +55,8 @@ static struct stmmac_mdio_bus_data stmmac_mdio_bus = {
 };
 
 
-
 /* Configuration for NAND Flash */
-static struct mtd_partition nand_parts[] = {
+static struct mtd_partition nand_parts_128[] = {
 	{
 		.name = "Boot_flex",
 		.size = 0x00100000,
@@ -90,20 +89,61 @@ static struct mtd_partition nand_parts[] = {
 	}
 };
 
+/* Configuration for NAND Flash */
+static struct mtd_partition nand_parts_256[] = {
+	{
+		.name = "Boot_flex",
+		.size = 0x00100000,
+		.offset = 0x00000000,
+	}, {
+		.name = "Boot-env",
+		.size = 0x00100000,
+		.offset = MTDPART_OFS_APPEND,
+	}, {
+		.name = "KernelReserve",
+		.size = 0x00f00000,
+		.offset = MTDPART_OFS_APPEND,
+	}, {
+		.name = "Kernel",
+		.size = 0x00f00000,
+		.offset = MTDPART_OFS_APPEND,
+	}, {
+		.name = "RootFS",
+		.size = 0x08000000,
+		.offset = MTDPART_OFS_APPEND,
+	}, {
+		.name = "Opt",
+		.size = 0x04000000,
+		.offset = MTDPART_OFS_APPEND,
+	}, {
+		.name = "User",
+		.size = 0x01f00000,
+//		.size = MTDPART_SIZ_FULL,
+		.offset = MTDPART_OFS_APPEND,
+	}
+};
 
 static struct stm_nand_timing_data nand_timing_data = {
 	.sig_setup		= 50,		/* times in ns */
 	.sig_hold		= 50,
 	.CE_deassert	= 0,
 	.WE_to_RBn		= 100,
-//	.wr_on			= 10,
 	.wr_on			= 15,
 	.wr_off			= 40,
 	.rd_on			= 10,
-	.rd_off			= 40,
-	.chip_delay		= 30,		/* in us */
+	.rd_off			= 60,
+	.chip_delay		= 40,		/* in us */
 };
 
+
+struct stm_nand_bank_data nand_bank_data = {
+	.csn		= 0,
+	.nr_partitions		= ARRAY_SIZE(nand_parts_128),
+	.partitions			= nand_parts_128,
+	.options			= NAND_NO_AUTOINCR | NAND_USE_FLASH_BBT,
+	.timing_data		= &nand_timing_data,
+	.emi_withinbankoffset	= 0,
+};
 
 static struct platform_device nand_device = {
 	.id = 0,
@@ -116,14 +156,7 @@ static struct platform_device nand_device = {
 	},
 	.dev.platform_data = &(struct stm_plat_nand_flex_data) {
 		.nr_banks = 1,
-		.banks = &(struct stm_nand_bank_data) {
-			.csn		= 0,
-			.nr_partitions		= ARRAY_SIZE(nand_parts),
-			.partitions			= nand_parts,
-			.options			= NAND_NO_AUTOINCR | NAND_USE_FLASH_BBT,
-			.timing_data		= &nand_timing_data,
-			.emi_withinbankoffset	= 0,
-		},
+		.banks = &nand_bank_data,
 		.flex_rbn_connected = 0,
 	},
 };
@@ -219,14 +252,13 @@ int __init device_init_stb840_promWad(int ver)
 	stx7105_configure_audio(&(struct stx7105_audio_config) {
 			.spdif_player_output_enabled = 1, });
 
-	/*
-	 * FLASH_WP is shared between between NOR and NAND FLASH.  However,
-	 * since NAND MTD has no concept of write-protect, we permanently
-	 * disable WP.
-	 */
-	gpio_request(HDK7105_GPIO_FLASH_WP, "FLASH_WP");
-	gpio_direction_output(HDK7105_GPIO_FLASH_WP, 1);
 
+	if(ver == 2) {
+//		platform_device_register(&hdk7105_nor_flash);
+		nand_bank_data.nr_partitions = ARRAY_SIZE(nand_parts_256),
+		nand_bank_data.partitions = nand_parts_256,
+		nand_bank_data.csn = 1;
+	}
 	platform_device_register(&nand_device);
 
 

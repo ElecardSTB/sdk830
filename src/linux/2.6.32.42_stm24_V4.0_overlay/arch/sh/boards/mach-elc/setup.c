@@ -1,13 +1,14 @@
 /*
- * arch/sh/boards/mach-hdk7105/setup.c
+ * arch/sh/boards/mach-elc/setup.c
  *
- * Copyright (C) 2008 STMicroelectronics Limited
- * Author: Stuart Menefy (stuart.menefy@st.com)
+ * Copyright (C) 2012 Elecard CTP
+ * Author: Anton Sergeev (Anton.Sergeev@elecard.ru)
  *
  * May be copied or modified under the terms of the GNU General Public
  * License.  See linux/COPYING for more information.
  *
- * STMicroelectronics HDK7105-SDK support.
+ * Elecards boards support.
+ * Based on arch/sh/boards/mach-hdk7105/setup.c
  */
 
 #include <linux/init.h>
@@ -23,7 +24,52 @@
 
 #include <linux/stm/pio.h>
 #include <linux/i2c.h>
+#include <linux/board_id.h>
 
+#undef ARRAY_SIZE
+#define ARRAY_SIZE(x) (sizeof(x) / sizeof((x)[0]))
+
+
+typedef int (board_init_func)(int ver);
+extern int device_init_stb830(int ver);
+extern int device_init_stb840_promSvyaz(int ver);
+extern int device_init_stb840_promWad(int ver);
+extern int device_init_stb840_ch7162(int ver);
+extern int device_init_stb830_reference(int ver);
+
+struct board_descr_s {
+	g_board_type_t		type;
+	char				*name;
+	board_init_func		*init_func;
+};
+
+struct board_config_s {
+	g_board_type_t					type;
+	int								version; //if setted to -1, this configuration apply for all board versions
+	struct board_special_config_s	special_configs;
+};
+
+struct board_descr_s board_descr[] __initdata = {
+  {eSTB830,				"stb830_st",		device_init_stb830},
+  {eSTB840_PromSvyaz,	"stb840_promSvyaz",	device_init_stb840_promSvyaz},
+  {eSTB840_PromWad,		"stb840_promWad",	device_init_stb840_promWad},
+  {eSTB840_ch7162,		"stb840_ch7162",	device_init_stb840_ch7162},
+  {eSTB830_reference,	"stb830_reference",	device_init_stb830_reference},
+};
+
+struct board_config_s board_config[]  = {
+  {eSTB830,				0,	{0, 1} },
+  {eSTB830,				2,	{0, 0} },
+  {eSTB840_PromSvyaz,	-1,	{0, 1} },
+  {eSTB840_PromWad,		-1,	{1, 1} },
+  {eSTB840_ch7162,		-1,	{0, 1} },
+  {eSTB830_reference,	-1,	{0, 1} },
+};
+
+static g_board_type_t g_board_type = eSTB830;
+static int g_board_version = 0;
+static int g_board_type_Id = 0;
+static int g_board_config_Id = -1;
 
 
 static void __init hdk7105_setup(char **cmdline_p)
@@ -41,71 +87,49 @@ static void __init hdk7105_setup(char **cmdline_p)
 			.is_console = 0, });*/
 }
 
+struct board_special_config_s *get_board_special_config(void)
+{
+	int i;
+	if(g_board_config_Id >= 0)
+		return &(board_config[g_board_config_Id].special_configs);
 
-typedef enum boardType_e {
-	eSTB830,
-	eSTB840_PromSvyaz,
-	eSTB840_PromWad,
-	eSTB840_ch7162,
-	eSTB830_reference,
-  
-} boardType_t;
-static boardType_t boardType = eSTB830;
-static int boardTypeId = 0;
-static int version = 0;
+	for(i = 0; i < ARRAY_SIZE(board_config); i++) {
+		if(board_config[i].type == g_board_type) {
+			if( (board_config[i].version == -1) ||
+				(board_config[i].version == g_board_version) ) {
+				g_board_config_Id = i;
+				return &(board_config[i].special_configs);
+			}
+		}
+	}
 
+	return &(board_config[0].special_configs);//return default configs
+}
+EXPORT_SYMBOL(get_board_special_config);
 
-typedef int (board_init_func)(int ver);
-
-struct boardDescr_s {
-	boardType_t			type;
-	char				*name;
-	board_init_func		*init_func;
-};
-
-
-
-extern int device_init_stb830(int ver);
-extern int device_init_stb840_promSvyaz(int ver);
-extern int device_init_stb840_promWad(int ver);
-extern int device_init_stb840_ch7162(int ver);
-extern int device_init_stb830_reference(int ver);
-
-
-struct boardDescr_s boardDescr[] __initdata = {
-  {eSTB830,				"stb830_st",		device_init_stb830},
-  {eSTB840_PromSvyaz,	"stb840_promSvyaz",	device_init_stb840_promSvyaz},
-  {eSTB840_PromWad,		"stb840_promWad",	device_init_stb840_promWad},
-  {eSTB840_ch7162,		"stb840_ch7162",	device_init_stb840_ch7162},
-  {eSTB830_reference,	"stb830_reference",	device_init_stb830_reference},
-};
-
-
-#undef ARRAY_SIZE
-#define ARRAY_SIZE(x) (sizeof(x) / sizeof((x)[0]))
 static int __init board_cmdline_opt(char *str)
 {
 	int i;
 	if (!str || !*str)
 		return -EINVAL;
 
-	for(i = 0; i < ARRAY_SIZE(boardDescr); i++) {
+	for(i = 0; i < ARRAY_SIZE(board_descr); i++) {
 		int descrNameLen = 0;
-		if( boardDescr[i].name == NULL )
+		if( board_descr[i].name == NULL )
 			continue;
-		descrNameLen = strlen(boardDescr[i].name);
-		if(!strncmp(str, boardDescr[i].name, descrNameLen)) {
+		descrNameLen = strlen(board_descr[i].name);
+		if(!strncmp(str, board_descr[i].name, descrNameLen)) {
 			if( str[descrNameLen] == '.' ) {
-				if( sscanf(str+descrNameLen, ".%d", &version) != 1 )
-					version = 0;
+				if( sscanf(str+descrNameLen, ".%d", &g_board_version) != 1 )
+					g_board_version = 0;
 			} else if( str[descrNameLen] != 0 )
 				continue;
-			boardType = boardDescr[i].type;
-			boardTypeId = i;
+			g_board_type = board_descr[i].type;
+			g_board_type_Id = i;
 			break;
 		}
 	}
-	if(boardType == eSTB840_PromWad) {
+	if(g_board_type == eSTB840_PromWad) {
 		//This for PromWad's board
 		stx7105_configure_asc(0, &(struct stx7105_asc_config) {
 				.hw_flow_control = 1,
@@ -114,6 +138,7 @@ static int __init board_cmdline_opt(char *str)
 	return 0;
 }
 
+//early_param("board_name=", board_cmdline_opt);
 __setup("board_name=", board_cmdline_opt);
 
 
@@ -144,9 +169,9 @@ static int __init hdk7105_device_init(void)
 		break;
 	}
 
-	if( boardDescr[boardTypeId].init_func ) {
-		printk("*Board: %s, ver=%d\n", boardDescr[boardTypeId].name, version);
-		boardDescr[boardTypeId].init_func(version);
+	if( board_descr[g_board_type_Id].init_func ) {
+		printk("*Board: %s, ver=%d\n", board_descr[g_board_type_Id].name, g_board_version);
+		board_descr[g_board_type_Id].init_func(g_board_version);
 	} else {
 		printk("Init fucnction not setted!!!\n");
 		BUG();

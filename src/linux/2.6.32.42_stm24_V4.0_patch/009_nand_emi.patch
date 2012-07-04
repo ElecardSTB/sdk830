@@ -1,0 +1,81 @@
+--- linux-sh4-2.6.32.42_stm24_V4.0/drivers/mtd/nand/stm_nand_emi.c	2011-12-17 07:49:09.000000000 +0700
++++ linux-sh4-2.6.32.42_stm24_V4.0/drivers/mtd/nand/stm_nand_emi.c	2012-07-04 14:41:57.216286136 +0700
+@@ -37,6 +37,7 @@
+ #include <linux/stm/platform.h>
+ #include <linux/stm/nand.h>
+ #include <asm/dma.h>
++#include <linux/board_id.h>
+ 
+ #ifdef CONFIG_MTD_PARTITIONS
+ #include <linux/mtd/partitions.h>
+@@ -484,7 +485,7 @@
+ 
+ #define GET_CLK_CYCLES(X, T)	(((X) + (T) - 1) / (T))
+ /* Configure EMI Bank for NAND access */
+-static int nand_config_emi(int bank, struct stm_nand_timing_data *td, int wait_active_low)
++static int nand_config_emi(int bank, struct stm_nand_timing_data *td)
+ {
+ 	struct clk *emi_clk;
+ 	uint32_t emi_t_ns;
+@@ -497,6 +498,7 @@
+ 	uint32_t iowr_start, iowr_end;
+ 	uint32_t rd_latch;
+ 	uint32_t bus_release;
++	uint32_t wait_active_low;
+ 
+ 	printk(KERN_INFO NAME ": Configuring EMI Bank %d for NAND access\n",
+ 	       bank);
+@@ -525,7 +527,7 @@
+ 	iord_end = GET_CLK_CYCLES(td->rd_on, emi_t_ns) + 2;
+ 	rd_latch = GET_CLK_CYCLES(td->rd_on, emi_t_ns) + 2;
+ 	bus_release = GET_CLK_CYCLES(50, emi_t_ns);
+-
++	wait_active_low = get_board_special_config()->nand_wait_active_low;
+ 	wr_cycle = GET_CLK_CYCLES(td->wr_on + td->wr_off, emi_t_ns) + 3;
+ 	iowr_start = 0;
+ 	iowr_end = GET_CLK_CYCLES(td->wr_on, emi_t_ns) + 2;
+@@ -561,7 +563,7 @@
+  * Probe for the NAND device.
+  */
+ static struct stm_nand_emi * __init nand_probe_bank(
+-	struct stm_nand_bank_data *bank, int rbn_gpio, int wait_active_low,
++	struct stm_nand_bank_data *bank, int rbn_gpio,
+ 	const char* name)
+ {
+ 	struct stm_nand_emi *data;
+@@ -584,7 +586,7 @@
+ 	data->emi_size = (1 << 18) + 1;
+ 
+ 	/* Configure EMI Bank */
+-	if (nand_config_emi(data->emi_bank, bank->timing_data, wait_active_low) != 0) {
++	if (nand_config_emi(data->emi_bank, bank->timing_data) != 0) {
+ 		printk(KERN_ERR NAME ": Failed to configure EMI bank "
+ 		       "for NAND device\n");
+ 		goto out1;
+@@ -739,7 +741,6 @@
+ 	int rbn_gpio;
+ 	struct stm_nand_emi_group *group;
+ 	struct stm_nand_bank_data *bank;
+-	int wait_active_low = pdata->wait_active_low;
+ 
+ 	group = kzalloc(sizeof(struct stm_nand_emi_group) +
+ 			(sizeof(struct stm_nand_emi *) * pdata->nr_banks),
+@@ -764,7 +765,7 @@
+ 
+ 	bank = pdata->banks;
+ 	for (n=0; n<pdata->nr_banks; n++) {
+-		group->banks[n] = nand_probe_bank(bank, rbn_gpio, wait_active_low,
++		group->banks[n] = nand_probe_bank(bank, rbn_gpio,
+ 						  dev_name(&pdev->dev));
+ 		bank++;
+ 	}
+--- linux-sh4-2.6.32.42_stm24_V4.0/include/linux/stm/platform.h_p	2012-07-04 16:37:13.000000000 +0700
++++ linux-sh4-2.6.32.42_stm24_V4.0/include/linux/stm/platform.h	2012-07-04 16:37:35.711918520 +0700
+@@ -284,7 +284,6 @@
+ 	unsigned int nr_banks;
+ 	struct stm_nand_bank_data *banks;
+ 	int emi_rbn_gpio;
+-	int wait_active_low;
+ };
+ 
+ struct stm_nand_config {

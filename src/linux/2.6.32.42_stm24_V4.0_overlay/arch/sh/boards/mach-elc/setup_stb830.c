@@ -209,7 +209,6 @@ static struct platform_device nand_device_2 = {
 			.emi_withinbankoffset	= 0, \
 		}, \
 		.emi_rbn_gpio=-1, \
-		.wait_active_low=1, \
 	}, \
 }
 
@@ -331,8 +330,8 @@ int __init device_init_stb830(int ver)
 
 //	wait_active_low = 1; // no ver ..ver1
 //	wait_active_low = 0; //>=ver2
-	if( ver >= 2 )
-		((struct stm_plat_nand_emi_data *)(nand_device_emi_b.dev.platform_data))->wait_active_low = 0;
+//	if( ver >= 2 )
+//		((struct stm_plat_nand_emi_data *)(nand_device_emi_b.dev.platform_data))->wait_active_low = 0;
 	platform_device_register(&nand_device_emi_b);
 //	platform_device_register(&nand_device_emi_c);
 //	stx7105_configure_nand_flex(1, &nand_device, 1);
