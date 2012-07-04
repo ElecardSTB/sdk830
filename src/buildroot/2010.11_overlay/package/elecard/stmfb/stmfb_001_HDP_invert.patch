@@ -1,0 +1,30 @@
+--- stmfb-3.1_stm24_0103-1/STMCommon/stmhdmi.cpp_orig	2012-06-27 15:32:32.000000000 +0700
++++ stmfb-3.1_stm24_0103-1/STMCommon/stmhdmi.cpp	2012-07-04 20:53:44.875104228 +0700
+@@ -23,6 +23,8 @@
+ #include "stmhdmiregs.h"
+ #include "stmiframemanager.h"
+ 
++#include <linux/board_id.h>
++
+ CSTmHDMI::CSTmHDMI(CDisplayDevice             *pDev,
+                    stm_hdmi_hardware_version_t hwver,
+                    ULONG                       ulHDMIOffset,
+@@ -142,6 +144,8 @@
+      * it will not trigger a hotplug interrupt.
+      */
+     ULONG hotplugstate = (ReadHDMIReg(STM_HDMI_STA) & STM_HDMI_STA_HOT_PLUG);
++	if(get_board_special_config()->hdmi_hpd_inverted)
++		hotplugstate = !hotplugstate;
+     if(hotplugstate != 0)
+     {
+       m_displayStatus = STM_DISPLAY_NEEDS_RESTART;
+@@ -989,7 +993,8 @@
+   if(its & STM_HDMI_INT_HOT_PLUG)
+   {
+     ULONG hotplugstate = (ReadHDMIReg(STM_HDMI_STA) & STM_HDMI_STA_HOT_PLUG);
+-
++	if(get_board_special_config()->hdmi_hpd_inverted)
++		hotplugstate = !hotplugstate;
+     if(m_displayStatus == STM_DISPLAY_DISCONNECTED)
+     {
+       /*
