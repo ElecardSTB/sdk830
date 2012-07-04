@@ -131,7 +131,7 @@ static struct stm_nand_timing_data nand_timing_data = {
 	.wr_on			= 15,
 	.wr_off			= 40,
 	.rd_on			= 10,
-	.rd_off			= 60,
+	.rd_off			= 40,
 	.chip_delay		= 40,		/* in us */
 };
 
