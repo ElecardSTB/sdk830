@@ -162,6 +162,7 @@ static struct mtd_partition nand_parts[] = {
 	}
 };
 
+#if 0
 static struct stm_nand_timing_data nand_timing_data = {
 	.sig_setup		= 50,		/* times in ns */
 	.sig_hold		= 50,
@@ -172,6 +173,19 @@ static struct stm_nand_timing_data nand_timing_data = {
 	.rd_on			= 20,
 	.rd_off			= 60,
 	.chip_delay		= 40,		/* in us */
+};
+#endif
+
+static struct stm_nand_timing_data nand_timing_data = {
+	.sig_setup		= 50,		/* times in ns */
+	.sig_hold		= 50,
+	.CE_deassert	= 0,
+	.WE_to_RBn		= 100,
+	.wr_on			= 15,
+	.wr_off			= 40,
+	.rd_on			= 10,
+	.rd_off			= 40,
+	.chip_delay		= 30,		/* in us */
 };
 
 static struct stm_nand_config stm_nand_device = {

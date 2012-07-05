@@ -1,0 +1,73 @@
+From b223dde120cf151968356997d97c6ab1db74a5da Mon Sep 17 00:00:00 2001
+From: Angus Clark <angus.clark@st.com>
+Date: Thu, 10 May 2012 09:44:29 +0100
+Subject: [PATCH] mtd: nand: update READID length heuristics
+
+Most NAND devices return the READID data, and then either repeat the same data
+on subsequent read cycles or output 0x00s. Based on this behaviour, we determine
+the length of the READID string by looking for repeated patterns in the returned
+data, or for tailing 0x00s.  However, there are some exceptions that need to be
+handled.  For example, one Toshiba device tested, the TC58NVG3S0F, returns
+additional, undocumented, READID data.  This particular case was handled by
+capping its READID length to 5 bytes.
+
+It has since be found that other Toshiba devices (e.g. the TC58NVG0S3E) also
+exhibit this behaviour. This patch extends the TC58NVG3S0F exception to capture
+all Toshiba devices that appear to output additional READID bytes.  At present,
+there are no known Toshiba devices that use a READID string greater than 5
+bytes, so capping to 5 should be safe.  We also move the exception to
+nand_get_id_len() which seems a better home.
+
+We also add another exception to handle a new family of Samsung NAND devices
+(K9F4G08U0D, K9K8G08U0D, K9K8G08U1D, K9WAG08U1D) which appear to output
+'NAND_MFR_SAMSUNG' as a 6th READID byte.  The datasheet is rather vague as to
+when this might occur, stating only that one *may* acquire 0xEC on the 6th
+cycle.  The particular device tested, the K9F4G08U0D, always returned an
+additional 0xEC on the 6th cycle.  Either way, the updated code should return
+the correct READID length.
+
+Signed-off-by: Angus Clark <angus.clark@st.com>
+---
+ drivers/mtd/nand/nand_ids.c |   19 +++++++++++++------
+ 1 files changed, 13 insertions(+), 6 deletions(-)
+
+diff --git a/drivers/mtd/nand/nand_ids.c b/drivers/mtd/nand/nand_ids.c
+index f9a6288..7c1ae58 100644
+--- a/drivers/mtd/nand/nand_ids.c
++++ b/drivers/mtd/nand/nand_ids.c
+@@ -611,6 +611,19 @@ static int nand_get_id_len(uint8_t *id, int max_id_len)
+ 			len--;
+ 	}
+ 
++	/* Some Toshiba devices return additional, undocumented, READID bytes
++	 * (e.g. TC58NVG3S0F).  Cap ID length to 5 bytes.
++	 */
++	if (id[0] == NAND_MFR_TOSHIBA && len > 5)
++		len = 5;
++
++	/* Some Samsung devices return 'NAND_MFR_SAMSUNG' as a 6th READID
++	 * byte. (e.g. K9F4G08U0D). Use ID length of 5 bytes.
++	 */
++	if (id[0] == NAND_MFR_SAMSUNG && len == 6 &&
++	    id[5] == NAND_MFR_SAMSUNG && id[6] == NAND_MFR_SAMSUNG)
++		len = 5;
++
+ 	return len;
+ }
+ 
+@@ -632,12 +645,6 @@ int nand_decode_id(struct mtd_info *mtd,
+ 		return 1;
+ 	}
+ 
+-	/* TC58NVG3S0F: device returns additional, undocumented READID bytes.
+-	 * Assume id_len = 5. */
+-	if (id[0] == NAND_MFR_TOSHIBA && id_len == max_id_len &&
+-	    id[1] == 0xD3 && id[2] == 0x90 && id[3] == 0x26 && id[4] == 0x76)
+-		id_len = 5;
+-
+ 	/*
+ 	 * Decode ID string
+ 	 */
+-- 
+1.7.7
+

@@ -1,0 +1,21 @@
+diff --git a/linux-sh4-2.6.32.57_stm24_V5.0_orig/drivers/mtd/nand/stm_nand_emi.c b/linux-sh4-2.6.32.57_stm24_V5.0/drivers/mtd/nand/stm_nand_emi.c
+index 6b7dafc..ceb8632 100755
+--- linux-sh4-2.6.32.57_stm24_V5.0_orig/drivers/mtd/nand/stm_nand_emi.c
++++ linux-sh4-2.6.32.57_stm24_V5.0/drivers/mtd/nand/stm_nand_emi.c
+@@ -37,6 +37,7 @@
+ #include <linux/stm/platform.h>
+ #include <linux/stm/nand.h>
+ #include <asm/dma.h>
++#include <linux/board_id.h>
+ 
+ #ifdef CONFIG_MTD_PARTITIONS
+ #include <linux/mtd/partitions.h>
+@@ -526,7 +527,7 @@ static int nand_config_emi(int bank, struct stm_nand_timing_data *td)
+ 	iord_end = GET_CLK_CYCLES(td->rd_on, emi_t_ns) + 2;
+ 	rd_latch = GET_CLK_CYCLES(td->rd_on, emi_t_ns) + 2;
+ 	bus_release = GET_CLK_CYCLES(50, emi_t_ns);
+-	wait_active_low = 0;
++	wait_active_low = get_board_special_config()->nand_wait_active_low;
+ 	wr_cycle = GET_CLK_CYCLES(td->wr_on + td->wr_off, emi_t_ns) + 3;
+ 	iowr_start = 0;
+ 	iowr_end = GET_CLK_CYCLES(td->wr_on, emi_t_ns) + 2;

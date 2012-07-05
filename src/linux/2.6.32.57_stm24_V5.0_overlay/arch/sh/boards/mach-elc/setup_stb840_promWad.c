@@ -87,13 +87,6 @@ static struct mtd_partition nand_parts_128[] = {
 //		.size = MTDPART_SIZ_FULL,
 		.offset = MTDPART_OFS_APPEND,
 	}
-#if 1
-, {
-		.name = "FULL",
-		.size = MTDPART_SIZ_FULL,
-		.offset = 0x00000000,
-	}
-#endif
 };
 
 /* Configuration for NAND Flash */
@@ -130,32 +123,6 @@ static struct mtd_partition nand_parts_256[] = {
 	}
 };
 
-/* NOR Flash */
-static struct platform_device hdk7105_nor_flash = {
-	.name		= "physmap-flash",
-	.id		= -1,
-	.num_resources	= 1,
-	.resource	= (struct resource[]) {
-		{
-			.start		= 0x00000000,
-			.end		= 128*1024*1024 - 1,
-			.flags		= IORESOURCE_MEM,
-		}
-	},
-	.dev.platform_data	= &(struct physmap_flash_data) {
-		.width		= 2,
-		.set_vpp	= NULL,
-		.nr_parts	= 1,
-		.parts		=  (struct mtd_partition []) {
-			{
-				.name = "NOR Flash FULL",
-				.size = MTDPART_SIZ_FULL,
-				.offset = 0x00000000,
-			}
-		},
-	},
-};
-
 static struct stm_nand_timing_data nand_timing_data = {
 	.sig_setup		= 50,		/* times in ns */
 	.sig_hold		= 50,
@@ -166,7 +133,9 @@ static struct stm_nand_timing_data nand_timing_data = {
 	.wr_off			= 40,
 	.rd_on			= 10,
 	.rd_off			= 40,
-	.chip_delay		= 30,		/* in us */
+//SergA: for samsung nand chips
+//	.chip_delay		= 30,		/* in us */
+	.chip_delay		= 40,		/* in us */
 };
 
 
@@ -191,7 +160,7 @@ static struct stm_nand_config stm_nand_device = {
 
 static struct platform_device *hdk7105_devices[] __initdata = {
 //	&hdk7105_front_panel,
-//	&pdk7105_leds,
+//	&pdk7105_leds
 };
 
 int __init device_init_stb840_promWad(int ver)
