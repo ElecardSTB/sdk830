@@ -1,0 +1,10 @@
+config BR2_PACKAGE_ACCEL_PPTP
+	bool "accel-pptp"
+	select BR2_PACKAGE_PPPD
+	help
+	  The PPTP client and server for Linux.
+
+	  ACCEL-PPTP uses kernel module to increase performance
+	  and decrease system usage.
+
+	  http://accel-pptp.sourceforge.net/
