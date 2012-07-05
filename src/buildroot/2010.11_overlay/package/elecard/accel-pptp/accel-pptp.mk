@@ -25,7 +25,8 @@ $(eval $(call AUTOTARGETS, package/elecard, accel-pptp))
 # FIXME:
 # accel-pptp-0.8.5.tar.bz2 is packed with two slashes in path,
 # and extraction don't work with tar --strip-components=1
-$(BUILD_DIR)/accel-pptp-$(ACCEL_PPTP_VERSION)/.stamp_extracted:
-	$(INFLATE$(suffix $($(PKG)_SOURCE))) $(DL_DIR)/$($(PKG)_SOURCE) | \
-	$(TAR) -C $(BUILD_DIR) $(TAR_OPTIONS) -
+$(ACCEL_PPTP_TARGET_EXTRACT):
+	@$(call MESSAGE,"Extracting")
+	$(INFLATE$(suffix $(ACCEL_PPTP_SOURCE))) $(DL_DIR)/$(ACCEL_PPTP_SOURCE) | \
+		$(TAR) -C $(BUILD_DIR) $(TAR_OPTIONS) -
 	$(Q)touch $@
