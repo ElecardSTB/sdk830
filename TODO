@@ -1,0 +1,7 @@
+
+1. Update system:
+  a) Add monitoring firmware upgrade in rootfs. (Chingis Tsyritorov)
+  b) Add suport WiFi in initramfs. This needs when WiFi is WAN, and we should check updates from this interface.
+  c) Add support for upgrading u-boot. This is low priority task.
+2. Controller for frontpannel 7-segment indicator (daemon). (Владимир Вдовченко)
+
