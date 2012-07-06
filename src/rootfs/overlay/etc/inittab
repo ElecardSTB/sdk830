@@ -35,7 +35,9 @@ null::respawn:/sbin/klogd -n
 [% IF CONFIG_TESTSERVER_ENABLE || CONFIG_TESTTOOL_ENABLE -%]
 ::sysinit:/opt/elecard/bin/test.sh start
 [% END -%]
+[% IF ENV.UPD_CONFIG != "rel" -%]
 ::respawn:-/bin/sh --login
+[% END -%]
 
 # Stuff to do for the 3-finger salute
 ::ctrlaltdel:/sbin/reboot

@@ -45,8 +45,10 @@ case "$1" in
 	fi
 	route add -net 224.0.0.0 netmask 240.0.0.0 $IPTV_GW
 
+[% IF ENV.UPD_CONFIG != "rel" -%]
 	echo -n "telnet "
 	telnetd
+[% END -%]
 
 	if [ -f /var/etc/dhcpd.conf ]; then
 		echo -n "dhcpd "
