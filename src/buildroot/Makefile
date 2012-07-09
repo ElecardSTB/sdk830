@@ -48,7 +48,6 @@ BULDROOT_PACK_NAME=buildroot-$(BUILDROOT_VERSION).tar.gz
 $(_ts_untarbuildroot)_rootfs:
 	test -e $(TARBALLS_DIR)/$(BULDROOT_PACK_NAME) || wget --passive-ftp -nd -P $(TARBALLS_DIR) $(BULDROOT_PACK_SITE)/$(BULDROOT_PACK_NAME)
 	$(call ECHO_MESSAGE,Unpackage buildroot)
-#	mkdir -p $(BUILDROOT)/packages
 	tar -xzf $(TARBALLS_DIR)/$(BULDROOT_PACK_NAME) -C $(BUILDROOT)/packages
 	ln -s buildroot-$(BUILDROOT_VERSION) $(BUILDROOT_ROOT)
 	mkdir -p $(BUILDROOT_ROOT)/output_rootfs $(BUILDROOT_ROOT)/output_initramfs
@@ -60,8 +59,8 @@ $(BUILDROOT_ROOT)/output_%/.config: ./buildroot-$(BUILDROOT_VERSION)_%.config
 	$(call CONFEDIT_INIT,$(BUILDROOT_ROOT)/output_$*/,$(PRJROOT)/src/buildroot/buildroot-$(BUILDROOT_VERSION)_$*.config)
 	$(call CONFEDIT_SET_STRING,$(BUILDROOT_ROOT)/output_$*,BR2_TOOLCHAIN_EXTERNAL_PATH,/opt/STM/STLinux-$(LINUX_VERSION)/devkit/sh4)
 	$(call CONFEDIT_EXECUTE,$(BUILDROOT_ROOT)/output_$*)
+	make -C $(BUILDROOT_ROOT) O=output_$* FS_TYPE=$* oldconfig
 	touch $@
-	ls -la $@ $?
 
 
 SDK_ENV_DEST:=$(BUILDROOT_VERSION)_overlay/package/elecard/sdk_env
