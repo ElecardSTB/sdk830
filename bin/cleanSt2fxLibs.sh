@@ -24,13 +24,13 @@ USR_LIB_SO_LIBS=" \
 #TODO: Is need to remove usr/lib/directfb-1.4* directory??
 
 echo "$USR_LIB_SO_LIBS"
-echo "Cleaning staging staging $STAGINGDIR"
+echo "Cleaning staging $STAGINGDIR"
 pushd $STAGINGDIR/usr/lib && rm -fr $USR_LIB_SO_LIBS && popd
 
-echo "Cleaning staging rootfs $ROOTFS"
+echo "Cleaning rootfs $ROOTFS"
 pushd $ROOTFS/usr/lib && rm -fr $USR_LIB_SO_LIBS && popd
 
-echo "Cleaning staging rootfs_nfs ${ROOTFS}_nfs"
+echo "Cleaning rootfs_nfs ${ROOTFS}_nfs"
 pushd ${ROOTFS}_nfs/usr/lib && rm -fr $USR_LIB_SO_LIBS && popd
 
 rm -f $ROOTFS_BUILD_DIR/.*_installed

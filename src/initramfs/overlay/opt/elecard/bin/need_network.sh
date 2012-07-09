@@ -5,11 +5,12 @@ TEST_FIRMWARE=
 [% ELSE -%]
 TEST_FIRMWARE=1
 [% END -%]
-UPDATER_CHECK_NETWORK=`/opt/elecard/bin/hwconfigManager a 0 UPDATER_CHECK_NETWORK 2>/dev/null | grep "^VALUE:" | cut -d ' ' -f 2`
-UPDATER_FOUND_UPDATE=`/opt/elecard/bin/hwconfigManager a 0 UPDATER_FOUND_UPDATE 2>/dev/null | grep "^VALUE:" | cut -d ' ' -f 2`
+UPNET=`/opt/elecard/bin/hwconfigManager h 0 UPNET 2>/dev/null | grep "^VALUE:" | cut -d ' ' -f 2`
+let UPNET=0x${UPNET:-0}
+UPFOUND=`/opt/elecard/bin/hwconfigManager h 0 UPFOUND 2>/dev/null | grep "^VALUE:" | cut -d ' ' -f 2`
+let UPFOUND=0x${UPFOUND:-0}
 
-NETWORK_NEED=
-if [ "$TEST_FIRMWARE" -o "${UPDATER_CHECK_NETWORK:-0}" != "0" -o "${UPDATER_FOUND_UPDATE:-0}" != "0" ]; then
+export NETWORK_NEED=
+if [ "$TEST_FIRMWARE" -o $UPNET -ne 0 -o $UPFOUND -ne 0 ]; then
 	NETWORK_NEED=1
 fi
-export NETWORK_NEED
