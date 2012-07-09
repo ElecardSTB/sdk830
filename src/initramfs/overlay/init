@@ -23,7 +23,7 @@ if [ -n "$NEWROOT" ]; then
 	mkdir -p $ROOTFS_MOUNT
 fi
 
-
+#/etc/init.d/S09mdev.sh start
 . /etc/init.d/rcS start
 
 if [ -e /tmp/reboot ]; then

@@ -31,8 +31,8 @@ case "$1" in
 
 	echo -n "Check and set STATE flag in HW-Config ... "
 	UPDATER_FLAGS=""
-#	eval LASTSTATE=`/opt/elecard/bin/hwconfigManager h 0 STATE 2>/dev/null | grep "^VALUE:" | sed 's/.*: \(.*\)/$((0x\1))/'`
-	LASTSTATE=`/opt/elecard/bin/hwconfigManager h 0 STATE 2>/dev/null | grep "^VALUE:" | cut -d ' ' -f 2`
+#	eval LASTSTATE=`hwconfigManager h 0 STATE 2>/dev/null | grep "^VALUE:" | sed 's/.*: \(.*\)/$((0x\1))/'`
+	LASTSTATE=`hwconfigManager h 0 STATE 2>/dev/null | grep "^VALUE:" | cut -d ' ' -f 2`
 	if [ -z "$LASTSTATE" ]; then
 		echo "Not found. Assuming failure"
 		LASTSTATE=1
@@ -46,24 +46,24 @@ case "$1" in
 		fi
 	fi
 
-	/opt/elecard/bin/hwconfigManager s 0 STATE 1 2>&1 1>/dev/null
+	hwconfigManager s 0 STATE 1 2>&1 1>/dev/null
 	if [ "$NETWORK_NEED" ]; then
-	#	UPDATERFLAGS=`/opt/elecard/bin/hwconfigManager h 0 UPFLAG 2>/dev/null | grep "^VALUE:" | sed 's/.*: \(.*\)/$((0x\1%10))/'`
-		UPDATERFLAGS=`/opt/elecard/bin/hwconfigManager h 0 UPFLAG 2>/dev/null | grep "^VALUE:" | cut -d ' ' -f 2`
+	#	UPDATERFLAGS=`hwconfigManager h 0 UPFLAG 2>/dev/null | grep "^VALUE:" | sed 's/.*: \(.*\)/$((0x\1%10))/'`
+		UPDATERFLAGS=`hwconfigManager h 0 UPFLAG 2>/dev/null | grep "^VALUE:" | cut -d ' ' -f 2`
 		let UPDATERFLAGS=0x${UPDATERFLAGS:-0}%10
 		if [ "$UPDATERFLAGS" != "0" ]; then
 			echo "Use extended timeout value for network update..."
 			UPDATER_FLAGS="-w$UPDATERFLAGS $UPDATER_FLAGS"
 		fi
 
-		UPDATERURL=`/opt/elecard/bin/hwconfigManager a 0 UPURL 2>/dev/null | grep "^VALUE:.*tp://" | cut -d ' ' -f 2`
+		UPDATERURL=`hwconfigManager a 0 UPURL 2>/dev/null | grep "^VALUE:.*tp://" | cut -d ' ' -f 2`
 		if [ "$UPDATERURL" ]; then
 			UPDATER_FLAGS="$UPDATER_FLAGS -h $UPDATERURL"
 		else
 			UPDATER_FLAGS="$UPDATER_FLAGS -h $DEFAULT_HTTP_URL"
 		fi
 
-		eval NOMUL=`/opt/elecard/bin/hwconfigManager a 0 UPNOMUL 2>/dev/null | grep "^VALUE:" | cut -d ' ' -f 2`
+		eval NOMUL=`hwconfigManager a 0 UPNOMUL 2>/dev/null | grep "^VALUE:" | cut -d ' ' -f 2`
 		if [ "$NOMUL" ]; then
 			if [ "$NOMUL" != "0" ]; then
 				echo "Disable multicast update"
@@ -75,7 +75,7 @@ case "$1" in
 		UPDATER_FLAGS="-n $UPDATER_FLAGS"
 	fi
 
-	eval NOUSB=`/opt/elecard/bin/hwconfigManager a 0 UPNOUSB 2>/dev/null | grep "^VALUE:" | cut -d ' ' -f 2`
+	eval NOUSB=`hwconfigManager a 0 UPNOUSB 2>/dev/null | grep "^VALUE:" | cut -d ' ' -f 2`
 	if [ "${NOUSB:-0}" != "0" ]; then
 		echo "Disable USB update"
 		UPDATER_FLAGS="-u $UPDATER_FLAGS"
@@ -83,14 +83,14 @@ case "$1" in
 		waitUSB
 	fi
 
-	/opt/elecard/bin/hwconfigManager u
+	hwconfigManager u
 
 	echo "UPDATER_FLAGS=\"$UPDATER_FLAGS\""
-	/opt/elecard/bin/clientUpdater $UPDATER_FLAGS
+	clientUpdater $UPDATER_FLAGS
 	RET=$?
 
-	/opt/elecard/bin/hwconfigManager s 0 STATE 0 2>&1 1>/dev/null
-#	/opt/elecard/bin/hwconfigManager h 0 STATE
+	hwconfigManager s 0 UPFOUND 0 2>&1 1>/dev/null
+	hwconfigManager s 0 STATE 0 2>&1 1>/dev/null
 
 	rm -f /tmp/reboot
 	if [ $RET -eq 1 ]; then
