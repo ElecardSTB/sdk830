@@ -4,7 +4,7 @@ include etc/envvars.mk
 include $(BUILDROOT)/.prjconfig
 
 
-DIRS := $(FIRMWARE_DIR) $(TIMESTAMPS_DIR) $(COMPONENT_DIR) $(BUILDROOT)/initramfs $(BUILDROOT)/rootfs
+DIRS := $(FIRMWARE_DIR) $(TIMESTAMPS_DIR) $(COMPONENT_DIR) $(BUILDROOT)/initramfs $(BUILDROOT)/rootfs $(BUILDROOT)/packages
 _ts_commonscript := $(TIMESTAMPS_DIR)/.commonscript
 pre_targets = $(DIRS) scripts
 
@@ -20,7 +20,7 @@ maketools:
 
 
 COMMON_SCRIPT_FILES=$(sort $(wildcard ./src/script/*.sh))
-$(_ts_commonscript): $(COMMON_SCRIPT_FILES)
+$(_ts_commonscript): $(DIRS) $(COMMON_SCRIPT_FILES)
 	$(call ECHO_MESSAGE,Common scripts)
 	@echo "Scripts:"
 	@for i in $?; do \
@@ -89,7 +89,7 @@ endif
 	cd $(COMPONENT_DIR)/fwinfo && tar -czf $(COMPONENT_DIR)/fwinfo.tgz ./*
 
 
-$(TIMESTAMPS_DIR) $(COMPONENT_DIR) $(FIRMWARE_DIR) $(PACKAGES_DIR) $(TARBALLS_DIR):
+$(TIMESTAMPS_DIR) $(COMPONENT_DIR) $(FIRMWARE_DIR) $(PACKAGES_DIR) $(TARBALLS_DIR) $(BUILDROOT)/packages:
 	mkdir -p $@
 
 #	cd $(BUILDROOT) && rm -f images_initramfs initramfs images rootfs

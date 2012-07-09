@@ -48,7 +48,7 @@ BULDROOT_PACK_NAME=buildroot-$(BUILDROOT_VERSION).tar.gz
 $(_ts_untarbuildroot)_rootfs:
 	test -e $(TARBALLS_DIR)/$(BULDROOT_PACK_NAME) || wget --passive-ftp -nd -P $(TARBALLS_DIR) $(BULDROOT_PACK_SITE)/$(BULDROOT_PACK_NAME)
 	$(call ECHO_MESSAGE,Unpackage buildroot)
-	mkdir -p $(BUILDROOT)/packages
+#	mkdir -p $(BUILDROOT)/packages
 	tar -xzf $(TARBALLS_DIR)/$(BULDROOT_PACK_NAME) -C $(BUILDROOT)/packages
 	ln -s buildroot-$(BUILDROOT_VERSION) $(BUILDROOT_ROOT)
 	mkdir -p $(BUILDROOT_ROOT)/output_rootfs $(BUILDROOT_ROOT)/output_initramfs
