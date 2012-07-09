@@ -89,8 +89,9 @@ $$(DIRECTFB_INSTALL_TS): $$(DIRECTFB_ST_SOURCE_DIR)/.compiled
 	cp -dfr $(STSDKROOT)/apilib/include/directfb $(STAGING_DIR)/usr/include/directfb-$(ST2FX_DIRECTFB_VERSION)
 #	if [ ! -e $(STAGING_DIR)/usr/include/directfb ]; then ln -s directfb-$(ST2FX_DIRECTFB_VERSION) $(STAGING_DIR)/usr/include/directfb; fi
 	ln -s directfb-$(ST2FX_DIRECTFB_VERSION) $(STAGING_DIR)/usr/include/directfb
+	mkdir -p $(STAGING_DIR)/usr/lib/pkgconfig
 	for i in package/elecard/pkgconfig/*.pc; do \
-		$(INSTALL) -D -m 0644 $$$$i $(STAGING_DIR)/usr/lib/pkgconfig; \
+		$(INSTALL) -D -m 0644 $$$$i $(STAGING_DIR)/usr/lib/pkgconfig/; \
 	done
 	cd $$(DIRECTFB_ST_LIBS_DIR) && cp -df $$(DIRECTFB_ST_MAIN_LIBS) $(STAGING_DIR)/usr/lib
 	cd $$(DIRECTFB_ST_LIBS_DIR) && cp -dfr `find -name directfb-$(ST2FX_DIRECTFB_VERSION)* -type d` $(STAGING_DIR)/usr/lib
@@ -142,7 +143,8 @@ $(ST2FX_DIR)/.unpacked: $(DL_DIR)/$(ST2FX_PACKAGE)
 
 $(ST2FX_DIR)/.installed: $(ST2FX_DIR)/.unpacked
 	for i in bmp freetype gif jpeg png tiff zlib; do cp -rf $(ST2FX_DIR)/include/$$i/* $(STAGING_DIR)/usr/include/; done
-	for i in package/elecard/pkgconfig/*.pc; do $(INSTALL) -D -m 0644 $$i $(STAGING_DIR)/usr/lib/pkgconfig; done
+	mkdir -p $(STAGING_DIR)/usr/lib/pkgconfig
+	for i in package/elecard/pkgconfig/*.pc; do $(INSTALL) -D -m 0644 $$i $(STAGING_DIR)/usr/lib/pkgconfig/; done
 	cd $(ST2FX_DIR)/include; for i in `ls | grep directfb`; do rm -rf $(STAGING_DIR)/usr/include/$$i; cp -rf $$i $(STAGING_DIR)/usr/include/; done
 	cp -rf $(ST2FX_DIR)/lib/sdk7105_7105_ST40_LINUX_32BITS/* $(STAGING_DIR)/usr/lib/
 	cp -rf $(ST2FX_DIR)/lib/sdk7105_7105_ST40_LINUX_32BITS/* $(TARGET_DIR)/usr/lib/
