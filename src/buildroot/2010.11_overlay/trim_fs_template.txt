@@ -52,7 +52,7 @@
 # libs
 [%INITRAMFS%]/usr/lib/libstdc++*
 [%INITRAMFS%]/lib/libcrypt*
-[%INITRAMFS%]/lib/libdl*
+#[%INITRAMFS%]/lib/libdl*
 [%INITRAMFS%]/lib/libgcc*
 [%INITRAMFS%]/lib/libm*
 [%INITRAMFS%]/lib/libnsl*
