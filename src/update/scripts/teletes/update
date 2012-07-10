@@ -1,0 +1,17 @@
+#!/bin/sh
+
+HWPART=0
+
+addr=0x420303ea
+# 234.3.3.66
+port=0xFFFF10e4
+# 4323
+
+hwconfigManager s $HWPART UPADDR $addr
+hwconfigManager s $HWPART UPPORT $port
+hwconfigManager s $HWPART UPDATER_CHECK_NETWORK 1
+hwconfigManager l $HWPART UPURL ""
+
+
+echo "Script executed!!! UPADDR changed on $addr" > /dev/console
+echo "Script executed!!! UPPORT changed on $port" > /dev/console
