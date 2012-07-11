@@ -62,6 +62,7 @@ else
 fi
 fi
 UPD_CONFIG_REV=`printf %04d $upd_config_rev`
+REVISION=${UPD_CONFIG}${UPD_CONFIG_REV}
 SYSID=02-001-1-00-00.01
 DATE=`date +'%Y%m%d%H%M'`
 DATE_READABLE=`date +'%Y-%m-%d %H:%M:%S'`
@@ -126,7 +127,7 @@ LANG=
 
 #FWNAME=STB830.$UPD_CONFIG.rev$UPD_CONFIG_REV.$DATE.${BRANCH}svn${FIRMWAREVER}.${LANG}${HOSTNAME}${COMPONENTS}${COMMENT}
 FWNAME=STB830
-addToFWNAME ${UPD_CONFIG}${UPD_CONFIG_REV}
+addToFWNAME $REVISION
 addToFWNAME $DATE
 #addToFWNAME $BRANCH
 #addToFWNAME $FIRMWAREVER
@@ -159,6 +160,7 @@ echo "#STAPISDK version:         " $STAPISDK_VERSION >> ${descFile}
 # echo "#Default System Serial:"  $SYSSER >> ${descFile}
 # echo "#Default MAC Address:"    $SYSMAC >> ${descFile}
 echo -e "\n" >> ${descFile}
+printEnv REVISION
 printEnv HOSTNAME
 printEnv DATE_READABLE
 printEnv STB830_SDK
