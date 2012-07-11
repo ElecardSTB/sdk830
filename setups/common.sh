@@ -133,7 +133,8 @@ if [ "$STAPISDK_VERSION" != "$STAPISDK_VERSION_PREV" ]; then
 	echo -e "So remove st2fx libraries and kernel modules!\n"
 	$PRJROOT/bin/cleanSt2fxLibs.sh
 	rm -rf $ROOTFS/lib/modules/*
-	rm -f $TIMESTAMPS_DIR/.configlinux
+	rm -rf $PRJROOT/src/elecard/apps/elcd/src/objs $PRJROOT/src/elecard/apps/testServer/src/objs
+	rm -f $TIMESTAMPS_DIR/.configlinux $TIMESTAMPS_DIR/.makeapilib
 	echo "$STAPISDK_VERSION" > $STAPISDK_VERSION_FILE
 fi
 
