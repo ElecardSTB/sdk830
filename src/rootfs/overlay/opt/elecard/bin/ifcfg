@@ -39,7 +39,7 @@ if [ `edcfg $WLAN_CONFIG_FILE get WAN_MODE` = 1 ]; then
 	if [ `edcfg $WLAN_CONFIG_FILE get BOOTPROTO` = "static" ]; then
 		echo "iface wlan0 inet static"
 		echo "  address `edcfg $WLAN_CONFIG_FILE get IPADDR`"
-		MASK=`edcfg $WLAN_CONFIG_FILE get IPADDR`
+		MASK=`edcfg $WLAN_CONFIG_FILE get NETMASK`
 		test -n "$MASK" && echo "  netmask $MASK"
 		GW=`edcfg $WLAN_CONFIG_FILE get DEFAULT_GATEWAY`
 		test -n "$GW"   && echo "  gateway $GW"
@@ -60,7 +60,7 @@ else
 	if [ `edcfg $WAN_CONFIG_FILE get BOOTPROTO` = "static" ]; then
 		echo "iface eth0 inet static"
 		echo "  address `edcfg $WAN_CONFIG_FILE get IPADDR`"
-		MASK=`edcfg $WAN_CONFIG_FILE get IPADDR`
+		MASK=`edcfg $WAN_CONFIG_FILE get NETMASK`
 		test -n "$MASK" && echo "  netmask $MASK"
 		GW=`edcfg $WAN_CONFIG_FILE get DEFAULT_GATEWAY`
 		test -n "$GW"   && echo "  gateway $GW"
