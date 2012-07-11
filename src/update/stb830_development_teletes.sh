@@ -11,7 +11,8 @@ BUILD_SCRIPT_FW=teletes
 #Comment that add to firmware pack name
 SHORT_COMMENT=teletes_updateaddr
 
-ENABLE_TELETES=1
+export ENABLE_TELETES=1
 
 make -C $PRJROOT firmware
 
+export -n ENABLE_TELETES
