@@ -51,32 +51,32 @@ case "$1" in
 	#	UPDATERFLAGS=`hwconfigManager h 0 UPFLAG 2>/dev/null | grep "^VALUE:" | sed 's/.*: \(.*\)/$((0x\1%10))/'`
 		UPDATERFLAGS=`hwconfigManager h 0 UPFLAG 2>/dev/null | grep "^VALUE:" | cut -d ' ' -f 2`
 		let UPDATERFLAGS=0x${UPDATERFLAGS:-0}%10
-		if [ "$UPDATERFLAGS" != "0" ]; then
+		if [ $UPDATERFLAGS -ne 0 ]; then
 			echo "Use extended timeout value for network update..."
 			UPDATER_FLAGS="-w$UPDATERFLAGS $UPDATER_FLAGS"
 		fi
 
 		UPDATERURL=`hwconfigManager a 0 UPURL 2>/dev/null | grep "^VALUE:.*tp://" | cut -d ' ' -f 2`
-		if [ "$UPDATERURL" ]; then
+		if [ "$UPDATERURL" != "" ]; then
 			UPDATER_FLAGS="$UPDATER_FLAGS -h $UPDATERURL"
 		else
 			UPDATER_FLAGS="$UPDATER_FLAGS -h $DEFAULT_HTTP_URL"
 		fi
 
-		eval NOMUL=`hwconfigManager a 0 UPNOMUL 2>/dev/null | grep "^VALUE:" | cut -d ' ' -f 2`
-		if [ "$NOMUL" ]; then
-			if [ "$NOMUL" != "0" ]; then
-				echo "Disable multicast update"
-				UPDATER_FLAGS="-n $UPDATER_FLAGS"
-			fi
+		NOMUL=`hwconfigManager h 0 UPNOMUL 2>/dev/null | grep "^VALUE:" | cut -d ' ' -f 2`
+		let NOMUL=0x${NOMUL:-0}
+		if [ $NOMUL -ne 0 ]; then
+			echo "Disable multicast update"
+			UPDATER_FLAGS="-n $UPDATER_FLAGS"
 		fi
 	else
 		#disable multicast, and dont set http url
 		UPDATER_FLAGS="-n $UPDATER_FLAGS"
 	fi
 
-	eval NOUSB=`hwconfigManager a 0 UPNOUSB 2>/dev/null | grep "^VALUE:" | cut -d ' ' -f 2`
-	if [ "${NOUSB:-0}" != "0" ]; then
+	eval NOUSB=`hwconfigManager h 0 UPNOUSB 2>/dev/null | grep "^VALUE:" | cut -d ' ' -f 2`
+	let NOUSB=0x${NOUSB:-0}
+	if [ $NOUSB -ne 0 ]; then
 		echo "Disable USB update"
 		UPDATER_FLAGS="-u $UPDATER_FLAGS"
 	else
