@@ -17,7 +17,12 @@
 #all mounts should be done in initamfs
 null::sysinit:/bin/hostname -F /etc/hostname
 # now run any rc scripts
+[% IF ENV.UPD_CONFIG == "rel" -%]
 ::sysinit:/etc/init.d/rcS start
+[% ELSE -%]
+::sysinit:time /etc/init.d/rcS start
+::sysinit:/bin/echo "Rootfs loading time (/etc/init.d/S*)." > /dev/console
+[% END -%]
 
 # Set up a couple of getty's
 #tty1::respawn:/sbin/getty 38400 tty1

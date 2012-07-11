@@ -1,7 +1,17 @@
 #!/bin/sh
 
+print_process_time() {
+[% IF ENV.UPD_CONFIG == "rel" -%]
+	:
+[% ELSE -%]
+	local diff_time
+	let diff_time=`date +%s`-${DATE_BEGIN:-0}
+	echo "Initramfs loading time is ${diff_time} seconds."
+[% END -%]
+}
 
 echo -e "\nStarting initramfs... "
+DATE_BEGIN=`date +%s`
 . /etc/profile
 /bin/mount -a
 
@@ -29,6 +39,7 @@ fi
 if [ -e /tmp/reboot ]; then
 	. /etc/init.d/rcS stop
 	umount -a
+	print_process_time
 	reboot -f
 fi
 
@@ -43,6 +54,7 @@ if [ -n "$NEWROOT" ]; then
 	if [ $? -eq 0 -a -e $ROOTFS_MOUNT/init ]; then
 #		. /etc/init.d/rcS stop
 		/etc/init.d/S40network.sh stop
+		/etc/init.d/S10watchdog.sh stop
 		mount --move /proc $ROOTFS_MOUNT/proc
 		mount --move /sys $ROOTFS_MOUNT/sys
 		mount --move /tmp $ROOTFS_MOUNT/tmp
@@ -50,6 +62,7 @@ if [ -n "$NEWROOT" ]; then
 		mount --move /dev $ROOTFS_MOUNT/dev
 		mount --move /var/etc $ROOTFS_MOUNT/var/etc
 		unset ROOTFS_NAND ROOTFS_NFS NEWROOT FSTYPE FSOPT NETWORK_NEED
+		print_process_time
 		echo "Switch root"
 		exec  switch_root $ROOTFS_MOUNT /init
 	else
@@ -63,6 +76,7 @@ if [ -n "$NEWROOT" ]; then
 #		$i start
 #	done
 fi
+print_process_time
 
 #if we didnt change root, then login
 TTY_NAME=`cat /proc/cmdline | grep console= | sed 's/.*console=\(ttyAS[0-9]\).*/\1/'`
