@@ -15,10 +15,10 @@ case "$1" in
 				mknod /dev/keypad c 99 0
 			fi
 		fi
-		if [ -n "$IS_STB840_CH7162" ]; then
-			MODULE=/lib/modules/STLinux-[%ENV.LINUX_VERSION%]/ct1628.ko
-			test -e $MODULE && insmod $MODULE
-		fi
+# 		if [ -n "$IS_STB840_CH7162" ]; then
+# 			MODULE=/lib/modules/STLinux-[%ENV.LINUX_VERSION%]/ct1628.ko
+# 			test -e $MODULE && insmod $MODULE
+# 		fi
 		;;
 	stop)
 		rmmod keyscanner
