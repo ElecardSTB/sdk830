@@ -58,7 +58,7 @@
 [%INITRAMFS%]/lib/libnsl*
 #[%INITRAMFS%]/lib/libnss_dns*
 #[%INITRAMFS%]/lib/libpthread*
-[%INITRAMFS%]/lib/libresolv*
+#[%INITRAMFS%]/lib/libresolv*
 #[%INITRAMFS%]/lib/librt*
 [%INITRAMFS%]/lib/libutil*
 
