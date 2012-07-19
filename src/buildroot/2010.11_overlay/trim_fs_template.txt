@@ -32,7 +32,7 @@
 [%ROOTFS%]/lib/modules/*/kernel/net/wireless
 [%ROOTFS%]/lib/modules/*/kernel/net/bluetooth
 
-[% IF ! CONFIG_TESTSERVER_ENABLE -%]
+[% IF CONFIG_ELECD_ENABLE -%]
 [%ROOTFS%]/opt/elecard/share/testchart_rgb565.gam
 [% END -%]
 
