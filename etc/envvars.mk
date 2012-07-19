@@ -47,7 +47,8 @@ TARBALLS_DIR := $(PRJROOT)/tarballs
 FIRMWARE_DIR := $(BUILDROOT)/firmware
 COMPONENT_DIR := $(BUILDROOT)/comps
 TIMESTAMPS_DIR := $(BUILDROOT)/timestamps
-PACKAGES_DIR := $(PRJROOT)/packages
+PACKAGES_DIR := $(BUILDROOT)/packages
+SDK_PACKAGES_DIR := $(BUILDROOT)/sdk_packages
 
 #define first default target
 all:

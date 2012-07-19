@@ -55,9 +55,9 @@ $(_ts_unpackkernel):
 	$(call ECHO_MESSAGE,Downloading kernel)
 	[ -e $(downloadkernel_file) ] || wget --passive-ftp -nd -P $(TARBALLS_DIR) ftp://ftp.stlinux.com/pub/stlinux/2.4/stapi/RPMS/$(KERNEL_PACK_NAME)
 	$(call ECHO_MESSAGE,Unpacking kernel)
-	cd $(BUILDROOT)/packages && rpm2cpio $(downloadkernel_file) | cpio -id
-	mv $(BUILDROOT)/packages/opt/STM/STLinux-2.4/devkit/sources/kernel/linux-sh4-$(FULL_LINUX_VERSION) $(BUILDROOT)/packages
-	rm -rf $(BUILDROOT)/packages/opt
+	cd $(PACKAGES_DIR) && rpm2cpio $(downloadkernel_file) | cpio -id
+	mv $(PACKAGES_DIR)/opt/STM/STLinux-2.4/devkit/sources/kernel/linux-sh4-$(FULL_LINUX_VERSION) $(PACKAGES_DIR)
+	rm -rf $(PACKAGES_DIR)/opt
 	touch $(_ts_unpackkernel)
 
 clean::

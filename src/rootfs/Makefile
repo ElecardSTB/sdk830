@@ -9,7 +9,7 @@ buildroot:
 	make -C ../buildroot rootfs
 
 $(COMPONENT_DIR)/rootfs1:
-	test -h $@ || ln -s $(BUILDROOT)/packages/buildroot/output_rootfs/images/rootfs.jffs2 $@
+	test -h $@ || ln -s $(PACKAGES_DIR)/buildroot/output_rootfs/images/rootfs.jffs2 $@
 
 
 #This calls from buildroot

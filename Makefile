@@ -4,7 +4,7 @@ include etc/envvars.mk
 include $(BUILDROOT)/.prjconfig
 
 
-DIRS := $(FIRMWARE_DIR) $(TIMESTAMPS_DIR) $(COMPONENT_DIR) $(BUILDROOT)/initramfs $(BUILDROOT)/rootfs $(BUILDROOT)/packages
+DIRS := $(FIRMWARE_DIR) $(TIMESTAMPS_DIR) $(COMPONENT_DIR) $(PACKAGES_DIR) $(BUILDROOT)/initramfs $(BUILDROOT)/rootfs
 _ts_commonscript := $(TIMESTAMPS_DIR)/.commonscript
 
 .PHONY : all firmware maketools make_description make_components untar_rootfs clean br buildroot rootfs br_i buildroot_i initramfs linux kernel stapisdk stsdk scripts
@@ -47,7 +47,7 @@ define CHECK_COMP_SIZE
 	fi;
 endef
 
-firmwarePackGenerator=$(BUILDROOT)/packages/buildroot/output_rootfs/host/usr/bin/firmwarePackGenerator
+firmwarePackGenerator=$(PACKAGES_DIR)/buildroot/output_rootfs/host/usr/bin/firmwarePackGenerator
 make_firmware:
 	$(call ECHO_MESSAGE,Creating firmware pack:)
 	$(firmwarePackGenerator) $(COMPONENT_DIR)/stb830_efp.conf
@@ -88,7 +88,7 @@ endif
 	cd $(COMPONENT_DIR)/fwinfo && tar -czf $(COMPONENT_DIR)/fwinfo.tgz ./*
 
 
-$(TIMESTAMPS_DIR) $(COMPONENT_DIR) $(FIRMWARE_DIR) $(PACKAGES_DIR) $(TARBALLS_DIR) $(BUILDROOT)/packages:
+$(TIMESTAMPS_DIR) $(COMPONENT_DIR) $(FIRMWARE_DIR) $(SDK_PACKAGES_DIR) $(TARBALLS_DIR) $(PACKAGES_DIR):
 	mkdir -p $@
 
 #	cd $(BUILDROOT) && rm -f images_initramfs initramfs images rootfs
@@ -104,7 +104,7 @@ group=$(shell id -g)
 define UNTAR_ROOTFS_NFS
 	$(call ECHO_MESSAGE,Untar rootfs for nfs share:);
 	mkdir -p $(BUILDROOT)/rootfs_nfs;
-	sudo tar -xf $(BUILDROOT)/packages/buildroot/output_rootfs/images/rootfs.tar -C $(BUILDROOT)/rootfs_nfs;
+	sudo tar -xf $(PACKAGES_DIR)/buildroot/output_rootfs/images/rootfs.tar -C $(BUILDROOT)/rootfs_nfs;
 	sudo chown -R $(user):$(group) $(BUILDROOT)/rootfs_nfs
 endef
 
@@ -130,7 +130,7 @@ linux kernel: scripts
 
 
 ifeq ($(STB830_SDK),)
-packs: scripts $(PACKAGES_DIR)
+packs: scripts $(SDK_PACKAGES_DIR)
 	$(PRJROOT)/src/elecard/bin/genPackages.sh
 
 stapisdk stsdk: scripts
