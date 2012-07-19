@@ -160,8 +160,8 @@ echo "#STAPISDK version:         " $STAPISDK_VERSION >> ${descFile}
 # echo "#Default System Serial:"  $SYSSER >> ${descFile}
 # echo "#Default MAC Address:"    $SYSMAC >> ${descFile}
 echo -e "\n" >> ${descFile}
-printEnv REVISION
 printEnv HOSTNAME
+printEnv REVISION
 printEnv DATE_READABLE
 printEnv STB830_SDK
 printEnv BUILD_SCRIPT_FW
@@ -199,6 +199,9 @@ if [ "$BUILD_WITHOUT_COMPONENTS_FW" != "1" ]; then
 	echo -e "\n#Build-in rootfs open keys:" >> ${descFile}
 	printEnv BUILD_ADD_KEYS_TO_FW
 	# echo "#Signatures:"             `ls $UPDATER_DIR/certificates` >> ${descFile}
+else
+	echo -e "\n#Branch, time and hash of repositories:" >> ${descFile}
+	printEnv SDK830_GIT
 fi
 
 echo -en "\n\n" >> ${descFile}
