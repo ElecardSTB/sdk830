@@ -84,6 +84,7 @@ case "$1" in
 	fi
 
 	hwconfigManager u
+	rm -f /tmp/reboot
 
 	echo "UPDATER_FLAGS=\"$UPDATER_FLAGS\""
 	clientUpdater $UPDATER_FLAGS
@@ -92,7 +93,6 @@ case "$1" in
 	hwconfigManager s 0 UPFOUND 0 2>&1 1>/dev/null
 	hwconfigManager s 0 STATE 0 2>&1 1>/dev/null
 
-	rm -f /tmp/reboot
 	if [ $RET -eq 1 ]; then
 		echo "Reboot requested!"
 		touch /tmp/reboot
