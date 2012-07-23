@@ -1,0 +1,5 @@
+config BR2_PACKAGE_FRONTPANEL
+	bool "frontpanel"
+	default n
+	help
+	  Frontpanel daemon.

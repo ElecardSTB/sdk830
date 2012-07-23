@@ -1,36 +1,24 @@
 #/bin/sh
 # switch leds on PromSvyaz board
-# run watch on stb840_ch7162 frontpanel
+# run frontpanel daemon
 
 [% IF CONFIG_TESTSERVER_ENABLE -%]
 	[% SKIPFILE %]
 [% END -%]
 
-IS_STB840_PROMSVYAZ=`grep stb840_promSvyaz /proc/cmdline > /dev/null && echo 1`
-IS_STB840_CH7162=`grep stb840_ch7162 /proc/cmdline > /dev/null && echo 1`
-
+export PATH=$PATH:/opt/elecard/bin
 
 case "$1" in
 	start)
-		if [ -n "$IS_STB840_PROMSVYAZ" ]; then
+		if [ "$board_name" = "stb840_promSvyaz" ]; then
 			echo "0" > /sys/class/leds/RED/brightness
 			echo "1" > /sys/class/leds/GREEN/brightness
-			if [ -e /sys/devices/platform/tm1668/text ]; then
-				while :; do
-					date +%H%M8 > /sys/devices/platform/tm1668/text
-					sleep 1
-				done &
-			fi
 		fi
-		if [ -n "$IS_STB840_CH7162" -a -e /sys/devices/platform/ct1628/text ]; then
-			while :; do
-				date +%H%M8 > /sys/devices/platform/ct1628/text
-				sleep 1
-			done &
-		fi
+		frontpanel
 		;;
 	stop)
-		if [ -n "$IS_STB840_PROMSVYAZ" ]; then
+		killall frontpanel
+		if [ "$board_name" = "stb840_promSvyaz" ]; then
 			echo "heartbeat" > /sys/class/leds/RED/trigger
 			echo "0" > /sys/class/leds/GREEN/brightness
 		fi

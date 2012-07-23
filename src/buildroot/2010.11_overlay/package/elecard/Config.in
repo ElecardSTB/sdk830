@@ -18,4 +18,5 @@ source "package/elecard/modules-elecard/Config.in"
 
 source "package/elecard/commonlib/Config.in"
 source "package/elecard/xl2tpd/Config.in"
+source "package/elecard/frontpanel/Config.in"
 endmenu
