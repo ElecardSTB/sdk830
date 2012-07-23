@@ -1,9 +1,9 @@
 #!/bin/sh
 
-[% IF CONFIG_ELECD_ENABLE -%]
-TEST_FIRMWARE=
-[% ELSE -%]
+[% IF CONFIG_TESTSERVER_ENABLE -%]
 TEST_FIRMWARE=1
+[% ELSE -%]
+TEST_FIRMWARE=
 [% END -%]
 UPNET=`/opt/elecard/bin/hwconfigManager h 0 UPNET 2>/dev/null | grep "^VALUE:" | cut -d ' ' -f 2`
 let UPNET=0x${UPNET:-0}
