@@ -24,3 +24,9 @@ config BR2_PACKAGE_UPDATER_USE_SSL
 	depends on BR2_PACKAGE_OPENSSL
 	help
 	  Support update with checking signatures.
+
+config BR2_PACKAGE_UPDATER_DAEMON
+	bool "updaterDaemon"
+	depends on BR2_PACKAGE_UPDATER
+	help
+	  Elecard updaterDaemon.

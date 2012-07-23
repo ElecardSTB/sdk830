@@ -20,17 +20,13 @@ ifeq ($(STB830_SDK),)
 UPDATER_DIR=$(PRJROOT)/src/elecard/updater
 
 updater-make:
-	$(UPDATER_DEFINES) TARGET_DIR=$(TARGET_DIR) STAGINGDIR=$(STAGING_DIR) make -C $(UPDATER_DIR) make_updater
+	$(UPDATER_DEFINES) TARGET_DIR=$(TARGET_DIR) STAGINGDIR=$(STAGING_DIR) make -C $(UPDATER_DIR) $(UPDATER_MAKE_TARGETS)
 
-updater-hwconfig-make:
-	$(UPDATER_DEFINES) TARGET_DIR=$(TARGET_DIR) STAGINGDIR=$(STAGING_DIR) make -C $(UPDATER_DIR) make_hwconfigManager
-
-firmwarePackGenerator-make:
+firmwarePackGenerator-host-make:
 	$(UPDATER_DEFINES) HOST_DIR=$(HOST_DIR) make -C $(UPDATER_DIR) make_firmwarePackGenerator
 
-updater-install: updater-make
-updater-hwconfig-install: updater-hwconfig-make
-firmwarePackGenerator-install: firmwarePackGenerator-make
+updater-install updaterDaemon-install hwconfig-install: updater-make
+firmwarePackGenerator-host-install: firmwarePackGenerator-host-make
 
 else #ifeq ($(STB830_SDK),)
 include package/elecard/sdk_env
@@ -45,34 +41,49 @@ $(UPDATER_DIR)/.unpacked: $(DL_DIR)/$(UPDATER_PACKAGE)
 	$(ZCAT) $(DL_DIR)/$(UPDATER_PACKAGE) | tar -C $(UPDATER_DIR) $(TAR_OPTIONS) -
 	touch $@
 
-updater-install updater-hwconfig-install firmwarePackGenerator-install: $(UPDATER_DIR)/.unpacked
+updater-install updaterDaemon-install hwconfig-install firmwarePackGenerator-host-install: $(UPDATER_DIR)/.unpacked
 endif #ifeq ($(STB830_SDK),)
 
-
-updater-hwconfig-install:
+updater_target_dir:
 	mkdir -p $(TARGET_DIR)/opt/elecard/bin/
+
+updater-install: updater_target_dir
+	install -m 755 -p $(UPDATER_DIR)/clientUpdater2/sh4/clientUpdater_$(FS_TYPE) $(TARGET_DIR)/opt/elecard/bin/clientUpdater
+
+updaterDaemon-install: updater_target_dir
+	install -m 755 -p $(UPDATER_DIR)/updaterDaemon/sh4/updaterDaemon $(TARGET_DIR)/opt/elecard/bin/
+
+hwconfig-install: updater_target_dir
 	install -m 755 -p $(UPDATER_DIR)/hwconfigManager/sh4/hwconfigManager $(TARGET_DIR)/opt/elecard/bin/
 	install -m 755 -p $(UPDATER_DIR)/hwconfig/hwconfig_stb830.conf $(TARGET_DIR)/etc/hwconfig.conf
 
-updater-install: updater-hwconfig
-	install -m 755 -p $(UPDATER_DIR)/clientUpdater2/sh4/clientUpdater_$(FS_TYPE) $(TARGET_DIR)/opt/elecard/bin/clientUpdater
-
 updater-uninstall:
-	rm -f $(TARGET_DIR)/opt/elecard/bin/hwconfigManager $(TARGET_DIR)/opt/elecard/bin/clientUpdater $(TARGET_DIR)/etc/hwconfig_stb830.conf
+	rm -f $(TARGET_DIR)/opt/elecard/bin/hwconfigManager $(TARGET_DIR)/opt/elecard/bin/clientUpdater $(TARGET_DIR)/opt/elecard/bin/updaterDaemon $(TARGET_DIR)/etc/hwconfig_stb830.conf
 
-firmwarePackGenerator-install:
+updater: $(UPDATER_DEPENDENCIES) updater-install
+hwconfig: $(UPDATER_DEPENDENCIES) hwconfig-install
+updaterDaemon: $(UPDATER_DEPENDENCIES) updaterDaemon-install
+
+ifeq ($(BR2_PACKAGE_UPDATER),y)
+updater-packages: updater
+UPDATER_MAKE_TARGETS+=make_updater
+endif
+ifeq ($(BR2_PACKAGE_UPDATER_HWCONFIG),y)
+updater-packages: hwconfig
+UPDATER_MAKE_TARGETS+=make_hwconfigManager
+endif
+ifeq ($(BR2_PACKAGE_UPDATER_DAEMON),y)
+updater-packages: updaterDaemon
+UPDATER_MAKE_TARGETS+=make_updaterDaemon
+endif
+
+firmwarePackGenerator-host-install:
 	mkdir -p $(HOST_DIR)/usr/bin
 	install -m 755 -p $(UPDATER_DIR)/firmwarePackGenerator/x86_new_sum/firmwarePackGenerator $(HOST_DIR)/usr/bin
 
-updater-hwconfig: $(UPDATER_DEPENDENCIES) updater-hwconfig-install
-updater: $(UPDATER_DEPENDENCIES) updater-install
-firmwarePackGenerator: commonlib firmwarePackGenerator-install
+firmwarePackGenerator-host: commonlib firmwarePackGenerator-host-install
 
-TARGETS+=firmwarePackGenerator
-ifeq ($(BR2_PACKAGE_UPDATER),y)
-TARGETS+=updater
-else
-ifeq ($(BR2_PACKAGE_UPDATER_HWCONFIG),y)
-TARGETS+=updater-hwconfig
-endif
+TARGETS+=firmwarePackGenerator-host
+ifneq ($(filter y,$(BR2_PACKAGE_UPDATER) $(BR2_PACKAGE_UPDATER_HWCONFIG) $(BR2_PACKAGE_UPDATER_DAEMON)),)
+TARGETS+=updater-packages
 endif
