@@ -23,11 +23,10 @@ overlays: $(ROOTFS_OVERLAY_FILES) $(COMPONENT_DIR)/fwinfo/firmwareDesc
 	cp -f $(COMPONENT_DIR)/fwinfo/firmwareDesc $(TARGET_DIR)
 	-cp -fr /opt/philips/sp7.2/stb810-SP7.2/build_256M_NOIP/rootfs/usr/share/zoneinfo $(TARGET_DIR)/usr/share
 	cp ./dev/dev-stapi-$(STAPISDK_VERSION).tar $(TARGET_DIR)/etc/dev-stapi.tar
+#adding open keys
 	rm -rf $(KEYS_DIR)
-ifneq ($(BUILD_ADD_KEYS_TO_FW),)
 	mkdir -p $(KEYS_DIR)
-	for i in $(BUILD_ADD_KEYS_TO_FW); do cp -f $(PRJROOT)/src/update/keys/open/$$i.pem $(KEYS_DIR)/; done
-endif
+	for i in elecard $(BUILD_ADD_KEYS_TO_FW); do cp -f $(PRJROOT)/src/update/keys/open/$$i.pem $(KEYS_DIR)/; done
 
 clean:
 	$(call ECHO_MESSAGE,Rootfs clean)
