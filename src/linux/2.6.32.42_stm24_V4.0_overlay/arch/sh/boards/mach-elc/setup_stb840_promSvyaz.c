@@ -33,7 +33,7 @@
 
 #include <linux/stm/pio.h>
 #include <linux/i2c.h>
-
+#include "setup.h"
 
 #define HDK7105_PIO_PHY_RESET stm_gpio(15, 5)
 #define HDK7105_GPIO_FLASH_WP stm_gpio(6, 4)
@@ -65,34 +65,12 @@ static struct platform_device pdk7105_leds = {
 };
 
 static struct tm1668_key hdk7105_front_panel_keys[] = {
-
+	{0x80000000, KEY_POWER,	"FP POWER"},
 };
 
-#define TM1668_7_SEG_HEX_DIGITS_UZPS \
-		{ '0', 0x03f }, \
-		{ '1', 0x006 }, \
-		{ '2', 0x05b }, \
-		{ '3', 0x04f }, \
-		{ '4', 0x066 }, \
-		{ '5', 0x06d }, \
-		{ '6', 0x07d }, \
-		{ '7', 0x007 }, \
-		{ '8', 0x07f }, \
-		{ '9', 0x06f }, \
-		{ 'a', 0x077 }, \
-		{ 'b', 0x07c }, \
-		{ 'c', 0x058 }, \
-		{ 'd', 0x05e }, \
-		{ 'e', 0x079 }, \
-		{ 'f', 0x071 }, \
-		{ 't', 0x078 }, \
-		{ 'U', 0x06e }, \
-		{ 'Z', 0x04f }, \
-		{ 'P', 0x037 }, \
-		{ 'S', 0x039 }
-
 static struct tm1668_character hdk7105_front_panel_characters[] = {
-	TM1668_7_SEG_HEX_DIGITS_UZPS,
+	TM1668_7_SEG_LETTERS_ELECARD,
+	TM1668_7_SEG_HEX_DIGITS,
 	TM1668_7_SEG_HEX_DIGITS_WITH_DOT,
 	TM1668_7_SEG_SEGMENTS,
 };

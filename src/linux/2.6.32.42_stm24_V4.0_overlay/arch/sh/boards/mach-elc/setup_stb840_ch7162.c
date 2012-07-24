@@ -34,6 +34,7 @@
 #include <linux/stm/pio.h>
 #include <linux/i2c.h>
 //#include <linux/keyboard.h>
+#include "setup.h"
 
 
 #define HDK7105_PIO_PHY_RESET stm_gpio(15, 5)
@@ -49,12 +50,12 @@ static struct platform_device pdk7105_leds = {
 			 * the other way round, but all tested boards
 			 * had the bi-colour LED fitted like below... */
 			{
-				.name = "LED1", /* This is also frontpanel LED */
+				.name = "WIFI", /* This is also frontpanel LED */
 				.gpio = stm_gpio(11, 6),
 				.active_low = 0,
 			},
 			{
-				.name = "LED2", /* This is also frontpanel LED */
+				.name = "LOCK", /* This is also frontpanel LED */
 				.gpio = stm_gpio(11, 5),
 				.active_low = 0,
 			}
@@ -72,19 +73,8 @@ static struct tm1668_key hdk7105_front_panel_keys[] = {
 };
 
 
-#define TM1668_7_SEG_HEX_DIGITS_ELC \
-		{ 'U', 0x03e }, \
-		{ 'P', 0x037 }, \
-		{ 'S', 0x039 }, \
-		{ 't', 0x078 }, \
-		{ 'n', 0x054 }, \
-		{ 'H', 0x076 }, \
-		{ 'u', 0x01c }, \
-		{ 'y', 0x06e }
-
-
 static struct tm1668_character hdk7105_front_panel_characters[] = {
-	TM1668_7_SEG_HEX_DIGITS_ELC,
+	TM1668_7_SEG_LETTERS_ELECARD,
 	TM1668_7_SEG_HEX_DIGITS,
 	TM1668_7_SEG_HEX_DIGITS_WITH_DOT,
 	TM1668_7_SEG_SEGMENTS,
@@ -97,8 +87,6 @@ static struct platform_device hdk7105_front_panel = {
 		.gpio_dio = stm_gpio(11, 2),
 		.gpio_sclk = stm_gpio(11, 3),
 		.gpio_stb = stm_gpio(11, 4),
-//		.config = tm1668_config_6_digits_12_segments,
-		.config = tm1668_config_7_digits_11_segments,
 
 		.keys_num = ARRAY_SIZE(hdk7105_front_panel_keys),
 		.keys = hdk7105_front_panel_keys,
