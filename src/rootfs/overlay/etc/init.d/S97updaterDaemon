@@ -2,11 +2,12 @@
 #
 # Start updater daemon....
 #
+export PATH=$PATH:/opt/elecard/bin
 
 case "$1" in
    start)
 #	ntpdate 192.168.1.2 
-	/opt/elecard/bin/updaterDaemon &
+	updaterDaemon &
 	;;
    stop)
 	killall updaterDaemon
