@@ -1,0 +1,18 @@
+#!/bin/sh
+
+standbyoff()
+{
+	StbCommandClient -f /tmp/elcd.sock  '{"method":"standby","params":[true],"id": 1}'
+}
+
+standbyon()
+{
+	StbCommandClient -f /tmp/elcd.sock  '{"method":"standby","params":[],"id": 1}'
+	StbCommandClient -f /tmp/frontpanel 't1'
+}
+
+if [ `basename $0` = "standbyoff" ]; then
+	standbyoff
+else
+	standbyon
+fi
