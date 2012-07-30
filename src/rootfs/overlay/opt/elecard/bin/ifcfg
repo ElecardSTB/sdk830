@@ -7,11 +7,15 @@ DEFAULT_LANIP=192.168.111.1
 WAN_CONFIG_FILE=/var/etc/ifcfg-wan
 LAN_CONFIG_FILE=/var/etc/ifcfg-lan
 WLAN_CONFIG_FILE=/var/etc/ifcfg-wlan0
+WAN=eth0
+LAN=wlan0
 
 usage()
 {
 echo "Usage:"
 echo "  $0 config"
+echo "  $0 dhcp"
+echo "  $0 <wan|lan>"
 echo "  $0 get <eth0|wlan|ppp> OPTION"
 echo "  $0 set <eth0|wlan|ppp> OPTION VALUE"
 echo
@@ -22,13 +26,25 @@ echo "  DEFAULT_GATEWAY"
 echo "  BOOTPROTO"
 }
 
-config()
+lan_ip()
 {
 LAN_IP=`edcfg $LAN_CONFIG_FILE get IPADDR`
 if [ -z "$LAN_IP" ]; then
 	LAN_IP=$DEFAULT_LANIP
 fi
-SUBNET_PART=`echo $LAN_IP | cut -d'.' -f1-3`
+echo $LAN_IP
+}
+
+# USage: subnet_part <IPADDR>
+subnet_part()
+{
+echo $1 | cut -d'.' -f1-3
+}
+
+config()
+{
+LAN_IP=`lan_ip`
+SUBNET_PART=`subnet_part $LAN_IP`
 
 echo "auto lo"
 echo "iface lo inet loopback"
@@ -81,12 +97,56 @@ else
 fi
 }
 
+get_wanlan()
+{
+if [ `edcfg $WLAN_CONFIG_FILE get WAN_MODE` = 1 ]; then
+	WAN=wlan0
+	LAN=eth0
+#else
+#	WAN=eth0
+#	LAN=wlan0
+fi
+}
+
+dhcp()
+{
+get_wanlan
+
+LAN_IP=`lan_ip`
+SUBNET_PART=`subnet_part $LAN_IP`
+HOST_ADDR=${LAN_IP##*.}
+if [ "$HOST_ADDR" -gt "128" ]; then
+	RANGE_START=${SUBNET_PART}.10
+	RANGE_END=${SUBNET_PART}.$((${HOST_ADDR}-1))
+else
+	RANGE_START=${SUBNET_PART}.$((${HOST_ADDR}+1))
+	RANGE_END=${SUBNET_PART}.250
+fi
+
+DNS=`grep nameserver /etc/resolv.conf | cut -d' ' -f2 | tr '\n' ','`
+# Remove trailing comma
+DNS=${DNS%?}
+if [ -n "$DNS" ]; then
+	DNS="  option domain-name-servers $DNS;"
+fi
+
+cat <<DHCP_CONF_END
+ddns-update-style none;
+default-lease-time 14400;
+subnet $SUBNET_PART.0 netmask 255.255.255.0 {
+  range $RANGE_START $RANGE_END;
+  option routers $LAN_IP;
+$DNS
+}
+DHCP_CONF_END
+}
+
 case "$1" in
 	get)
 		case "$3" in
 			subnet)
-			SUBNET_PART=`edcfg $LAN_CONFIG_FILE get IPADDR | cut -d'.' -f1-3`
-			test -n "$SUBNET_PART" && echo "$SUBNET_PART.0/24"
+			SUBNET_PART=`subnet_part $(lan_ip)`
+			echo "$SUBNET_PART.0/24"
 			;;
 			*) edcfg /var/etc/ifcfg-$2 get $3
 			;;
@@ -99,6 +159,17 @@ case "$1" in
 	;;
 	config)
 	config
+	;;
+	lan)
+	get_wanlan
+	echo $LAN
+	;;
+	wan)
+	get_wanlan
+	echo $WAN
+	;;
+	dhcp)
+	dhcp
 	;;
 	*)
 	usage
