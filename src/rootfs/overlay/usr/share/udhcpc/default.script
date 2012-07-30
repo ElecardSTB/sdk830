@@ -49,12 +49,14 @@ case "$1" in
 			echo "ppp enabled, ignoring default gateway $router"
 		fi
 
+		if [ -n "$dns" ]; then
 		echo -n > $RESOLV_CONF
 		[ -n "$domain" ] && echo search $domain >> $RESOLV_CONF
 		for i in $dns ; do
 			echo "adding dns $i"
 			echo nameserver $i >> $RESOLV_CONF
 		done
+		fi
 
 		if [ $interface = $LAN ] && ! brctl show | grep $WAN > /dev/null; then
 			SUBNET_PART=`ifconfig $LAN | grep 'inet addr:' | cut -d: -f2 | cut -d'.' -f1-3`
