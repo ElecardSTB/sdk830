@@ -95,7 +95,7 @@ static struct platform_device hdk7105_front_panel = {
 		.brightness = 4,
 		.characters_num = ARRAY_SIZE(hdk7105_front_panel_characters),
 		.characters = hdk7105_front_panel_characters,
-		.text = "b00t",
+		.text = "boot",
 	},
 };
 
