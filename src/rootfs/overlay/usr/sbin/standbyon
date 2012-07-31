@@ -2,11 +2,15 @@
 
 standbyoff()
 {
+	StbCommandClient -f /tmp/frontpanel 'h 500 200'
+	StbCommandClient -f /tmp/frontpanel 'n3 STAND UP'
 	StbCommandClient -f /tmp/elcd.sock  '{"method":"standby","params":[true],"id": 1}'
 }
 
 standbyon()
 {
+	StbCommandClient -f /tmp/frontpanel 'h 500 200'
+	StbCommandClient -f /tmp/frontpanel 'n3 SLEEP'
 	StbCommandClient -f /tmp/elcd.sock  '{"method":"standby","params":[],"id": 1}'
 	StbCommandClient -f /tmp/frontpanel 't1'
 }
