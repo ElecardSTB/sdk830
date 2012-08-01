@@ -30,12 +30,9 @@ case "$1" in
 [% END -%]
 		:
 	else
-		if [ "$WAN" = eth0 ]; then
 		# Get routes and nameservers from dhcp
-		udhcpc -n -i $WAN -s /opt/elecard/bin/udhcpc.nfs
+		udhcpc -n -i eth0 -s /opt/elecard/bin/udhcpc.nfs
 		test -d /sys/class/net/wlan0 && ifup wlan0
-		/sbin/ifup $LAN
-		fi
 	fi
 
 	if brctl show | grep $WAN >/dev/null; then
