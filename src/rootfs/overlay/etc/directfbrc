@@ -1,4 +1,4 @@
-[% IF (ENV.STAPISDK_VERSION == "36.0") || (ENV.STAPISDK_VERSION == "36.2") || (ENV.STAPISDK_VERSION == "38.0") || (ENV.STAPISDK_VERSION == "39.1") -%]
+[% IF (ENV.STAPISDK_VERSION >= 36.0) -%]
 module-dir=/usr/lib/directfb-1.4
 [% ELSE -%]
 module-dir=/usr/lib/directfb-1.4.12
