@@ -13,6 +13,18 @@ WAN=eth0
 LAN=wlan0
 fi
 
+dhcp()
+{
+	if [ -d /sys/class/net/wlan0 -o -d /sys/class/net/eth1 ] && \
+	   [ "`edcfg /var/etc/ifcfg-lan get MODE`" = "NAT" ]; then
+		touch /var/etc/dhcpd.leases
+		[ -f /var/etc/dhcpd.conf ] || ifcfg dhcp > /var/etc/dhcpd.conf
+		dhcpd -q -lf /var/etc/dhcpd.leases -cf /var/etc/dhcpd.conf $LAN
+		return 0
+	fi
+	return 1
+}
+
 case "$1" in
   start)
 	echo -n "Starting network... "
@@ -47,13 +59,7 @@ case "$1" in
 	telnetd
 [% END -%]
 
-	if [ -d /sys/class/net/wlan0 -o -d /sys/class/net/eth1 ] && \
-	   [ "`edcfg /var/etc/ifcfg-lan get MODE`" = "NAT" ]; then
-		echo -n "dhcpd "
-		touch /var/etc/dhcpd.leases
-		[ -f /var/etc/dhcpd.conf ] || ifcfg dhcp > /var/etc/dhcpd.conf
-		dhcpd -q -lf /var/etc/dhcpd.leases -cf /var/etc/dhcpd.conf $LAN
-	fi
+	dhcp && echo -n "dhcp "
 
 	if ! brctl show | grep $WAN > /dev/null; then
 		# Enable ip forwarding
@@ -81,8 +87,14 @@ case "$1" in
 	"$0" stop
 	"$0" start
 	;;
+  dhcpd)
+	echo "Restarting dhcp server..."
+	killall dhcpd &>/dev/null
+	rm -f /var/etc/dhcpd.conf
+	dhcp
+	;;
   *)
-	echo $"Usage: $0 {start|stop|restart}"
+	echo $"Usage: $0 {start|stop|restart|dhcpd}"
 	exit 1
 esac
 

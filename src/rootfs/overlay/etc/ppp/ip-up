@@ -12,4 +12,5 @@ if [ -n "$USEPEERDNS" -a -f $PPP_RESOLV_CONF ]; then
 	else
 		cat $PPP_RESOLV_CONF > /etc/resolv.conf
 	fi
+	/etc/init.d/S40network dhcpd
 fi
