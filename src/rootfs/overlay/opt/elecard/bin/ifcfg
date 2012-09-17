@@ -50,21 +50,23 @@ echo "auto lo"
 echo "iface lo inet loopback"
 echo
 # TODO check eth1 and setup bridge
-if [ `edcfg $WLAN_CONFIG_FILE get WAN_MODE` = 1 ]; then
-	echo "auto wlan0"
-	if [ `edcfg $WLAN_CONFIG_FILE get BOOTPROTO` = "static" ]; then
-		echo "iface wlan0 inet static"
-		echo "  address `edcfg $WLAN_CONFIG_FILE get IPADDR`"
-		MASK=`edcfg $WLAN_CONFIG_FILE get NETMASK`
-		test -n "$MASK" && echo "  netmask $MASK"
-		GW=`edcfg $WLAN_CONFIG_FILE get DEFAULT_GATEWAY`
-		test -n "$GW"   && echo "  gateway $GW"
-	else
-		echo "iface wlan0 inet dhcp"
+if [ "`edcfg $WLAN_CONFIG_FILE get WAN_MODE`" = 1 ]; then
+	if [ "`edcfg $WLAN_CONFIG_FILE get ENABLE_WIRELESS`" = 1 ]; then
+		echo "auto wlan0"
+		if [ "`edcfg $WLAN_CONFIG_FILE get BOOTPROTO`" = "static" ]; then
+			echo "iface wlan0 inet static"
+			echo "  address `edcfg $WLAN_CONFIG_FILE get IPADDR`"
+			MASK=`edcfg $WLAN_CONFIG_FILE get NETMASK`
+			test -n "$MASK" && echo "  netmask $MASK"
+			GW=`edcfg $WLAN_CONFIG_FILE get DEFAULT_GATEWAY`
+			test -n "$GW"   && echo "  gateway $GW"
+		else
+			echo "iface wlan0 inet dhcp"
+		fi
+		echo "  pre-up wpa_supplicant -Dnl80211 -iwlan0 -c $WPA_SUPPLICANT_CONF -B"
+		echo "  pre-up wifi_led.sh 1"
+		echo
 	fi
-	echo "  pre-up wpa_supplicant -Dnl80211 -iwlan0 -c $WPA_SUPPLICANT_CONF -B"
-	echo "  pre-up wifi_led.sh 1"
-	echo
 	echo "auto eth0"
 	echo "iface eth0 inet static"
 	echo "  address $LAN_IP"
@@ -74,7 +76,7 @@ if [ `edcfg $WLAN_CONFIG_FILE get WAN_MODE` = 1 ]; then
 	echo
 else
 	echo "auto eth0"
-	if [ `edcfg $WAN_CONFIG_FILE get BOOTPROTO` = "static" ]; then
+	if [ "`edcfg $WAN_CONFIG_FILE get BOOTPROTO`" = "static" ]; then
 		echo "iface eth0 inet static"
 		echo "  address `edcfg $WAN_CONFIG_FILE get IPADDR`"
 		MASK=`edcfg $WAN_CONFIG_FILE get NETMASK`
@@ -85,21 +87,23 @@ else
 		echo "iface eth0 inet dhcp"
 	fi
 	echo
-	echo "auto wlan0"
-	echo "iface wlan0 inet static"
-	echo "  address $LAN_IP"
-	echo "  netmask 255.255.255.0"
-	echo "  pre-up hostapd $HOSTAPD_CONF -B"
-	echo "  pre-up iptables -t nat -A POSTROUTING -s $SUBNET_PART.0/24 -o eth0 -j MASQUERADE"
-	echo "  pre-up wifi_led.sh 1"
-	echo "  post-down iptables -t nat -D POSTROUTING -s $SUBNET_PART.0/24 -o eth0 -j MASQUERADE || true"
-	echo
+	if [ "`edcfg $WLAN_CONFIG_FILE get ENABLE_WIRELESS`" = 1 ]; then
+		echo "auto wlan0"
+		echo "iface wlan0 inet static"
+		echo "  address $LAN_IP"
+		echo "  netmask 255.255.255.0"
+		echo "  pre-up hostapd $HOSTAPD_CONF -B"
+		echo "  pre-up iptables -t nat -A POSTROUTING -s $SUBNET_PART.0/24 -o eth0 -j MASQUERADE"
+		echo "  pre-up wifi_led.sh 1"
+		echo "  post-down iptables -t nat -D POSTROUTING -s $SUBNET_PART.0/24 -o eth0 -j MASQUERADE || true"
+		echo
+	fi
 fi
 }
 
 get_wanlan()
 {
-if [ `edcfg $WLAN_CONFIG_FILE get WAN_MODE` = 1 ]; then
+if [ "`edcfg $WLAN_CONFIG_FILE get WAN_MODE`" = 1 ]; then
 	WAN=wlan0
 	LAN=eth0
 #else
