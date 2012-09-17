@@ -47,7 +47,8 @@ case "$1" in
 	telnetd
 [% END -%]
 
-	if [ -d /sys/class/net/wlan0 -o -d /sys/class/net/eth1 ]; then
+	if [ -d /sys/class/net/wlan0 -o -d /sys/class/net/eth1 ] && \
+	   [ "`edcfg /var/etc/ifcfg-lan get MODE`" = "NAT" ]; then
 		echo -n "dhcpd "
 		touch /var/etc/dhcpd.leases
 		[ -f /var/etc/dhcpd.conf ] || ifcfg dhcp > /var/etc/dhcpd.conf
