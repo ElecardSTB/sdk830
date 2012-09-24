@@ -36,6 +36,16 @@ case "$1" in
 	brctl addbr br0
 	brctl setfd br0 0
     fi
+
+	if [ ! -d /sys/class/net/wlan0 -a "WAN" = "wlan0" ]; then
+		echo
+		echo "Wi-Fi not found! Falling back to Ethernet"
+		edcfg /var/etc/ifcfg-wlan0 set WAN_MODE 0
+		ifcfg config > /var/etc/interfaces
+		WAN=eth0
+		LAN=wlan0
+	fi
+
 	if ! grep /dev/nfs /proc/cmdline > /dev/null; then
 [% IF ! CONFIG_TESTSERVER_ENABLE -%]
 		/sbin/ifup -a
