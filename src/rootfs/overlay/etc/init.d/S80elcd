@@ -22,7 +22,7 @@ case "$1" in
 	if [ -z "`cat /proc/cmdline | grep /dev/nfs`" ]; then
 		. /etc/profile
 		echo $APP_PATH $URL
-		$APP_PATH $URL >/var/log/elcd.log &
+		$APP_PATH $URL
 		while [ ! -e /tmp/elcd.sock ]; do
 			usleep 100000
 		done
