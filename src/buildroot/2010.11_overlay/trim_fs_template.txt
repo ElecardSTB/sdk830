@@ -27,6 +27,9 @@
 [%ROOTFS%]/etc/init.d/S55userfs
 [%ROOTFS%]/etc/init.d/S91smb
 
+[%ROOTFS%]/etc/network/if-post-down.d/wlan0
+[%ROOTFS%]/etc/network/if-up.d/eth0
+
 #We uses compat wirless modules instead applicable kernel modules mac80211 cfg80211. So trim this.
 [%ROOTFS%]/lib/modules/*/kernel/net/mac80211
 [%ROOTFS%]/lib/modules/*/kernel/net/wireless

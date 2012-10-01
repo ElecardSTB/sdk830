@@ -60,11 +60,13 @@ if [ "`edcfg $WLAN_CONFIG_FILE get WAN_MODE`" = 1 ]; then
 			test -n "$MASK" && echo "  netmask $MASK"
 			GW=`edcfg $WLAN_CONFIG_FILE get DEFAULT_GATEWAY`
 			test -n "$GW"   && echo "  gateway $GW"
+			echo "  pre-up static-dns-config.sh"
 		else
 			echo "iface wlan0 inet dhcp"
 		fi
 		echo "  pre-up wpa_supplicant -Dnl80211 -iwlan0 -c $WPA_SUPPLICANT_CONF -B"
 		echo "  pre-up wifi_led.sh 1"
+		echo "  post-down wifi_down.sh"
 		echo
 	fi
 	echo "auto eth0"
@@ -96,6 +98,7 @@ else
 		echo "  pre-up iptables -t nat -A POSTROUTING -s $SUBNET_PART.0/24 -o eth0 -j MASQUERADE"
 		echo "  pre-up wifi_led.sh 1"
 		echo "  post-down iptables -t nat -D POSTROUTING -s $SUBNET_PART.0/24 -o eth0 -j MASQUERADE || true"
+		echo "  post-down wifi_down.sh"
 		echo
 	fi
 fi
