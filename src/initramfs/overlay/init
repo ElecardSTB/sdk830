@@ -13,7 +13,7 @@ print_process_time() {
 echo -e "\nStarting initramfs... "
 DATE_BEGIN=`date +%s`
 . /etc/profile
-/bin/mount -a
+mount -a
 
 NEWROOT=""
 if [ -n "`cat /proc/cmdline | grep "root=/dev/mtdblock"`" ]; then
@@ -54,6 +54,7 @@ if [ -n "$NEWROOT" ]; then
 	if [ $? -eq 0 -a -e $ROOTFS_MOUNT/init ]; then
 #		. /etc/init.d/rcS stop
 		/etc/init.d/S40network.sh stop
+		/etc/init.d/S13frontpanel.sh stop
 		/etc/init.d/S10watchdog.sh stop
 		mount --move /proc $ROOTFS_MOUNT/proc
 		mount --move /sys $ROOTFS_MOUNT/sys

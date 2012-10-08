@@ -1,6 +1,6 @@
 #/bin/sh
 # Switch leds on PromSvyaz board/
-# Frontpanel daemon should started from initramfs. Just switch on displaing time.
+# Start frontpanel daemon.
 
 [% IF CONFIG_TESTSERVER_ENABLE -%]
 	[% SKIPFILE %]
@@ -14,12 +14,10 @@ case "$1" in
 			echo "0" > /sys/class/leds/RED/brightness
 			echo "1" > /sys/class/leds/GREEN/brightness
 		fi
-		#switch on displaing time
-		StbCommandClient -f /tmp/frontpanel "t1"
+		frontpanel
 		;;
 	stop)
-		#switch off displaing time
-		StbCommandClient -f /tmp/frontpanel "t0"
+		killall frontpanel
 		if [ "$board_name" = "stb840_promSvyaz" ]; then
 			echo "heartbeat" > /sys/class/leds/RED/trigger
 			echo "0" > /sys/class/leds/GREEN/brightness

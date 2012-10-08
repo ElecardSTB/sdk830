@@ -6,7 +6,7 @@ export PATH=$PATH:/opt/elecard/bin
 
 case "$1" in
 	start)
-		frontpanel -t
+		frontpanel -q
 		;;
 	stop)
 		killall frontpanel
