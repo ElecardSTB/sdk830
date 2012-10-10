@@ -36,6 +36,7 @@ extern int device_init_stb840_promSvyaz(int ver);
 extern int device_init_stb840_promWad(int ver);
 extern int device_init_stb840_ch7162(int ver);
 extern int device_init_stb830_reference(int ver);
+extern int device_init_stb_pioneer(int ver);
 
 struct board_descr_s {
 	g_board_type_t		type;
@@ -55,6 +56,7 @@ struct board_descr_s board_descr[] __initdata = {
   {eSTB840_PromWad,		"stb840_promWad",	device_init_stb840_promWad},
   {eSTB840_ch7162,		"stb840_ch7162",	device_init_stb840_ch7162},
   {eSTB830_reference,	"stb830_reference",	device_init_stb830_reference},
+  {eSTB_pioneer,		"stb_pioneer",		device_init_stb_pioneer},
 };
 
 struct board_config_s board_config[]  = {
@@ -64,6 +66,7 @@ struct board_config_s board_config[]  = {
   {eSTB840_PromWad,		-1,	{1, 1} },
   {eSTB840_ch7162,		-1,	{0, 1} },
   {eSTB830_reference,	-1,	{0, 1} },
+  {eSTB_pioneer,		-1,	{0, 1} },
 };
 
 static g_board_type_t g_board_type = eSTB830;

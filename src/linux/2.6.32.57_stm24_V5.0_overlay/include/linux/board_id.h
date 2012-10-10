@@ -13,6 +13,7 @@ typedef enum g_board_type_e {
 	eSTB840_PromWad,
 	eSTB840_ch7162,
 	eSTB830_reference,
+	eSTB_pioneer,
   
 } g_board_type_t;
 
