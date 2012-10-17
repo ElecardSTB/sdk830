@@ -58,15 +58,11 @@ int cxd2820r_set_frontend_c(struct dvb_frontend *fe)
 	/* program tuner */
 	if (fe->ops.tuner_ops.set_params)
 	{
-		if (fe->ops.i2c_gate_ctrl)
-			fe->ops.i2c_gate_ctrl(fe, 1);
 #if (LINUX_VERSION_CODE >= KERNEL_VERSION(3,3,0))
 		fe->ops.tuner_ops.set_params(fe);
 #else
 		fe->ops.tuner_ops.set_params(fe, NULL);
 #endif
-		if (fe->ops.i2c_gate_ctrl)
-			fe->ops.i2c_gate_ctrl(fe, 0);
 	}
 
 	if (priv->delivery_system !=  SYS_DVBC_ANNEX_A) {
