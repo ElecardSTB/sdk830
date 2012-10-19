@@ -4,7 +4,7 @@
 #
 #############################################################
 
-STAPISDK_DEPENDENCIES = zlib tiff libpng jpeg freetype directfb openssl commonlib linuxtv-dvb-apps
+STAPISDK_DEPENDENCIES = zlib tiff libpng jpeg freetype directfb openssl commonlib linuxtv-dvb-apps bzip2
 STAPISDK_APILIB_DEPENDENCIES = elcdrpclib
 
 elcdrpclib:
