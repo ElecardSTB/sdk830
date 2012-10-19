@@ -93,6 +93,14 @@ else
 fi
 export FULL_LINUX_VERSION2 STAPISDK_MULTICOM_VERSION
 
+#create tarballs symlink
+if [ ! -e $PRJROOT/tarballs ]; then
+	DEFAULT_TARBALLS_DIR=/opt/elecard/DSP/tarballs
+	[ ! -e $DEFAULT_TARBALLS_DIR ] && mkdir -p $DEFAULT_TARBALLS_DIR
+	rm -f $PRJROOT/tarballs
+	ln -s $DEFAULT_TARBALLS_DIR $PRJROOT/tarballs
+fi
+
 make -C $PRJROOT scripts
 if [ -z "$STB830_SDK" ]; then
 	. $PRJROOT/src/elecard/setups/common.sh
