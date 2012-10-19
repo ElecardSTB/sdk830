@@ -12,17 +12,18 @@ UPD_CONFIG=dev
 SHORT_COMMENT=3D
 
 export ENABLE_3DRENDERING=1
-
 #rebuild STAPI module with difine ENABLE_3DRENDERING=1
-make -C /opt/STM/stapisdk-35.1/stapp purge_apilib MODULE=sthdmi
+make -C $STSDKROOT/stapp purge_apilib MODULE=sthdmi
+#this is workaround for build sthdmi error
+[ -e $DVD_MAKE/Modules.symvers ] || echo -n " " > $DVD_MAKE/Modules.symvers
+make -C $STSDKROOT/stapp apilib MODULE=sthdmi
 
-if  make -C /opt/STM/stapisdk-35.1/stapp apilib MODULE=sthdmi && 
-    make -C $PRJROOT firmware
-then
-    #rebuild STAPI module to avoid building 3D firmares afterwards.
-    export -n ENABLE_3DRENDERING
-    
-    make -C /opt/STM/stapisdk-35.1/stapp purge_apilib MODULE=sthdmi > /dev/null
-    make -C /opt/STM/stapisdk-35.1/stapp apilib MODULE=sthdmi > /dev/null
-fi
+make -C $PRJROOT firmware
+
+#rebuild STAPI module to avoid building 3D firmares afterwards.
 export -n ENABLE_3DRENDERING
+make -C $STSDKROOT/stapp purge_apilib MODULE=sthdmi
+#this is workaround for build sthdmi error
+[ -e $DVD_MAKE/Modules.symvers ] || echo -n " " > $DVD_MAKE/Modules.symvers
+make -C $STSDKROOT/stapp apilib MODULE=sthdmi
+
