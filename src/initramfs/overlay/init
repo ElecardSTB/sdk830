@@ -43,7 +43,6 @@ if [ -e /tmp/reboot ]; then
 	reboot -f
 fi
 
-
 if [ -n "$NEWROOT" ]; then
 	if [ -n "$ROOTFS_NAND" ]; then
 		/etc/init.d/S10rootfs.bg start
