@@ -5,7 +5,7 @@
 # $4 verbose
 function overlay() {
 	local overlay_dirs=`find $1/* -type d | sort`
-	local overlay_files=`find $1/* -type f`
+	local overlay_files=`find $1/* -type f -o -type l`
 	local D
 	local F
 	if [ "$3" = "1" ]; then
