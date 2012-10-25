@@ -2,11 +2,12 @@
 
 LIRCD=/usr/sbin/lircd
 PID_FILE=/var/run/lircd.pid
-LIRCFLAGS="-o /dev/lircd -P $PID_FILE"
+LIRCFLAGS="-P $PID_FILE"
 
 case "$1" in
     start)
 	echo -n "Starting daemon lircd: "
+        mkdir -p /var/run/lirc 2>/dev/null
         start-stop-daemon --start --quiet --pidfile $PID_FILE --exec $LIRCD -- $LIRCFLAGS
         echo "done"
 	;;
