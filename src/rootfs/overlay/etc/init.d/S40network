@@ -57,12 +57,9 @@ case "$1" in
 		test -d /sys/class/net/wlan0 && ifup wlan0
 	fi
 
-	if brctl show | grep $WAN >/dev/null; then
-		IPTV_GW=$LAN
-	else
-		IPTV_GW=$WAN
-	fi
-	route add -net 224.0.0.0 netmask 240.0.0.0 $IPTV_GW
+	# Add multicast routes for all interfaces
+	route add -net 224.0.0.0 netmask 240.0.0.0 eth0
+	route add -net 224.0.0.0 netmask 240.0.0.0 wlan0
 
 [% IF ENV.UPD_CONFIG != "rel" -%]
 	echo -n "telnet "
