@@ -5,15 +5,22 @@ PACKAGES_CONFIG_FILE=$(PRJROOT)/build_stb830_24/packages/buildroot/output_rootfs
 OPTIONAL_PACKAGES_FILE=$(PRJROOT)/src/buildroot/optional_packages.txt
 #OPTIONAL_PACKAGES = $(shell cat $(OPTIONAL_PACKAGES_FILE))
 
-OPTIONAL_PACKAGES:=$(patsubst %,%-install,$(shell cat $(OPTIONAL_PACKAGES_FILE)))
+OPTIONAL_PACKAGES_INSTALL:=$(patsubst %,%-install,$(shell cat $(OPTIONAL_PACKAGES_FILE)))
+OPTIONAL_PACKAGES_UNINSTALL:=$(patsubst %,%-uninstall,$(shell cat $(OPTIONAL_PACKAGES_FILE)))
 
-$(OPTIONAL_PACKAGES):%: %-write-file
+$(OPTIONAL_PACKAGES_INSTALL):%: %-write-file
+$(OPTIONAL_PACKAGES_UNINSTALL):%: %-read-file
 
 %-write-file:
 	if ! grep $(patsubst %-install,%,$*) $(PACKAGES_CONFIG_FILE) > /dev/null; then \
 	  echo $(patsubst %-install,%,$*) >> $(PACKAGES_CONFIG_FILE); \
 	fi;
 
+%-read-file:
+	if grep $(patsubst %-uninstall,%,$*) $(PACKAGES_CONFIG_FILE) > /dev/null; then \
+	  sed -i -e '/$(patsubst %-uninstall,%,$*)/d' $(PACKAGES_CONFIG_FILE);\
+	fi;
+	
 update-curent-config:
 	$(info $(PRJROOT))
 	if [ -f "$(PACKAGES_CONFIG_FILE)" ]; then\
