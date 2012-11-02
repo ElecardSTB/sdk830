@@ -42,3 +42,5 @@ uninstall-additional:
 
 	
 	
+#LIBFOO_UNINSTALL_TARGET_OPT, contains the make options used to uninstall the package from the target directory. By default, 
+#the value is DESTDIR=$$(TARGET_DIR) uninstall. 

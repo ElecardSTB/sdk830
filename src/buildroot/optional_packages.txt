@@ -1,2 +1,3 @@
 browser
 xworks
+libglib2_bin

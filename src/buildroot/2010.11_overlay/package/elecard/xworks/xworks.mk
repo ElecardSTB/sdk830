@@ -10,7 +10,8 @@ XWORKS_PACKAGES_DIR=$(PRJROOT)/src/update/source/xworks/
 
 XWORKS_INSTALL_DIR=$(patsubst %,$(XWORKS_PACKAGES_DIR)%,$(shell ls $(XWORKS_PACKAGES_DIR) ))
 XWORKS_OVERLAY_FILE=$(patsubst $(XWORKS_PACKAGES_DIR)%,$(ROOTFS)/%,$(shell find $(XWORKS_PACKAGES_DIR)* -type f))
-XWORKS_OVERLAY_DIR=$(patsubst $(XWORKS_PACKAGES_DIR)%,$(ROOTFS)/%,$(shell find $(XWORKS_PACKAGES_DIR)* -type d | sort))
+XWORKS_OVERLAY_DIR=$(patsubst $(XWORKS_PACKAGES_DIR)%,$(ROOTFS)/%,$(shell find $(XWORKS_PACKAGES_DIR)* -type d | sort -r))
+XWORKS_DEPENDENCES=libglib2_bin
 
 $(XWORKS_NAME)-make:
 
@@ -31,7 +32,7 @@ $(XWORKS_NAME)-uninstall:
 	done;\
 	for i in $(XWORKS_OVERLAY_DIR); do \
 		if [ -d $$i ]; then\
-			rmdir $$i;\
+			rmdir --ignore-fail-on-non-empty $$i;\
 		fi;\
 	done
 

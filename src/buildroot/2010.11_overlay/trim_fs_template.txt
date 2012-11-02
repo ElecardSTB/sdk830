@@ -17,7 +17,7 @@
 [%ROOTFS%]/root/modules/stapi_ioctl.ko
 [%ROOTFS%]/root/modules/companion_7105_audio_16bit.bin
 
-[%ROOTFS%]/usr/lib/libQt*.so*
+#[%ROOTFS%]/usr/lib/libQt*.so*
 
 [%ROOTFS%]/opt/elecard/bin/lircd*
 [%ROOTFS%]/opt/elecard/bin/checkUpdate.sh

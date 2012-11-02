@@ -5,7 +5,7 @@
 #############################################################
 BROWSER_NAME=browser
 BROWSER_PACKAGES_DIR=$(PRJROOT)/src/update/source/browser/
-BROWSER_DEPENDENCES=xworks
+BROWSER_DEPENDENCES=xworks libglib2_bin
 
 BROWSER_INSTALL_DIR=$(patsubst %,$(BROWSER_PACKAGES_DIR)%,$(shell ls $(BROWSER_PACKAGES_DIR) ))
 BROWSER_OVERLAY_FILE=$(patsubst $(BROWSER_PACKAGES_DIR)%,$(ROOTFS)/%,$(shell find $(BROWSER_PACKAGES_DIR)* -type f))
