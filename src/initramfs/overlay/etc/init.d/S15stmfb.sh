@@ -8,6 +8,10 @@ insmodSafe() {
 	test -e "$module" && insmod $module "$@"
 }
 
+BOARD_NAME=${board_name%.*}
+#Temporary dont load stmfb driver on PromSvyaz. This hang the board, then watchdog reboot it.
+[ "$BOARD_NAME" = "stb840_promSvyaz" ] && exit 0
+
 case "$1" in
 	start)
 		echo -n "Starting stmfb... "

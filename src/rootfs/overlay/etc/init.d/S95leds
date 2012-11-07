@@ -7,10 +7,11 @@
 [% END -%]
 
 export PATH=$PATH:/opt/elecard/bin
+BOARD_NAME=${board_name%.*}
 
 case "$1" in
 	start)
-		if [ "$board_name" = "stb840_promSvyaz" ]; then
+		if [ "$BOARD_NAME" = "stb840_promSvyaz" ]; then
 			echo "0" > /sys/class/leds/RED/brightness
 			echo "1" > /sys/class/leds/GREEN/brightness
 		fi
@@ -18,7 +19,7 @@ case "$1" in
 		;;
 	stop)
 		killall frontpanel
-		if [ "$board_name" = "stb840_promSvyaz" ]; then
+		if [ "$BOARD_NAME" = "stb840_promSvyaz" ]; then
 			echo "heartbeat" > /sys/class/leds/RED/trigger
 			echo "0" > /sys/class/leds/GREEN/brightness
 		fi
