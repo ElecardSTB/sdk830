@@ -155,6 +155,7 @@ echo "#Build configuration:      " $UPD_CONFIG >> ${descFile}
 echo "#Always Update Flag:       " $ALWAYSUPDATE >> ${descFile}
 
 echo "#STAPISDK version:         " $STAPISDK_VERSION >> ${descFile}
+echo "#Kernel version:           " $FULL_LINUX_VERSION >> ${descFile}
 # echo "#Build Host: "              $HOSTNAME >> ${descFile}
 # echo "#Output Standard:"        $STANDARD >> ${descFile}
 # echo "#Default System Serial:"  $SYSSER >> ${descFile}
