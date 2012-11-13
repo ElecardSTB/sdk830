@@ -33,4 +33,8 @@ pushd $ROOTFS/usr/lib && rm -fr $USR_LIB_SO_LIBS && popd
 echo "Cleaning rootfs_nfs ${ROOTFS}_nfs"
 pushd ${ROOTFS}_nfs/usr/lib && rm -fr $USR_LIB_SO_LIBS && popd
 
+echo "Cleaning multicom libraries from rootfs and rootfs_nfs"
+pushd ${ROOTFS}/root && rm -fr ./multicom* && popd
+pushd ${ROOTFS}_nfs/root && rm -fr ./multicom* && popd
+
 rm -f $ROOTFS_BUILD_DIR/.*_installed
