@@ -50,6 +50,8 @@ null::respawn:/sbin/klogd -n
 # Stuff to do before rebooting
 null::shutdown:/usr/bin/killall klogd
 null::shutdown:/usr/bin/killall syslogd
+null::shutdown:/bin/umount /var/etc
+null::shutdown:/bin/sleep 1
 null::shutdown:/bin/umount -a -r
 null::shutdown:/sbin/swapoff -a
 
