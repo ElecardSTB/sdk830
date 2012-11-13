@@ -9,7 +9,7 @@
 #ftp://ftp.stlinux.com/pub/stlinux/2.4/updates/RPMS/host/stlinux24-host-stmfb-source-3.1_stm24_0103-1.noarch.rpm
 #ftp://ftp.stlinux.com/pub/stlinux/2.4/updates/RPMS/sh4/stlinux24-sh4-stmfb-firmware-1.20-1.noarch.rpm
 ########################### STMFB ###########################
-STMFB_VERSION:=3.1_stm24_0103-1
+STMFB_VERSION:=3.1_stm24_0104-1
 STMFB_SOURCE:=stlinux24-host-stmfb-source-$(STMFB_VERSION).noarch.rpm
 STMFB_SITE:=ftp://ftp.stlinux.com/pub/stlinux/2.4/updates/RPMS/host
 STMFB_DEPENDENCIES:=stmfb-firmware
