@@ -5,7 +5,7 @@
 #############################################################
 
 STAPISDK_DEPENDENCIES = zlib tiff libpng jpeg freetype directfb openssl commonlib linuxtv-dvb-apps bzip2
-STAPISDK_APILIB_DEPENDENCIES = elcdrpclib
+STAPISDK_APILIB_DEPENDENCIES =
 
 elcdrpclib:
 	make CROSS_COMPILE=sh4-linux- BUILD_TARGET=sh4/ -C $(PRJROOT)/src/apps/elcdRpcLib
@@ -48,5 +48,5 @@ endif #ifeq ($(STB830_SDK),)
 
 
 ifeq ($(BR2_PACKAGE_STAPISDK),y)
-TARGETS+=stapisdk stapisdk-apilib
+TARGETS+=stapisdk stapisdk-apilib elcdrpclib
 endif
