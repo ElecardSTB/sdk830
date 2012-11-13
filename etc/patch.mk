@@ -14,7 +14,7 @@ patch_$(4): $1
 
 #$(1): force
 $(4)_OVERLAY_FILES=$(shell find ./$(2)_overlay/ -not -regex ".*.svn.*" -type f)
-$(4)_PATCH_FILES=$(sort $(wildcard ./$(2)_patch/*.patch))
+$(4)_PATCH_FILES=$(sort $(wildcard ./$(2)_patch/*.patch) $(wildcard ./$(2)_patch/additional*/*.patch))
 $(4)_SCRIPT_FILES=$(sort $(wildcard ./$(2)_script/*.sh))
 $(1): $(5) $$($(4)_OVERLAY_FILES) $$($(4)_PATCH_FILES) $$($(4)_SCRIPT_FILES)
 	$(call ECHO_MESSAGE,Patching/overlaying $(4))
