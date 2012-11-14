@@ -1,46 +1,48 @@
 include package/elecard/*/*.mk
+
+ifeq ($(FS_TYPE),rootfs)
+
+SDK830_INSTALLED_OPTPACKS_FILE:=$(BUILD_DIR)/installedOptPacks
+SDK830_OPTPACKS_LIST_FILE:=$(PRJROOT)/src/buildroot/optional_packages.txt
+SDK830_OPTPACKS_LIST:=$(shell cat $(SDK830_OPTPACKS_LIST_FILE))
+
+
+SDK830_OPTPACKS_INSTALL:=$(patsubst %,%-install,$(SDK830_OPTPACKS_LIST))
+SDK830_OPTPACKS_UNINSTALL:=$(patsubst %,%-uninstall,$(SDK830_OPTPACKS_LIST))
+
 TARGETS:=update-curent-config $(TARGETS)
-	
-PACKAGES_CONFIG_FILE=$(PRJROOT)/build_stb830_24/packages/buildroot/output_rootfs/build/config
-OPTIONAL_PACKAGES_FILE=$(PRJROOT)/src/buildroot/optional_packages.txt
-#OPTIONAL_PACKAGES = $(shell cat $(OPTIONAL_PACKAGES_FILE))
-
-OPTIONAL_PACKAGES_INSTALL:=$(patsubst %,%-install,$(shell cat $(OPTIONAL_PACKAGES_FILE)))
-OPTIONAL_PACKAGES_UNINSTALL:=$(patsubst %,%-uninstall,$(shell cat $(OPTIONAL_PACKAGES_FILE)))
-
-$(OPTIONAL_PACKAGES_INSTALL):%: %-write-file
-$(OPTIONAL_PACKAGES_UNINSTALL):%: %-read-file
-
-%-write-file:
-	if ! grep $(patsubst %-install,%,$*) $(PACKAGES_CONFIG_FILE) > /dev/null; then \
-	  echo $(patsubst %-install,%,$*) >> $(PACKAGES_CONFIG_FILE); \
-	fi;
-
-%-read-file:
-	if grep $(patsubst %-uninstall,%,$*) $(PACKAGES_CONFIG_FILE) > /dev/null; then \
-	  sed -i -e '/$(patsubst %-uninstall,%,$*)/d' $(PACKAGES_CONFIG_FILE);\
-	fi;
-	
 update-curent-config:
-	$(info $(PRJROOT))
-	if [ -f "$(PACKAGES_CONFIG_FILE)" ]; then\
-	  mv -f $(PACKAGES_CONFIG_FILE) $(PACKAGES_CONFIG_FILE).tmp;\
+	if [ -f "$(SDK830_INSTALLED_OPTPACKS_FILE)" ]; then\
+		mv -f $(SDK830_INSTALLED_OPTPACKS_FILE) $(SDK830_INSTALLED_OPTPACKS_FILE).prev;\
 	fi;
-	touch $(PACKAGES_CONFIG_FILE)
-	
+	touch $(SDK830_INSTALLED_OPTPACKS_FILE)
+
+$(SDK830_OPTPACKS_INSTALL) $(SDK830_OPTPACKS_UNINSTALL):%: %-adjast-with-config
+
+%-install-adjast-with-config:
+	if ! grep "$*" $(SDK830_INSTALLED_OPTPACKS_FILE) >/dev/null; then \
+		echo "$*" >> $(SDK830_INSTALLED_OPTPACKS_FILE); \
+	fi;
+
+%-uninstall-adjast-with-config:
+	if grep "$*" $(SDK830_INSTALLED_OPTPACKS_FILE) >/dev/null; then \
+		sed -i -e '/$*/d' $(SDK830_INSTALLED_OPTPACKS_FILE);\
+	fi;
 
 target-finalize: uninstall-additional
 
 uninstall-additional:
-	@$(call MESSAGE,"Uninstall optional packages");\
-	cat $(PACKAGES_CONFIG_FILE).tmp | while read line; do \
-	  PACKAGE_NAME=`echo $$line | cut -d':' -f1`; \
-	  if ! grep $$PACKAGE_NAME $(PACKAGES_CONFIG_FILE) > /dev/null; then \
-	    make $$PACKAGE_NAME-uninstall O=$(O) FS_TYPE=$(FS_TYPE); \
-	  fi; \
-	done ;\
+	@$(call MESSAGE,"Uninstall optional packages")
+	cat $(SDK830_INSTALLED_OPTPACKS_FILE).prev
+	cat $(SDK830_INSTALLED_OPTPACKS_FILE)
+	cat $(SDK830_INSTALLED_OPTPACKS_FILE).prev | cut -d':' -f1 | \
+	while read pack_name; do \
+		if ! grep $$pack_name $(SDK830_INSTALLED_OPTPACKS_FILE) >/dev/null; then \
+			make $$pack_name-uninstall O=$(O) FS_TYPE=$(FS_TYPE); \
+		fi; \
+	done
 
-	
-	
+endif #ifeq ($(FS_TYPE),rootfs)
+
 #LIBFOO_UNINSTALL_TARGET_OPT, contains the make options used to uninstall the package from the target directory. By default, 
 #the value is DESTDIR=$$(TARGET_DIR) uninstall. 
