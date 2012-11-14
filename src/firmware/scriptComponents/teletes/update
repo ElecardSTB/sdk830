@@ -9,9 +9,8 @@ port=0xFFFF10e4
 
 hwconfigManager s $HWPART UPADDR $addr
 hwconfigManager s $HWPART UPPORT $port
-hwconfigManager s $HWPART UPDATER_CHECK_NETWORK 1
+hwconfigManager s $HWPART UPNET 1
 hwconfigManager l $HWPART UPURL ""
-
 
 echo "Script executed!!! UPADDR changed on $addr" > /dev/console
 echo "Script executed!!! UPPORT changed on $port" > /dev/console

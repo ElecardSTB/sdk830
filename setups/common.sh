@@ -127,6 +127,7 @@ addToEnv() {
 	fi
 }
 addToEnv PATH $PRJROOT/bin:/opt/STM/STLinux-${LINUX_VERSION}/host/bin
+addToEnv PATH $PRJROOT/src/firmware/bin:$PRJROOT/src/elecard/firmware/bin
 addToEnv PERLLIB $PRJROOT/etc/perllib
 if [ -n "$STB830_SDK" ]; then
 	addToEnv PATH /opt/STM/STLinux-${LINUX_VERSION}/devkit/sh4/bin

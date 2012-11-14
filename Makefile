@@ -65,7 +65,7 @@ endif
 ifneq ($(BUILD_SCRIPT_FW),)
 	$(call ECHO_MESSAGE,Creating script component:)
 	rm -f $(COMPONENT_DIR)/script.tgz
-	cd $(PRJROOT)/src/update/scripts/$(BUILD_SCRIPT_FW) && tar -czf $(COMPONENT_DIR)/script.tgz ./*
+	tar -C $(PRJROOT)/src/firmware/scriptComponents/$(BUILD_SCRIPT_FW) -czf $(COMPONENT_DIR)/script.tgz ./*
 endif
 #	rm -rf $(COMPONENT_DIR)/fwinfo/signatures
 ifneq ($(BUILD_SIGN_WITH),)

@@ -1,0 +1,14 @@
+#!/bin/sh
+
+# stdout and stderr to /dev/console
+exec 1>/dev/console 2>&1
+
+echo "This is a test script."
+echo "Here we can use all that allowed in initramfs."
+
+echo "For example:"
+echo "ls -la /"
+ls -la /
+
+echo "Script executed!!!"
+

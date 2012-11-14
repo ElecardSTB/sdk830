@@ -1,0 +1,14 @@
+#!/bin/sh
+
+EDCFG=/opt/elecard/bin/edcfg
+$EDCFG /var/etc/elecard/elcd.conf set VIDEO_MODE 1080p60
+$EDCFG /config/StbMainApp/settings.conf set 3D_MONITOR 1
+
+
+echo -n "Script executed!!! Resolution changed on " > /dev/console
+$EDCFG /var/etc/elecard/elcd.conf get VIDEO_MODE > /dev/console
+
+echo -n " Show Header3D " > /dev/console
+$EDCFG /config/StbMainApp/settings.conf get 3D_MONITOR > /dev/console
+
+

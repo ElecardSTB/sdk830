@@ -1,5 +1,7 @@
 #!/bin/sh
 
+source $(dirname $0)/../../../etc/checkEnvs.sh
+
 #Comment that add to firmware pack name
 export SHORT_COMMENT=${SHORT_COMMENT:-$1}
 
