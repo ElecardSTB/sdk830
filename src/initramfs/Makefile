@@ -18,17 +18,10 @@ check_overlays: $(INITRAMFS_IMAGES_DIR)/rootfs.cpio
 $(INITRAMFS_IMAGES_DIR)/rootfs.cpio: $(INITRAMFS_OVERLAY_FILES) $(KDIR)/.config
 	make -C ../buildroot initramfs_rm_make_ts
 
-
-#TARGET_DIR variable should be seted by buildroot
-TARGET_DIR?=$(BUILDROOT)/initramfs
-#this calls from buildroot
-overlays:
-	$(call ECHO_MESSAGE,Initramfs overlays)
-	prjfilter ./overlay $(TARGET_DIR) -c $(BUILDROOT)/.prjconfig
-	@echo
-
-
 clean:
 	$(call ECHO_MESSAGE,Initramfs clean)
 	rm -f $(COMPONENT_DIR)/initramfs.cpio
 
+#Dummy target. This calls from buildroot.
+#Real overlay target located in $PRJROOT/src/buildroot/2010.11_overlay/package/elecard/overlays.mk
+overlays:

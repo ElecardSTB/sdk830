@@ -1,15 +1,3 @@
---- buildroot-2010.11_orig/Makefile	2010-11-30 21:52:43.000000000 +0600
-+++ buildroot-2010.11/Makefile	2012-03-07 09:52:40.000000000 +0700
-@@ -401,6 +401,9 @@
- 	rm -f $(BUILD_DIR)/.fakeroot*
- 
- target-finalize:
-+ifneq ($(FS_TYPE),)
-+	make -C $(PRJROOT)/src/$(FS_TYPE) overlays TARGET_DIR=$(TARGET_DIR)
-+endif
- ifeq ($(BR2_HAVE_DEVFILES),y)
- 	( scripts/copy.sh $(STAGING_DIR) $(TARGET_DIR) )
- else
 --- buildroot-2010.11_orig/package/Config.in	2010-11-30 21:52:43.000000000 +0600
 +++ buildroot-2010.11/package/Config.in	2012-03-07 09:52:40.000000000 +0700
 @@ -489,4 +489,7 @@
@@ -31,12 +19,3 @@
  
  define ROOTFS_CPIO_CMD
  	cd $(TARGET_DIR) && find . | cpio --quiet -o -H newc > $$@
---- buildroot-2010.11_orig/package/makedevs/makedevs.c	2010-11-30 21:52:43.000000000 +0600
-+++ buildroot-2010.11/package/makedevs/makedevs.c	2012-03-07 09:52:40.000000000 +0700
-@@ -531,5 +531,5 @@
- 	if (system("/bin/sync"))
- 		bb_error_msg("sync failed, continuing anyway");
- 
--	return 0;
-+	return ret;
- }
