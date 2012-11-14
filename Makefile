@@ -75,13 +75,13 @@ ifneq ($(BUILD_SIGN_WITH),)
 ifneq ($(BUILD_WITHOUT_COMPONENTS_FW),1)
 	for i in $(BUILD_SIGN_WITH); do \
 		for j in kernel rootfs; do \
-			openssl dgst -sign $(PRJROOT)/src/update/keys/private/$$i.pem -out $(COMPONENT_DIR)/fwinfo/signatures/$$i/$$j.sha1 -sha1 $(COMPONENT_DIR)/$${j}1; \
+			openssl dgst -sign $(PRJROOT)/src/firmware/keys/private/$$i.pem -out $(COMPONENT_DIR)/fwinfo/signatures/$$i/$$j.sha1 -sha1 $(COMPONENT_DIR)/$${j}1; \
 		done; \
 	done
 endif
 ifneq ($(BUILD_SCRIPT_FW),)
 	for i in $(BUILD_SIGN_WITH); do \
-		openssl dgst -sign $(PRJROOT)/src/update/keys/private/$$i.pem -out $(COMPONENT_DIR)/fwinfo/signatures/$$i/script.sha1 -sha1 $(COMPONENT_DIR)/script.tgz; \
+		openssl dgst -sign $(PRJROOT)/src/firmware/keys/private/$$i.pem -out $(COMPONENT_DIR)/fwinfo/signatures/$$i/script.sha1 -sha1 $(COMPONENT_DIR)/script.tgz; \
 	done
 endif
 endif

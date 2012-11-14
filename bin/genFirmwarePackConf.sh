@@ -20,7 +20,7 @@ getLastCommit() {
 }
 
 CUR_DIR=$(dirname $0)
-UPDATE_DIR=$PRJROOT/src/update
+SRC_FIRMWARE_DIR=$PRJROOT/src/firmware
 OUTDIR=$BUILDROOT/firmware
 COMPDIR=$BUILDROOT/comps
 
@@ -45,16 +45,16 @@ fi
 upd_config_rev=0
 if [ "$UPD_CONFIG" = "dev" ]; then
 	ALWAYSUPDATE=1
-	if [ ! -e $UPDATE_DIR/.development_revision ]; then
-		echo "1" > $UPDATE_DIR/.development_revision
+	if [ ! -e $SRC_FIRMWARE_DIR/.development_revision ]; then
+		echo "1" > $SRC_FIRMWARE_DIR/.development_revision
 	fi
-	upd_config_rev=`cat $UPDATE_DIR/.development_revision`
+	upd_config_rev=`cat $SRC_FIRMWARE_DIR/.development_revision`
 	if [ -n "$INCREMENT_REVISION" ]; then
-		echo $(($upd_config_rev+1)) > $UPDATE_DIR/.development_revision
+		echo $(($upd_config_rev+1)) > $SRC_FIRMWARE_DIR/.development_revision
 	fi
 else if [ "$UPD_CONFIG" = "rel" ]; then
 	ALWAYSUPDATE=0
-	upd_config_rev=`cat $UPDATE_DIR/.release_revision`
+	upd_config_rev=`cat $SRC_FIRMWARE_DIR/.release_revision`
 else
 	echo "Firmware configuration setted not properly UPD_CONFIG=\"$UPD_CONFIG\", should be dev/rel"
 	popd
