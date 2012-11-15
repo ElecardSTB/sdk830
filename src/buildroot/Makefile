@@ -10,8 +10,9 @@ _ts_makebuildroot := $(TIMESTAMPS_DIR)/.makebuildroot
 
 
 BUILDROOT_VERSION?=2010.11
-
 BUILDROOT_ROOT := $(PACKAGES_DIR)/buildroot
+BUILDROOT_PACK_SITE=http://git.buildroot.net/buildroot/snapshot
+BUILDROOT_PACK_NAME=buildroot-$(BUILDROOT_VERSION).tar.gz
 
 .SECONDARY:
 #.SECONDARY: $(_ts_makebuildroot)_% $(BUILDROOT_ROOT)/output_%/.config
@@ -42,13 +43,11 @@ endif
 
 $(eval $(call createPatchOverlayScriptTarget,$(_ts_patchbuildroot)_rootfs,$(BUILDROOT_VERSION),$(BUILDROOT_ROOT),buildroot,$(_ts_untarbuildroot)_rootfs))
 
-BULDROOT_PACK_SITE=http://git.buildroot.net/buildroot/snapshot
-BULDROOT_PACK_NAME=buildroot-$(BUILDROOT_VERSION).tar.gz
 
 $(_ts_untarbuildroot)_rootfs:
-	test -e $(TARBALLS_DIR)/$(BULDROOT_PACK_NAME) || wget --passive-ftp -nd -P $(TARBALLS_DIR) $(BULDROOT_PACK_SITE)/$(BULDROOT_PACK_NAME)
+	test -e $(TARBALLS_DIR)/$(BUILDROOT_PACK_NAME) || wget --passive-ftp -nd -P $(TARBALLS_DIR) $(BUILDROOT_PACK_SITE)/$(BUILDROOT_PACK_NAME)
 	$(call ECHO_MESSAGE,Unpackage buildroot)
-	tar -xzf $(TARBALLS_DIR)/$(BULDROOT_PACK_NAME) -C $(PACKAGES_DIR)
+	tar -xzf $(TARBALLS_DIR)/$(BUILDROOT_PACK_NAME) -C $(PACKAGES_DIR)
 	ln -s buildroot-$(BUILDROOT_VERSION) $(BUILDROOT_ROOT)
 	mkdir -p $(BUILDROOT_ROOT)/output_rootfs $(BUILDROOT_ROOT)/output_initramfs
 	touch $(_ts_untarbuildroot)_rootfs
