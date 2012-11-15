@@ -29,6 +29,8 @@ source $CUR_DIR/../etc/checkEnvs.sh
 source $PRJROOT/etc/vcs.sh
 pushd $PRJROOT 1>/dev/null
 
+echo_message "Generate firmware description:"
+
 get_ver="git svn info"
 if ! $get_ver &> /dev/null; then
 	get_ver="svn info"

@@ -7,10 +7,10 @@ include $(BUILDROOT)/.prjconfig
 DIRS := $(FIRMWARE_DIR) $(TIMESTAMPS_DIR) $(COMPONENT_DIR) $(PACKAGES_DIR) $(BUILDROOT)/initramfs $(BUILDROOT)/rootfs
 _ts_commonscript := $(TIMESTAMPS_DIR)/.commonscript
 
-.PHONY : all firmware maketools make_description make_components untar_rootfs clean br buildroot rootfs br_i buildroot_i initramfs linux kernel stapisdk stsdk scripts
+.PHONY : all firmware maketools make_components untar_rootfs clean br buildroot rootfs br_i buildroot_i initramfs linux kernel stapisdk stsdk scripts
 
-all: scripts make_description make_components untar_rootfs
-firmware: scripts make_description make_components make_firmware untar_rootfs
+all: scripts make_components untar_rootfs
+firmware: scripts make_components make_firmware untar_rootfs
 firmware: MAKE_FIRMWARE=1
 
 
@@ -31,10 +31,6 @@ $(_ts_commonscript): $(COMMON_SCRIPT_FILES)
 	touch $(_ts_commonscript)
 
 scripts: $(DIRS) $(_ts_commonscript)
-
-make_description: scripts
-	$(call ECHO_MESSAGE,Generate firmware description:)
-	INCREMENT_REVISION=$(MAKE_FIRMWARE) $(PRJROOT)/bin/genFirmwarePackConf.sh
 
 define CHECK_COMP_SIZE
 	@filesize=$$(stat -L -c%s $(1)); \
@@ -58,34 +54,13 @@ make_firmware:
 	$(call CHECK_COMP_SIZE,$(COMPONENT_DIR)/rootfs1,77594624,134217728)
 
 make_components: scripts
+	INCREMENT_REVISION=$(MAKE_FIRMWARE) $(PRJROOT)/bin/genFirmwarePackConf.sh
 ifneq ($(BUILD_WITHOUT_COMPONENTS_FW),1)
 	make -C src/linux
 	make -C src/rootfs
 endif
-ifneq ($(BUILD_SCRIPT_FW),)
-	$(call ECHO_MESSAGE,Creating script component:)
-	rm -f $(COMPONENT_DIR)/script.tgz
-	tar -C $(PRJROOT)/src/firmware/scriptComponents/$(BUILD_SCRIPT_FW) -czf $(COMPONENT_DIR)/script.tgz ./*
-endif
-#	rm -rf $(COMPONENT_DIR)/fwinfo/signatures
-ifneq ($(BUILD_SIGN_WITH),)
-	$(call ECHO_MESSAGE,Sign components with $(BUILD_SIGN_WITH).pem key)
-	mkdir -p $(COMPONENT_DIR)/fwinfo/signatures
-	for i in $(BUILD_SIGN_WITH); do mkdir -p $(COMPONENT_DIR)/fwinfo/signatures/$$i; done
-ifneq ($(BUILD_WITHOUT_COMPONENTS_FW),1)
-	for i in $(BUILD_SIGN_WITH); do \
-		for j in kernel rootfs; do \
-			openssl dgst -sign $(PRJROOT)/src/firmware/keys/private/$$i.pem -out $(COMPONENT_DIR)/fwinfo/signatures/$$i/$$j.sha1 -sha1 $(COMPONENT_DIR)/$${j}1; \
-		done; \
-	done
-endif
-ifneq ($(BUILD_SCRIPT_FW),)
-	for i in $(BUILD_SIGN_WITH); do \
-		openssl dgst -sign $(PRJROOT)/src/firmware/keys/private/$$i.pem -out $(COMPONENT_DIR)/fwinfo/signatures/$$i/script.sha1 -sha1 $(COMPONENT_DIR)/script.tgz; \
-	done
-endif
-endif
-	cd $(COMPONENT_DIR)/fwinfo && tar -czf $(COMPONENT_DIR)/fwinfo.tgz ./*
+	@$(PRJROOT)/bin/genScriptComp.sh
+	@$(PRJROOT)/bin/genDescrComp.sh
 
 
 $(TIMESTAMPS_DIR) $(COMPONENT_DIR) $(FIRMWARE_DIR) $(SDK_PACKAGES_DIR) $(TARBALLS_DIR) $(PACKAGES_DIR):
