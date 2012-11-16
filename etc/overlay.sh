@@ -1,7 +1,7 @@
 #!/bin/bash
 
 # This function copies or removes file tree from $1 to $2
-# $3 copy/remove
+# $3 0-remove, 1-copy
 # $4 verbose
 function overlay() {
 	local overlay_dirs=`find $1/* -type d | sort`
@@ -26,9 +26,12 @@ function overlay() {
 		fi
 	done
 	if [ "$3" != "1" ]; then
-		for i in $overlay_dirs; do
+		local remove_dirs=`echo $overlay_dirs | tr ' ' '\n' | sort -r`
+		for i in $remove_dirs; do
 			D=${i#$1/}
 			rmdir "$2/$D" 2>/dev/null && [ "$4" = "1" ] 2>/dev/null && echo "Removed empty directory $2/$D"
 		done
 	fi
+#run true last command for returning success if it calls from makefile
+	true
 }

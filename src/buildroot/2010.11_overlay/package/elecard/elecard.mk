@@ -12,37 +12,45 @@ SDK830_OPTPACKS_UNINSTALL:=$(patsubst %,%-uninstall,$(SDK830_OPTPACKS_LIST))
 
 TARGETS:=update-curent-config $(TARGETS)
 update-curent-config:
-	if [ -f "$(SDK830_INSTALLED_OPTPACKS_FILE)" ]; then\
-		mv -f $(SDK830_INSTALLED_OPTPACKS_FILE) $(SDK830_INSTALLED_OPTPACKS_FILE).prev;\
+	@if [ -f "$(SDK830_INSTALLED_OPTPACKS_FILE)" ]; then \
+		mv -f $(SDK830_INSTALLED_OPTPACKS_FILE) $(SDK830_INSTALLED_OPTPACKS_FILE).prev; \
 	fi;
-	touch $(SDK830_INSTALLED_OPTPACKS_FILE)
+	@touch $(SDK830_INSTALLED_OPTPACKS_FILE)
+
 
 $(SDK830_OPTPACKS_INSTALL) $(SDK830_OPTPACKS_UNINSTALL):%: %-adjast-with-config
 
+#Here add optional package that will be installed at the beginnig of installedOptPacks file.
+#This need for correcting uninstall packages with their dependences.
 %-install-adjast-with-config:
-	if ! grep "$*" $(SDK830_INSTALLED_OPTPACKS_FILE) >/dev/null; then \
-		echo "$*" >> $(SDK830_INSTALLED_OPTPACKS_FILE); \
-	fi;
+	@if ! grep "$*" $(SDK830_INSTALLED_OPTPACKS_FILE) >/dev/null; then \
+		if [ `stat -c %s $(SDK830_INSTALLED_OPTPACKS_FILE)` -eq 0 ]; then \
+			echo "$*" > $(SDK830_INSTALLED_OPTPACKS_FILE); \
+		else \
+			sed -i "1 i $*" $(SDK830_INSTALLED_OPTPACKS_FILE); \
+		fi; \
+	fi
 
 %-uninstall-adjast-with-config:
-	if grep "$*" $(SDK830_INSTALLED_OPTPACKS_FILE) >/dev/null; then \
-		sed -i -e '/$*/d' $(SDK830_INSTALLED_OPTPACKS_FILE);\
+	@if grep "$*" $(SDK830_INSTALLED_OPTPACKS_FILE) >/dev/null; then \
+		sed -i "/$*/d" $(SDK830_INSTALLED_OPTPACKS_FILE);\
 	fi;
 
 target-finalize: uninstall-additional
 
 uninstall-additional:
 	@$(call MESSAGE,"Uninstall optional packages")
-	cat $(SDK830_INSTALLED_OPTPACKS_FILE).prev
-	cat $(SDK830_INSTALLED_OPTPACKS_FILE)
+# 	cat $(SDK830_INSTALLED_OPTPACKS_FILE).prev
+# 	cat $(SDK830_INSTALLED_OPTPACKS_FILE)
+#copy installedOptPacks because it can be changed while uninstalling unused packages
+	cp -f $(SDK830_INSTALLED_OPTPACKS_FILE) $(SDK830_INSTALLED_OPTPACKS_FILE).copy
 	cat $(SDK830_INSTALLED_OPTPACKS_FILE).prev | cut -d':' -f1 | \
 	while read pack_name; do \
-		if ! grep $$pack_name $(SDK830_INSTALLED_OPTPACKS_FILE) >/dev/null; then \
+		if ! grep $$pack_name $(SDK830_INSTALLED_OPTPACKS_FILE).copy >/dev/null; then \
 			make $$pack_name-uninstall O=$(O) FS_TYPE=$(FS_TYPE); \
 		fi; \
 	done
+	rm -f $(SDK830_INSTALLED_OPTPACKS_FILE).copy
 
 endif #ifeq ($(FS_TYPE),rootfs)
 
-#LIBFOO_UNINSTALL_TARGET_OPT, contains the make options used to uninstall the package from the target directory. By default, 
-#the value is DESTDIR=$$(TARGET_DIR) uninstall. 

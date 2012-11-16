@@ -3,11 +3,17 @@
 # Elecards package versions and ather envs
 #
 #############################################################
+ifeq ($(_ELECARD_ENVIRONMENT_),)
+_ELECARD_ENVIRONMENT_:=1
 
 ELECARD_UPLOAD_SERVER:=ftp://93.91.165.233/incoming/sdk830_packs/
+ELECARD_SMITHY_ADDR:=smithy.elecard.net.ru
+ELECARD_SMITHY_TARBALLS:=http://$(ELECARD_SMITHY_ADDR)/tarballs
 
 UPDATER_PACK_VERSION:=12.07.23_10.04_5afdb3d
 COMMONLIB_PACK_VERSION:=12.07.17_05.44_a9b15f7
 ST2FX_PACK_VERSION:=12.07.19_12.57_628b98a
 STAPISDK_PACK_VERSION:=12.07.19_12.57_628b98a
 MODULES_ELECARD_PACK_VERSION:=12.07.23_10.21_8369d89
+
+endif #ifeq ($(_ELECARD_ENVIRONMENT_),)
