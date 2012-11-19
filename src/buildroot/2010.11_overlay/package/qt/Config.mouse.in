@@ -1,0 +1,18 @@
+menu "Mouse drivers"
+
+config BR2_PACKAGE_QT_MOUSE_PC
+	bool "pc"
+
+config BR2_PACKAGE_QT_MOUSE_LINUXTP
+	bool "linuxtp"
+
+config BR2_PACKAGE_QT_MOUSE_LINUXINPUT
+	bool "linux input"
+
+config BR2_PACKAGE_QT_MOUSE_TSLIB
+	bool "tslib"
+
+config BR2_PACKAGE_QT_MOUSE_QVFB
+	bool "qvfb"
+
+endmenu

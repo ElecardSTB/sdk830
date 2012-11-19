@@ -1,0 +1,11 @@
+--- qt-everywhere-opensource-src-4.8.0_orig/src/3rdparty/javascriptcore/JavaScriptCore/wtf/TCSystemAlloc.cpp	2012-02-13 14:05:57.661684979 +0700
++++ qt-everywhere-opensource-src-4.8.0/src/3rdparty/javascriptcore/JavaScriptCore/wtf/TCSystemAlloc.cpp	2012-02-13 14:05:05.287683145 +0700
+@@ -458,7 +458,7 @@
+   size_t new_length = new_end - new_start;
+   void* newAddress = (void*) new_start;//mmap(reinterpret_cast<char*>(new_start), new_length, PROT_READ | PROT_WRITE, MAP_PRIVATE | MAP_ANONYMOUS | MAP_FIXED, -1, 0);
+    // If the mmap failed then that's ok, we just won't return the memory to the system.
+-  ASSERT_UNUSED(newAddress, newAddress == new_start || newAddress == reinterpret_cast<void*>(MAP_FAILED));
++  ASSERT_UNUSED(newAddress, reinterpret_cast<size_t>(newAddress) == new_start || newAddress == reinterpret_cast<void*>(MAP_FAILED));
+ }
+ 
+ #elif HAVE(VIRTUALALLOC)
