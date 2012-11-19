@@ -9,6 +9,8 @@ wifi_led.sh 0
 kill `cat /var/run/udhcpc.wlan0.pid`
 killall hostapd
 killall wpa_supplicant
+sleep 1
+killall -9 wpa_supplicant
 rm -rf /var/run/wpa_supplicant
 
 # Restore stderr
