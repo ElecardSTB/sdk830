@@ -57,9 +57,8 @@ case "$1" in
 		test -d /sys/class/net/wlan0 && ifup wlan0
 	fi
 
-	# Add multicast routes for all interfaces
-	route add -net 224.0.0.0 netmask 240.0.0.0 eth0
-	route add -net 224.0.0.0 netmask 240.0.0.0 wlan0
+	# Add multicast route
+	route add -net 224.0.0.0 netmask 240.0.0.0 $WAN
 
 [% IF ENV.UPD_CONFIG != "rel" -%]
 	echo -n "telnet "
