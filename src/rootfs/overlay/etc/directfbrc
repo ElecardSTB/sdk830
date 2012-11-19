@@ -13,8 +13,8 @@ fbdev=/dev/fb0
 #no-cursor
 
 #disable-module=lirc
-#disable-module=keyboard
-#disable-module=ps2mouse
+disable-module=keyboard
+disable-module=ps2mouse
 
 pixelformat=ARGB
 bg-color=00000000
