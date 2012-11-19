@@ -1,5 +1,13 @@
 #!/bin/sh
 
+edcfg /var/etc/elecard/StbMainApp/settings.conf set RTPPLAYLIST http://192.168.1.12:8000/www/hdchannels.xspf
+edcfg /var/etc/elecard/StbMainApp/settings.conf set RTPUSEPLAYLIST 1
+edcfg /var/etc/elecard/StbMainApp/settings.conf set TELETESPLAYLIST http://192.126.1.12:8000/www/cameras.xspf
+edcfg /var/etc/elecard/StbMainApp/settings.conf set VODIP 192.168.1.13
+edcfg /var/etc/elecard/StbMainApp/settings.conf set VODINFOIP 192.168.1.13
+edcfg /var/etc/elecard/StbMainApp/settings.conf set VODINFOURL http://192.168.1.12:8000/www/vod.xspf
+edcfg /var/etc/elecard/StbMainApp/settings.conf set VODUSEPLAYLIST 1
+
 HWPART=0
 
 addr=0x420303ea
@@ -10,7 +18,9 @@ port=0xFFFF10e4
 hwconfigManager s $HWPART UPADDR $addr
 hwconfigManager s $HWPART UPPORT $port
 hwconfigManager s $HWPART UPNET 1
+hwconfigManager s $HWPART UPNOMUL 0
 hwconfigManager l $HWPART UPURL ""
+
 
 echo "Script executed!!! UPADDR changed on $addr" > /dev/console
 echo "Script executed!!! UPPORT changed on $port" > /dev/console
