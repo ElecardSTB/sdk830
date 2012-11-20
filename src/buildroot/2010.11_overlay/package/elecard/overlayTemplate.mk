@@ -29,7 +29,7 @@ $$($(2)_TARGET_INSTALL_TARGET):
 
 # Install to staging dir
 $$($(2)_TARGET_INSTALL_STAGING):
-	@$$(call MESSAGE,"Installing to target")
+	@$$(call MESSAGE,"Installing to staging")
 	source $(PRJROOT)/etc/overlay.sh; overlay $$($(2)_DIR)/overlay $(STAGING_DIR) 1 $(ELC_OVERLAY_VERBOSE)
 	$(Q)touch $$@
 
@@ -37,8 +37,14 @@ $$($(2)_TARGET_INSTALL_STAGING):
 $$($(2)_TARGET_UNINSTALL):
 	@$$(call MESSAGE,"Uninstalling")
 	source $(PRJROOT)/etc/overlay.sh; \
+	echo "Uninstall from rootfs"; \
 	overlay $$($(2)_DIR)/overlay $(TARGET_DIR) 0 $(ELC_OVERLAY_VERBOSE); \
-	overlay $$($(2)_DIR)/overlay $(STAGING_DIR) 0 $(ELC_OVERLAY_VERBOSE)
+	echo "Uninstall from staging"; \
+	overlay $$($(2)_DIR)/overlay $(STAGING_DIR) 0 $(ELC_OVERLAY_VERBOSE); \
+	if grep -E "^CONFIG_UNTAR_ROOTFS_FOR_NFS" $(BUILDROOT)/.prjconfig >/dev/null; then \
+		echo "Uninstall from rootfs_nfs"; \
+		overlay $$($(2)_DIR)/overlay $(BUILDROOT)/rootfs_nfs 0 $(ELC_OVERLAY_VERBOSE); \
+	fi
 	rm -f $$($(2)_TARGET_INSTALL_TARGET)
 	rm -f $$($(2)_TARGET_INSTALL_STAGING)
 

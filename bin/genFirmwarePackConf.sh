@@ -65,6 +65,7 @@ fi
 fi
 UPD_CONFIG_REV=`printf %04d $upd_config_rev`
 REVISION=${UPD_CONFIG}${UPD_CONFIG_REV}
+#Why here we define this. See $PRJROOT/src/elecard/apps/COMMONLib/include/common.h[94]: #define STB830_SYSID_INCOMPATIBLE_PART	0x00020090
 SYSID=02-001-1-00-00.01
 DATE=`date +'%Y%m%d%H%M'`
 DATE_READABLE=`date +'%Y-%m-%d %H:%M:%S'`
