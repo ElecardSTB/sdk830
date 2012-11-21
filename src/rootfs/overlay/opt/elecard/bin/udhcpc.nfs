@@ -4,6 +4,7 @@ RESOLV_CONF="/etc/resolv.conf"
 
 case "$1" in
 	renew|bound)
+		logger -t udhcpc.nfs "Config $interface $ip router=$router dns=$dns"
 		echo -n > $RESOLV_CONF
 		[ -n "$domain" ] && echo search $domain >> $RESOLV_CONF
 		for i in $dns; do

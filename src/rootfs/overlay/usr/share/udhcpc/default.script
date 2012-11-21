@@ -9,19 +9,20 @@ RESOLV_CONF="/etc/resolv.conf"
 [ -n "$subnet" ] && NETMASK="netmask $subnet"
 
 WAN=eth0
+LAN=wlan0
 
-if wpa_cli -iwlan0 status >/dev/null; then
+if wpa_cli -iwlan0 status &>/dev/null; then
 	WAN=wlan0
+	LAN=eth0
 fi
-
-LAN=br0
 
 case "$1" in
 	deconfig)
+		logger -t udhcpc "Deconfig $interface"
 		if [ $interface = $LAN ]; then
 			SUBNET_PART=`ifconfig $LAN | grep 'inet addr:' | cut -d: -f2 | cut -d'.' -f1-3`
 			if [ -n $SUBNET_PART ]; then
-				echo "disabling nat for ${SUBNET_PART}.0/24"
+				logger -t udhcpc "disabling nat for ${SUBNET_PART}.0/24"
 				iptables -t nat -D POSTROUTING -s ${SUBNET_PART}.0/24 -o eth0  -j MASQUERADE
 				iptables -t nat -D POSTROUTING -s ${SUBNET_PART}.0/24 -o wlan0 -j MASQUERADE
 			fi
@@ -30,12 +31,12 @@ case "$1" in
 		;;
 
 	renew|bound)
+		logger -t udhcpc "Config $interface $ip router=$router dns=$dns"
 		ifconfig $interface $ip $BROADCAST $NETMASK
 
-		if ! killall -0 pppd || [ $interface = "ppp0" ]; then
+		if ! killall -0 pppd 2>/dev/null || [ $interface = "ppp0" ]; then
 
 		if [ -n "$router" ] ; then
-			echo "deleting routers"
 			while route del default gw 0.0.0.0 dev $interface ; do
 				:
 			done
@@ -46,22 +47,21 @@ case "$1" in
 		fi
 
 		else
-			echo "ppp enabled, ignoring default gateway $router"
+			logger -t udhcpc "ppp enabled, ignoring default gateway $router"
 		fi
 
 		if [ -n "$dns" ]; then
-		echo -n > $RESOLV_CONF
-		[ -n "$domain" ] && echo search $domain >> $RESOLV_CONF
-		for i in $dns ; do
-			echo "adding dns $i"
-			echo nameserver $i >> $RESOLV_CONF
-		done
+			echo -n > $RESOLV_CONF
+			[ -n "$domain" ] && echo search $domain >> $RESOLV_CONF
+			for i in $dns ; do
+				echo nameserver $i >> $RESOLV_CONF
+			done
 		fi
 
 		if [ $interface = $LAN ] && ! brctl show | grep $WAN > /dev/null; then
 			SUBNET_PART=`ifconfig $LAN | grep 'inet addr:' | cut -d: -f2 | cut -d'.' -f1-3`
 			if [ -n $SUBNET_PART ]; then
-				echo "enabling nat for ${SUBNET_PART}.0/24"
+				logger -t udhcpc "enabling nat for ${SUBNET_PART}.0/24"
 				iptables -t nat -A POSTROUTING -s ${SUBNET_PART}.0/24 -o $WAN -j MASQUERADE 
 			fi
 		fi
