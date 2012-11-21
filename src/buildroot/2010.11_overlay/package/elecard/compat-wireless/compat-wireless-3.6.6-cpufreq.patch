@@ -1,0 +1,37 @@
+--- compat-wireless-3.6.2-1-snp.orig/compat/compat-3.1.c	2012-10-16 04:11:41.000000000 +0700
++++ compat-wireless-3.6.2-1-snp/compat/compat-3.1.c	2012-10-16 11:14:05.075432971 +0700
+@@ -18,7 +18,7 @@
+  *
+  * 	cpufreq: expose a cpufreq_quick_get_max routine
+  */
+-
++#ifdef CONFIG_CPU_FREQ
+ unsigned int compat_cpufreq_quick_get_max(unsigned int cpu)
+ {
+ 	struct cpufreq_policy *policy = cpufreq_cpu_get(cpu);
+@@ -32,7 +32,7 @@
+ 	return ret_freq;
+ }
+ EXPORT_SYMBOL(compat_cpufreq_quick_get_max);
+-
++#endif
+ 
+ static DEFINE_SPINLOCK(compat_simple_ida_lock);
+ 
+--- compat-wireless-3.6.2-1-snp.orig/include/linux/compat-3.1.h	2012-09-29 13:58:33.000000000 +0700
++++ compat-wireless-3.6.2-1-snp/include/linux/compat-3.1.h	2012-10-16 11:30:18.160251965 +0700
+@@ -111,10 +111,14 @@
+ 
+ void ida_simple_remove(struct ida *ida, unsigned int id);
+ 
++#ifdef CONFIG_CPU_FREQ
+ /* mask cpufreq_quick_get_max as RHEL6 backports this */
+ #define cpufreq_quick_get_max(a) compat_cpufreq_quick_get_max(a)
+ 
+ unsigned int cpufreq_quick_get_max(unsigned int cpu);
++#else
++static inline unsigned int cpufreq_quick_get_max(unsigned int cpu) { return 0; }
++#endif
+ #endif /* (LINUX_VERSION_CODE < KERNEL_VERSION(3,1,0)) */
+ 
+ #endif /* LINUX_3_1_COMPAT_H */

@@ -4,8 +4,8 @@
 #
 #############################################################
 
-COMPAT_WIRELESS_VERSION = 3.0-2
-COMPAT_WIRELESS_SITE = http://www.orbit-lab.org/kernel/compat-wireless-3-stable/v3.0
+COMPAT_WIRELESS_VERSION = 3.6.6-1-snp
+COMPAT_WIRELESS_SITE = http://www.orbit-lab.org/kernel/compat-wireless-3-stable/v3.6
 COMPAT_WIRELESS_SOURCE = compat-wireless-$(COMPAT_WIRELESS_VERSION).tar.bz2
 
 define COMPAT_WIRELESS_BUILD_CMDS
