@@ -1,0 +1,13 @@
+#!/bin/sh
+#
+
+case "$1" in
+	start)
+		touch /var/log/messages
+		syslogd -m 0
+		klogd
+		;;
+	*)
+		echo $"Usage: $0 {start}"
+		exit 1
+esac

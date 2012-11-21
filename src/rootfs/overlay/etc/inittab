@@ -32,9 +32,6 @@ null::sysinit:/bin/hostname -F /etc/hostname
 #ttyS0::respawn:/sbin/getty -L ttyS0 115200 vt100 # GENERIC_SERIAL
 
 # Logging junk
-null::sysinit:/bin/touch /var/log/messages
-null::respawn:/sbin/syslogd -n -m 0
-null::respawn:/sbin/klogd -n
 #tty3::respawn:/usr/bin/tail -f /var/log/messages
 
 [% IF CONFIG_TESTSERVER_ENABLE || CONFIG_TESTTOOL_ENABLE -%]
