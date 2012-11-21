@@ -148,28 +148,17 @@ static struct mtd_partition nand_parts[] = {
 };
 
 
-/*static struct stm_nand_timing_data nand_timing_data = {
-	.sig_setup		= 100,
-	.sig_hold		= 100,
-	.CE_deassert	= 0,
-	.WE_to_RBn		= 200,
-//	.wr_on			= 10,
-	.wr_on			= 30,
-	.wr_off			= 60,
-	.rd_on			= 20,
-	.rd_off			= 60,
-	.chip_delay		= 60,
-};*/
 static struct stm_nand_timing_data nand_timing_data = {
-	.sig_setup	= 50,		/* times in ns */
-	.sig_hold	= 50,
+	.sig_setup		= 50,		/* times in ns */
+	.sig_hold		= 50,
 	.CE_deassert	= 0,
-	.WE_to_RBn	= 100,
-	.wr_on		= 10,
-	.wr_off		= 40,
-	.rd_on		= 10,
-	.rd_off		= 40,
-	.chip_delay	= 30,		/* in us */
+	.WE_to_RBn		= 100,
+//	.wr_on			= 10,
+	.wr_on			= 15,
+	.wr_off			= 40,
+	.rd_on			= 10,
+	.rd_off			= 40,
+	.chip_delay		= 30,		/* in us */
 };
 
 static struct stm_nand_config stm_nand_device = {
@@ -274,6 +263,15 @@ int __init device_init_stb840_promSvyaz(int ver)
 
 	stx7105_configure_audio(&(struct stx7105_audio_config) {
 			.spdif_player_output_enabled = 1, });
+
+	/*
+	 * FLASH_WP is shared between between NOR and NAND FLASH.  However,
+	 * since NAND MTD has no concept of write-protect, we permanently
+	 * disable WP.
+	 */
+	//Fix, for work with nand in new kernels (2.6.32.57 and higher).
+	gpio_request(HDK7105_GPIO_FLASH_WP, "FLASH_WP");
+	gpio_direction_output(HDK7105_GPIO_FLASH_WP, 1);
 
 	stx7105_configure_nand(&stm_nand_device);
 
