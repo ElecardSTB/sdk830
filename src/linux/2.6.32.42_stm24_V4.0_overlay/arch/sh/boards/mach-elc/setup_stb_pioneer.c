@@ -61,7 +61,7 @@ static struct stmmac_mdio_bus_data stmmac_mdio_bus = {
 /* Configuration for NAND Flash */
 static struct mtd_partition nand_parts[] = {
 	{
-		.name = "Boot",
+		.name = "Boot_flex",
 		.size = 0x00100000,
 		.offset = 0x00000000,
 	}, {
