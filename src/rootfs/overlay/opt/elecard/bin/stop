@@ -1,0 +1,2 @@
+#!/bin/sh
+StbCommandClient  -f /tmp/elcd.sock '{"method":"closestream","params":[],"id": 1}'

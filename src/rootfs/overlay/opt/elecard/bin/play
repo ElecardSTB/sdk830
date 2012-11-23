@@ -1,0 +1,4 @@
+#!/bin/sh
+start_pos=
+if [ $2 -gt 0 ] 2>/dev/null; then start_pos=",$2"; fi
+StbCommandClient -pf /tmp/elcd.sock "{\"method\":\"play\",\"params\":[\"$1\"$start_pos],\"id\": 1}"
