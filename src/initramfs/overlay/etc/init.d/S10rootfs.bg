@@ -40,7 +40,10 @@ case "$1" in
 			killall $pid
 			rm $SCRIPT_TS
 		fi
-		checkMount && echo "unmounting rootfs"; umount $ROOTFS_MOUNT
+		if checkMount; then
+			echo "unmounting rootfs"
+			umount $ROOTFS_MOUNT
+		fi
 		;;
 	*)
 		echo "Usage: $0 {start|stop}"
