@@ -96,22 +96,6 @@ struct cxd2820r_config {
 };
 
 
-#if defined(CONFIG_DVB_CXD2820R) || \
-	(defined(CONFIG_DVB_CXD2820R_MODULE) && defined(MODULE))
-extern struct dvb_frontend *cxd2820r_attach(
-	const struct cxd2820r_config *config,
-	struct i2c_adapter *i2c
-);
-#else
-static inline struct dvb_frontend *cxd2820r_attach(
-	const struct cxd2820r_config *config,
-	struct i2c_adapter *i2c
-)
-{
-	printk(KERN_WARNING "%s: driver disabled by Kconfig\n", __func__);
-	return NULL;
-}
-
-#endif
+struct dvb_frontend *cxd2820r_attach(const struct cxd2820r_config *config, struct i2c_adapter *i2c);
 
 #endif /* CXD2820R_H */
