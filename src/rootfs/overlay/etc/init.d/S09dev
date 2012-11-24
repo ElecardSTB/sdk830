@@ -4,7 +4,7 @@
 case "$1" in
 	start)
 
-		/bin/echo /sbin/mdev > /proc/sys/kernel/hotplug
+		echo "/sbin/mdev" > /proc/sys/kernel/hotplug
 		if [ -f /etc/dev.tar ]; then
 			# Using prebuilt /dev/ archive in retail mode
 			echo -n "Populating /dev using /etc/dev.tar..."
@@ -16,6 +16,7 @@ case "$1" in
 			mkdir -p /dev/pts /dev/shm /dev/mqueue
 			ln -s /proc/self/fd /dev/fd
 		fi
+		echo "/usr/sbin/modprobe" > /proc/sys/kernel/modprobe
 
 		echo "done"
 		;;
