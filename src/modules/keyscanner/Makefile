@@ -1,8 +1,9 @@
 # obj-m is a list of what kernel modules to build.  The .o and other
 # objects will be automatically built from the corresponding .c file -
 # no need to list the source files explicitly.
+MODULE_NAME:=keyscanner
 
-obj-m := keyscanner.o
+obj-m := $(MODULE_NAME).o
 
 # KDIR is the location of the kernel source.  The current standard is
 # to link to the associated source tree from the directory containing
@@ -10,30 +11,21 @@ obj-m := keyscanner.o
 #this can be configured already
 #KDIR  := 
 
+MODULE_NAME := $(MODULE_NAME).ko
+
 # PWD is the current working directory and the location of our module
 # source files.
 PWD   := $(shell pwd)
 
+$(MODULE_NAME): default
 # default is the default make target.  The rule here says to run make
 # with a working directory of the directory containing the kernel
 # source and compile only the modules in the PWD (local) directory.
 default:
 	$(MAKE) -C $(KDIR) M=$(PWD) modules ARCH=sh CROSS_COMPILE=sh4-linux-
 
-
-INSTALL_DIR := $(ROOTFS)/lib/modules/STLinux-$(LINUX_VERSION)
-MODULE_NAME := keyscanner.ko
-
 install: default
-	mkdir -p $(INSTALL_DIR)
-	sh4-linux-strip --strip-debug $(MODULE_NAME)
-	cp -f $(MODULE_NAME) $(INSTALL_DIR)
-
-uninstall:
-	rm -f $(INSTALL_DIR)/$(MODULE_NAME)
-
-$(MODULE_NAME): default
-
+	$(MAKE) -C $(KDIR) M=$(PWD) ARCH=sh INSTALL_MOD_DIR=elecard INSTALL_MOD_PATH=$(ROOTFS) CROSS_COMPILE=sh4-linux- modules_install
 
 clean:
 	$(RM) $(obj-m)

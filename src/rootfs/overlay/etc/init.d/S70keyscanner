@@ -9,17 +9,12 @@ case "$1" in
 	start)
 		if [ "$BOARD_NAME" = "stb830_st" ]; then
 			echo "Starting keyscanner... "
-			MODULE=/lib/modules/STLinux-[%ENV.LINUX_VERSION%]/keyscanner.ko
-			test -e $MODULE && insmod $MODULE
+			modprobe keyscanner
 			if [ ! -c /dev/keypad ]; then
 				mknod /dev/keypad c 99 0
 			fi
 		fi
 # ct1628 driver build in kernel now.
-# 		if [ "$BOARD_NAME" = "stb840_ch7162" ]; then
-# 			MODULE=/lib/modules/STLinux-[%ENV.LINUX_VERSION%]/ct1628.ko
-# 			test -e $MODULE && insmod $MODULE
-# 		fi
 		;;
 	stop)
 		rmmod keyscanner
