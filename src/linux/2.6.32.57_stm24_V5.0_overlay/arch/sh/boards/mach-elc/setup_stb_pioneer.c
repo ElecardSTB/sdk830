@@ -1,7 +1,7 @@
 /*
  * arch/sh/boards/st/stb/elc/setup_stb_pioneer.c
  *
- * Copyright (C) 2012 Elecard CTP
+ * Copyright (C) 2012 Elecard-STB
  * Author: Anton Sergeev (Anton.Sergeev@elecard.ru)
  *
  * May be copied or modified under the terms of the GNU General Public

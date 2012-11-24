@@ -1,7 +1,7 @@
 /*
  * arch/sh/boards/st/stb/elc/setup_stb840_promWad.c
  *
- * Copyright (C) 2011 Elecard CTP
+ * Copyright (C) 2011 Elecard-STB
  * Author: Anton Sergeev (Anton.Sergeev@elecard.ru)
  *
  * May be copied or modified under the terms of the GNU General Public
