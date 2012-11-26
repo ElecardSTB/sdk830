@@ -63,8 +63,22 @@ struct st_dvb_s {
 
 /*** LOCAL CONSTANTS ********************************************************/
 #define dprintk(format, args...) if (st_dvb_debug) { printk("%s[%d]: " format, __FILE__, __LINE__, ##args); }
-
 #define DVB_NUMS 2
+
+#if 1
+#define DVB_CI_FUNC(FUNCTION, RETURN, ...) \
+{ \
+	typeof(&FUNCTION) __a = symbol_request(FUNCTION); \
+	if(__a) { \
+		printk("Cant find %s()\n", #FUNCTION); \
+		return RETURN; \
+	} else { \
+		__a(__VA_ARGS__); \
+	}; \
+}
+#else
+#define DVB_CI_FUNC(FUNCTION, ...) FUNCTION(__VA_ARGS__)
+#endif
 
 /*** LOCAL VARIABLES *********************************************************/
 struct st_dvb_s st_dvb[DVB_NUMS] = {
@@ -90,8 +104,9 @@ static int __init st_dvb_init_module(void)
 				};
 	int i, j;
 
-	if(ci_enable[0] || ci_enable[1])
-		st_dvb_init_stpccrd();
+	if(ci_enable[0] || ci_enable[1]) {
+		DVB_CI_FUNC(st_dvb_init_stpccrd, -1);
+	}
 	for(i = 0; i < DVB_NUMS; i++) {
 		struct dvb_adapter *dvb_adapter = &(st_dvb[i].dvb_adapter);
 
@@ -101,8 +116,9 @@ static int __init st_dvb_init_module(void)
 			continue;
 		}
 		//init dvb-ca
-		if(ci_enable[i])
-			st_dvb_init_ca(i, dvb_adapter);
+		if(ci_enable[i]) {
+			DVB_CI_FUNC(st_dvb_init_ca, -1, i, dvb_adapter);
+		}
 
 		//init frontend
 		for(j = 0; j < ARRAY_SIZE(frontend_ops); j++) {
@@ -137,11 +153,11 @@ static void __exit st_dvb_cleanup_module(void)
 //		else
 //			dprintk("ERROR: %s function unregister_fe=NULL.\n", st_dvb[i].fops->name);
 
-		st_dvb_release_ca(i);
+		DVB_CI_FUNC(st_dvb_release_ca, ,i);
 		dvb_unregister_adapter(&(st_dvb[i].dvb_adapter));
 		st_dvb[i].fops = NULL;
 	}
-	st_dvb_release_stpccrd();
+	DVB_CI_FUNC(st_dvb_release_stpccrd,);
 }
 
 
