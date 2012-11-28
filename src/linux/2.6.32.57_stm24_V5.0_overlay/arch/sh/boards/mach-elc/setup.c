@@ -26,17 +26,13 @@
 #include <linux/i2c.h>
 #include <linux/board_id.h>
 
+#include "setup.h"
+
 #undef ARRAY_SIZE
 #define ARRAY_SIZE(x) (sizeof(x) / sizeof((x)[0]))
 
 
 typedef int (board_init_func)(int ver);
-extern int device_init_stb830(int ver);
-extern int device_init_stb840_promSvyaz(int ver);
-extern int device_init_stb840_promWad(int ver);
-extern int device_init_stb840_ch7162(int ver);
-extern int device_init_stb830_reference(int ver);
-extern int device_init_stb_pioneer(int ver);
 
 struct board_descr_s {
 	g_board_type_t		type;
@@ -89,6 +85,18 @@ static void __init hdk7105_setup(char **cmdline_p)
 			.hw_flow_control = 1,
 			.is_console = 0, });*/
 }
+
+g_board_type_t elc_get_board_type(void)
+{
+	return g_board_type;
+}
+EXPORT_SYMBOL(elc_get_board_type);
+
+int elc_get_board_version(void)
+{
+	return g_board_version;
+}
+EXPORT_SYMBOL(elc_get_board_version);
 
 struct board_special_config_s *get_board_special_config(void)
 {

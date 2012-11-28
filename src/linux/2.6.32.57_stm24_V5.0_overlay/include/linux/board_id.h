@@ -26,6 +26,8 @@ struct board_special_config_s {
 };
 
 extern struct board_special_config_s *get_board_special_config(void);
+extern g_board_type_t elc_get_board_type(void);
+extern int elc_get_board_version(void);
 #endif //#ifdef __KERNEL__
 
 #ifdef __cplusplus

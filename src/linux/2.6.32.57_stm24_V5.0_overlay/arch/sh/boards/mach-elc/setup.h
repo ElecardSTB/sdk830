@@ -80,4 +80,11 @@
 		{ 'Z', 0b01011011 }, \
 		{ 'z', 0b01011011 }
 
+extern int device_init_stb830(int ver);
+extern int device_init_stb840_promSvyaz(int ver);
+extern int device_init_stb840_promWad(int ver);
+extern int device_init_stb840_ch7162(int ver);
+extern int device_init_stb830_reference(int ver);
+extern int device_init_stb_pioneer(int ver);
+
 #endif //#ifndef __MACH_ELC_SETUP_H__
