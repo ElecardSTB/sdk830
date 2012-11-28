@@ -69,7 +69,7 @@ struct st_dvb_s {
 #define DVB_CI_FUNC(FUNCTION, RETURN, ...) \
 { \
 	typeof(&FUNCTION) __a = symbol_request(FUNCTION); \
-	if(__a) { \
+	if(__a == NULL) { \
 		printk("Cant find %s()\n", #FUNCTION); \
 		return RETURN; \
 	} else { \
