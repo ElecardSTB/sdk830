@@ -15,13 +15,13 @@ buildroot:
 
 INITRAMFS_OVERLAY_FILES=$(shell find ./overlay -not -regex ".*.svn.*" -type f)
 check_overlays: $(INITRAMFS_IMAGES_DIR)/rootfs.cpio
-$(INITRAMFS_IMAGES_DIR)/rootfs.cpio: $(INITRAMFS_OVERLAY_FILES) $(KDIR)/.config
+$(INITRAMFS_IMAGES_DIR)/rootfs.cpio: $(INITRAMFS_OVERLAY_FILES) $(KDIR)/.config $(COMPONENT_DIR)/.pubKeysList
 	make -C ../buildroot initramfs_rm_make_ts
 
 clean:
 	$(call ECHO_MESSAGE,Initramfs clean)
 	rm -f $(COMPONENT_DIR)/initramfs.cpio
 
-#Dummy target. This calls from buildroot.
+#Dummy target. This is depricated call from buildroot.
 #Real overlay target located in $PRJROOT/src/buildroot/2010.11_overlay/package/elecard/overlays.mk
 overlays:

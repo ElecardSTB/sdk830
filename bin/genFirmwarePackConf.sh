@@ -114,18 +114,24 @@ if [ -z "$STB830_SDK" ]; then
 	echo " private-elecard-apps(src/elecard/apps)=$PRIVATE_ELECARD_APPS_GIT"
 fi
 
-getBranch ./
-BRANCH=$Return_Val
+#getBranch ./
+#BRANCH=$Return_Val
 #LANG=ENG
 LANG=
 
-[ -n "$BUILD_SCRIPT_FW" ] && COMPONENTS=script
-[ -n "$BUILD_SIGN_WITH" ] && SIGN=sign
-
+COMPONENTS=${BUILD_SCRIPT_FW:+script}
+SIGN=${BUILD_SIGN_WITH:+sign}
 # Comps effect on firmware pack size, so skip adding "comps" to efp name.
 # if [ "$BUILD_WITHOUT_COMPONENTS_FW" != "1" ]; then
 # 	COMPONENTS=${COMPONENTS:+${COMPONENTS}_}comps
 # fi
+
+#This file uses as dependence in $PRJROOT/src/initramfs/Makefile
+CUR_PUBLIC_KEYS_FILELIST=$COMPDIR/.pubKeysList
+if [ "$BUILD_ADD_KEYS_TO_FW" != "`cat $CUR_PUBLIC_KEYS_FILELIST`" ]; then
+#Needs to rebuild initramfs. Refresh file with list of public keys.
+	echo -n "$BUILD_ADD_KEYS_TO_FW" > $CUR_PUBLIC_KEYS_FILELIST
+fi
 
 
 #FWNAME=STB830.$UPD_CONFIG.rev$UPD_CONFIG_REV.$DATE.${BRANCH}svn${FIRMWAREVER}.${LANG}${HOSTNAME}${COMPONENTS}${COMMENT}
@@ -200,7 +206,7 @@ if [ "$BUILD_WITHOUT_COMPONENTS_FW" != "1" ]; then
 		printEnv ENABLE_SECUREMEDIA
 	fi
 
-	echo -e "\n#Build-in rootfs open keys:" >> ${descFile}
+	echo -e "\n#Public keys included into rootfs:" >> ${descFile}
 	printEnv BUILD_ADD_KEYS_TO_FW
 	# echo "#Signatures:"             `ls $UPDATER_DIR/certificates` >> ${descFile}
 else
