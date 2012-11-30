@@ -37,6 +37,7 @@ fi
 . /etc/init.d/rcS start
 
 if [ -e /tmp/reboot ]; then
+	cp /tmp/updater.log /var/etc/updater_last.log
 	. /etc/init.d/rcS stop
 	umount -a
 	print_process_time
