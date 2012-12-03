@@ -18,6 +18,9 @@ check_overlays: $(INITRAMFS_IMAGES_DIR)/rootfs.cpio
 $(INITRAMFS_IMAGES_DIR)/rootfs.cpio: $(INITRAMFS_OVERLAY_FILES) $(KDIR)/.config $(COMPONENT_DIR)/.pubKeysList
 	make -C ../buildroot initramfs_rm_make_ts
 
+#Dummy target if $PRJROOT/bin/genFirmwarePackConf.sh not create this
+$(COMPONENT_DIR)/.pubKeysList:
+
 clean:
 	$(call ECHO_MESSAGE,Initramfs clean)
 	rm -f $(COMPONENT_DIR)/initramfs.cpio
