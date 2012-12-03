@@ -128,7 +128,7 @@ SIGN=${BUILD_SIGN_WITH:+sign}
 
 #This file uses as dependence in $PRJROOT/src/initramfs/Makefile
 CUR_PUBLIC_KEYS_FILELIST=$COMPDIR/.pubKeysList
-if [ "$BUILD_ADD_KEYS_TO_FW" != "`cat $CUR_PUBLIC_KEYS_FILELIST`" ]; then
+if [ ! -e $CUR_PUBLIC_KEYS_FILELIST -o "$BUILD_ADD_KEYS_TO_FW" != "`cat $CUR_PUBLIC_KEYS_FILELIST`" ]; then
 #Needs to rebuild initramfs. Refresh file with list of public keys.
 	echo -n "$BUILD_ADD_KEYS_TO_FW" > $CUR_PUBLIC_KEYS_FILELIST
 fi
