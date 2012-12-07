@@ -5,7 +5,13 @@
 #############################################################
 
 STAPISDK_DEPENDENCIES = zlib tiff libpng jpeg freetype directfb openssl commonlib linuxtv-dvb-apps bzip2 elcdrpclib
+STAPISDK_DEPENDENCIES += cjsonlib
 STAPISDK_APILIB_DEPENDENCIES =
+
+cjsonlib:
+	make CROSS_COMPILE=sh4-linux- BUILD_TARGET=sh4/ -C $(PRJROOT)/src/apps/cJSON
+	mkdir -p $(TARGET_DIR)/opt/elecard/lib/
+	install -m 755 $(PRJROOT)/src/apps/cJSON/sh4/libcjson.so $(TARGET_DIR)/opt/elecard/lib/
 
 elcdrpclib:
 	make CROSS_COMPILE=sh4-linux- BUILD_TARGET=sh4/ -C $(PRJROOT)/src/apps/elcdRpcLib
