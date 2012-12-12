@@ -38,6 +38,7 @@
 
 
 #define HDK7105_PIO_PHY_RESET stm_gpio(15, 5)
+#define HDK7105_GPIO_FLASH_WP stm_gpio(6, 4)
 
 
 static int hdk7105_phy_reset(void *bus)
@@ -61,7 +62,7 @@ static struct stmmac_mdio_bus_data stmmac_mdio_bus = {
 /* Configuration for NAND Flash */
 static struct mtd_partition nand_parts[] = {
 	{
-		.name = "Boot_flex",
+		.name = "Boot",
 		.size = 0x00100000,
 		.offset = 0x00000000,
 	}, {
@@ -195,6 +196,13 @@ int __init device_init_stb_pioneer(int ver)
 	stx7105_configure_audio(&(struct stx7105_audio_config) {
 			.pcm_player_1_enabled = 1,
 			.spdif_player_output_enabled = 1, });
+	/*
+	 * FLASH_WP is shared between between NOR and NAND FLASH.  However,
+	 * since NAND MTD has no concept of write-protect, we permanently
+	 * disable WP.
+	 */
+	gpio_request(HDK7105_GPIO_FLASH_WP, "FLASH_WP");
+	gpio_direction_output(HDK7105_GPIO_FLASH_WP, 1);
 
 	stx7105_configure_nand(&stm_nand_device);
 
