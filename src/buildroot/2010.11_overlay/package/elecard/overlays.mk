@@ -9,7 +9,6 @@ fs-overlays:
 ifeq ($(FS_TYPE),rootfs)
 #rootfs specific overlays
 	cp -f $(BUILDROOT)/comps/fwinfo/firmwareDesc $(TARGET_DIR)
-	-cp -fr /opt/philips/sp7.2/stb810-SP7.2/build_256M_NOIP/rootfs/usr/share/zoneinfo $(TARGET_DIR)/usr/share
 	cp $(PRJROOT)/src/$(FS_TYPE)/dev/dev-stapi-$(STAPISDK_VERSION).tar $(TARGET_DIR)/etc/dev-stapi.tar
 endif
 #Add open keys. clientUpdater work from initramfs and rootfs (check only mode), so copy keys there.
