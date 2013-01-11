@@ -2,6 +2,19 @@
 
 source $(dirname $0)/default_env.sh
 
+update3Dcomponents() {
+	#clean only StbMainApp, because it always builds
+	prjmake -C $PRJROOT/src/apps/StbMainApp clean
+
+	prjmake stsdk sub=purge_apilib MODULE=sthdmi
+	#Rebuild also stfrontend, to fix linking errors: undefined reference to `STFRONTEND_*'
+	for i in sthdmi stfrontend; do 
+		#this fixes errors like: No rule to make target `libstfrontend.a', needed by `libstapi_stpti4.a'. Stop.
+		[ -e $DVD_MAKE/Modules.symvers ] || echo -n " " > $DVD_MAKE/Modules.symvers
+		prjmake stsdk sub=apilib MODULE=$i
+	done
+}
+
 BUILD_SCRIPT_FW=3d_firmware
 
 UPD_CONFIG=dev
@@ -12,20 +25,12 @@ SHORT_COMMENT=3D
 
 # Rebuild STAPI module and StbMainApp with ENABLE_3DRENDERING=1
 export ENABLE_3DRENDERING=1
-make -C $PRJROOT/src/apps/StbMainApp clean
-make -C $STSDKROOT/stapp purge_apilib MODULE=sthdmi
-#this is workaround for build sthdmi error
-[ -e $DVD_MAKE/Modules.symvers ] || echo -n " " > $DVD_MAKE/Modules.symvers
-make -C $STSDKROOT/stapp apilib MODULE=sthdmi
+update3Dcomponents
 
-# Build 3D firmware
-make -C $PRJROOT firmware
+# Build firmware
+prjmake firmware
 
 # Rebuild STAPI module to avoid building 3D firmares afterwards
 export -n ENABLE_3DRENDERING
-make -C $PRJROOT/src/apps/StbMainApp clean
-make -C $STSDKROOT/stapp purge_apilib MODULE=sthdmi
-#this is workaround for build sthdmi error
-[ -e $DVD_MAKE/Modules.symvers ] || echo -n " " > $DVD_MAKE/Modules.symvers
-make -C $STSDKROOT/stapp apilib MODULE=sthdmi
+update3Dcomponents
 
