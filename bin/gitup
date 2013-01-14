@@ -7,7 +7,7 @@ pushd . 1>/dev/null
 for d in $PRJROOT $PRJROOT/src/apps; do
 	cd $d
 	echo "Updating $d"
-	git pull || exit
+	git pull --rebase || exit
 done
 
 if [ -z "$STB830_SDK" ]; then
