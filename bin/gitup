@@ -6,8 +6,18 @@ source $CUR_DIR/../etc/checkEnvs.sh
 pushd . 1>/dev/null
 for d in $PRJROOT $PRJROOT/src/apps; do
 	cd $d
+	if ! git diff-index --cached --quiet HEAD --ignore-submodules --; then
+		echo >&2 "Cannot pull with rebase: your index contains uncommitted changes."
+		exit 1
+	fi
+	stashed_changes=0
+	if ! git diff-files --quiet --ignore-submodules --; then
+		git stash -q
+		stashed_changes=1
+	fi
 	echo "Updating $d"
 	git pull --rebase || exit
+	[ $stashed_changes -eq 0 ] || git stash pop -q || exit
 done
 
 if [ -z "$STB830_SDK" ]; then
