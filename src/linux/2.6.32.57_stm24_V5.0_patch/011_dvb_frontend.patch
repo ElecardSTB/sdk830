@@ -1,0 +1,213 @@
+--- linux-sh4-2.6.32.57_stm24_V5.0_orig/drivers/media/dvb/dvb-core/dvb_frontend.c	2012-09-20 10:18:38.000000000 +0700
++++ linux-sh4-2.6.32.57_stm24_V5.0/drivers/media/dvb/dvb-core/dvb_frontend.c	2012-12-25 13:09:51.050239656 +0700
+@@ -133,6 +133,53 @@
+ 	enum dvbfe_search algo_status;
+ };
+ 
++/*
++ * Due to DVBv3 API calls, a delivery system should be mapped into one of
++ * the 4 DVBv3 delivery systems (FE_QPSK, FE_QAM, FE_OFDM or FE_ATSC),
++ * otherwise, a DVBv3 call will fail.
++ */
++enum dvbv3_emulation_type {
++	DVBV3_UNKNOWN,
++	DVBV3_QPSK,
++	DVBV3_QAM,
++	DVBV3_OFDM,
++	DVBV3_ATSC,
++};
++
++static enum dvbv3_emulation_type dvbv3_type(u32 delivery_system)
++{
++	switch (delivery_system) {
++	case SYS_DVBC_ANNEX_A:
++		return DVBV3_QAM;
++	case SYS_DVBS:
++	case SYS_DVBS2:
++	case SYS_ISDBS:
++	case SYS_DSS:
++		return DVBV3_QPSK;
++	case SYS_DVBT:
++	case SYS_DVBT2:
++	case SYS_ISDBT:
++	case SYS_DMBTH:
++		return DVBV3_OFDM;
++	case SYS_ATSC:
++	case SYS_ATSCMH:
++	case SYS_DVBC_ANNEX_B:
++		return DVBV3_ATSC;
++	case SYS_UNDEFINED:
++	case SYS_ISDBC:
++	case SYS_DVBH:
++	case SYS_DAB:
++	default:
++		/*
++		 * Doesn't know how to emulate those types and/or
++		 * there's no frontend driver from this type yet
++		 * with some emulation code, so, we're not sure yet how
++		 * to handle them, or they're not compatible with a DVBv3 call.
++		 */
++		return DVBV3_UNKNOWN;
++	}
++}
++
+ static void dvb_frontend_wakeup(struct dvb_frontend *fe);
+ 
+ static void dvb_frontend_add_event(struct dvb_frontend *fe, fe_status_t status)
+@@ -1127,21 +1174,39 @@
+ 	c->frequency = p->frequency;
+ 	c->inversion = p->inversion;
+ 
+-	switch (fe->ops.info.type) {
+-	case FE_QPSK:
++	if (c->delivery_system == SYS_UNDEFINED) {
++		switch (fe->ops.info.type)
++		{
++			case FE_OFDM:
++				c->delivery_system = SYS_DVBT; break;
++			case FE_QAM:
++				c->delivery_system = SYS_DVBC_ANNEX_A; break;
++			case FE_QPSK:
++				c->delivery_system = SYS_DVBS; break;
++			case FE_ATSC:
++				c->delivery_system = SYS_ATSC; break;
++			default:
++				printk(KERN_ERR "%s: doesn't know how to handle a DVBv3 frontend type %i\n",
++				__func__, fe->ops.info.type);
++				return;
++		}
++	}
++
++	switch (dvbv3_type(c->delivery_system)) {
++	case DVBV3_QPSK:
+ 		c->modulation = QPSK;   /* implied for DVB-S in legacy API */
+ 		c->rolloff = ROLLOFF_35;/* implied for DVB-S */
+ 		c->symbol_rate = p->u.qpsk.symbol_rate;
+ 		c->fec_inner = p->u.qpsk.fec_inner;
+ 		c->delivery_system = SYS_DVBS;
+ 		break;
+-	case FE_QAM:
++	case DVBV3_QAM:
+ 		c->symbol_rate = p->u.qam.symbol_rate;
+ 		c->fec_inner = p->u.qam.fec_inner;
+ 		c->modulation = p->u.qam.modulation;
+ 		c->delivery_system = SYS_DVBC_ANNEX_AC;
+ 		break;
+-	case FE_OFDM:
++	case DVBV3_OFDM:
+ 		if (p->u.ofdm.bandwidth == BANDWIDTH_6_MHZ)
+ 			c->bandwidth_hz = 6000000;
+ 		else if (p->u.ofdm.bandwidth == BANDWIDTH_7_MHZ)
+@@ -1159,13 +1224,18 @@
+ 		c->hierarchy = p->u.ofdm.hierarchy_information;
+ 		c->delivery_system = SYS_DVBT;
+ 		break;
+-	case FE_ATSC:
++	case DVBV3_ATSC:
+ 		c->modulation = p->u.vsb.modulation;
+ 		if ((c->modulation == VSB_8) || (c->modulation == VSB_16))
+ 			c->delivery_system = SYS_ATSC;
+ 		else
+ 			c->delivery_system = SYS_DVBC_ANNEX_B;
+ 		break;
++	case DVBV3_UNKNOWN:
++		printk(KERN_ERR
++		       "%s: doesn't know how to handle a DVBv3 call to delivery system %i\n",
++		       __func__, c->delivery_system);
++		return;
+ 	}
+ }
+ 
+@@ -1181,21 +1251,21 @@
+ 	p->frequency = c->frequency;
+ 	p->inversion = c->inversion;
+ 
+-	switch (fe->ops.info.type) {
+-	case FE_QPSK:
++	switch (dvbv3_type(c->delivery_system)) {
++	case DVBV3_QPSK:
+ 		dprintk("%s() Preparing QPSK req\n", __func__);
+ 		p->u.qpsk.symbol_rate = c->symbol_rate;
+ 		p->u.qpsk.fec_inner = c->fec_inner;
+ 		c->delivery_system = SYS_DVBS;
+ 		break;
+-	case FE_QAM:
++	case DVBV3_QAM:
+ 		dprintk("%s() Preparing QAM req\n", __func__);
+ 		p->u.qam.symbol_rate = c->symbol_rate;
+ 		p->u.qam.fec_inner = c->fec_inner;
+ 		p->u.qam.modulation = c->modulation;
+ 		c->delivery_system = SYS_DVBC_ANNEX_AC;
+ 		break;
+-	case FE_OFDM:
++	case DVBV3_OFDM:
+ 		dprintk("%s() Preparing OFDM req\n", __func__);
+ 		if (c->bandwidth_hz == 6000000)
+ 			p->u.ofdm.bandwidth = BANDWIDTH_6_MHZ;
+@@ -1213,7 +1283,7 @@
+ 		p->u.ofdm.hierarchy_information = c->hierarchy;
+ 		c->delivery_system = SYS_DVBT;
+ 		break;
+-	case FE_ATSC:
++	case DVBV3_ATSC:
+ 		dprintk("%s() Preparing VSB req\n", __func__);
+ 		p->u.vsb.modulation = c->modulation;
+ 		if ((c->modulation == VSB_8) || (c->modulation == VSB_16))
+@@ -1221,6 +1291,11 @@
+ 		else
+ 			c->delivery_system = SYS_DVBC_ANNEX_B;
+ 		break;
++	case DVBV3_UNKNOWN:
++		printk(KERN_ERR
++		       "%s: doesn't know how to handle a DVBv3 call to delivery system %i\n",
++		       __func__, c->delivery_system);
++		return;
+ 	}
+ }
+ 
+@@ -1712,6 +1787,7 @@
+ 	struct dvb_device *dvbdev = file->private_data;
+ 	struct dvb_frontend *fe = dvbdev->priv;
+ 	struct dvb_frontend_private *fepriv = fe->frontend_priv;
++	struct dtv_frontend_properties *c = &fe->dtv_property_cache;
+ 	int err = -EOPNOTSUPP;
+ 
+ 	switch (cmd) {
+@@ -1720,6 +1796,36 @@
+ 		memcpy(info, &fe->ops.info, sizeof(struct dvb_frontend_info));
+ 		dvb_frontend_get_frequeny_limits(fe, &info->frequency_min, &info->frequency_max);
+ 
++		/*
++		 * Associate the 4 delivery systems supported by DVBv3
++		 * API with their DVBv5 counterpart. For the other standards,
++		 * use the closest type, assuming that it would hopefully
++		 * work with a DVBv3 application.
++		 * It should be noticed that, on multi-frontend devices with
++		 * different types (terrestrial and cable, for example),
++		 * a pure DVBv3 application won't be able to use all delivery
++		 * systems. Yet, changing the DVBv5 cache to the other delivery
++		 * system should be enough for making it work.
++		 */
++		switch (dvbv3_type(c->delivery_system)) {
++		case DVBV3_QPSK:
++			info->type = FE_QPSK;
++			break;
++		case DVBV3_ATSC:
++			info->type = FE_ATSC;
++			break;
++		case DVBV3_QAM:
++			info->type = FE_QAM;
++			break;
++		case DVBV3_OFDM:
++			info->type = FE_OFDM;
++			break;
++		default:
++			info->type = fe->ops.info.type;
++		}
++		dprintk("current delivery system on cache: %d, V3 type: %d\n",
++			c->delivery_system, fe->ops.info.type);
++
+ 		/* Force the CAN_INVERSION_AUTO bit on. If the frontend doesn't
+ 		 * do it, it is done for it. */
+ 		info->caps |= FE_CAN_INVERSION_AUTO;
+
