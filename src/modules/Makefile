@@ -10,7 +10,7 @@ all: install_kernelmodules
 	$(call ECHO_MESSAGE,Building elecard drivers)
 	make -C ./keyscanner install
 	make -C ./st_dvb install
-	make -C ./cxd2820r install
+#	make -C ./cxd2820r install
 
 
 install_kernelmodules: $(_ts_makekernelmodules)
@@ -28,6 +28,6 @@ clean:
 	$(call ECHO_MESSAGE,Cleaning elecard drivers)
 	make -C ./keyscanner clean
 	make -C ./st_dvb clean
-	make -C ./cxd2820r clean
+#	make -C ./cxd2820r clean
 #	$(call ECHO_MESSAGE,Cleaning kernel modules)
 
