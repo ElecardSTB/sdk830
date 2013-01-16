@@ -1,0 +1,5 @@
+config BR2_PACKAGE_LINUXTV
+	bool "The LinuxTV project"
+	help
+	  The LinuxTV project develops and maintains the media driver Linux Kernel Subsystems, which consists of devices for webcams, analog TV, digital TV and remote controllers.
+
