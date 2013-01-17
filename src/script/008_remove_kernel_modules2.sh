@@ -1,7 +1,7 @@
 #!/bin/sh
 
 LINUX_VERSION_PATH=${FULL_LINUX_VERSION}-hdk7105
-#
+#up
 rm -rf $BUILDROOT/rootfs/lib/modules/$LINUX_VERSION_PATH
 if [ -e $BUILDROOT/rootfs_nfs/lib/modules/$LINUX_VERSION_PATH ]; then
 	cd $BUILDROOT/rootfs_nfs/lib/modules/
