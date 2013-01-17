@@ -19,6 +19,8 @@ case "$1" in
 		rmmod stmfb 2>/dev/null
 		rmmod stmcore-display-sti7105 2>/dev/null
 
+		#load dvb-core defore st-modules, for reserving major number 212
+		modprobe dvb-core
 		source $STAPISDK_ROOT/modules/load_modules.sh
 		insmodSafe $STAPISDK_ROOT/modules/stpccrd_core.ko
 		insmodSafe $STAPISDK_ROOT/modules/stpccrd_ioctl.ko
