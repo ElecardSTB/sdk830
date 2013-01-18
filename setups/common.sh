@@ -101,7 +101,6 @@ if [ ! -e $PRJROOT/tarballs ]; then
 	ln -s $DEFAULT_TARBALLS_DIR $PRJROOT/tarballs
 fi
 
-make -C $PRJROOT scripts
 if [ -z "$STB830_SDK" ]; then
 	. $PRJROOT/src/elecard/setups/common.sh
 else
