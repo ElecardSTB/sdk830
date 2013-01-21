@@ -101,7 +101,9 @@ if [ ! -e $PRJROOT/tarballs ]; then
 	ln -s $DEFAULT_TARBALLS_DIR $PRJROOT/tarballs
 fi
 
-make -C $PRJROOT scripts
+TIMESTAMPS_DIR=$BUILDROOT/timestamps
+[ -e $TIMESTAMPS_DIR ] || mkdir -p $TIMESTAMPS_DIR
+touch $TIMESTAMPS_DIR/.stamp_validenvironment
 if [ -z "$STB830_SDK" ]; then
 	. $PRJROOT/src/elecard/setups/common.sh
 else
@@ -135,9 +137,7 @@ fi
 
 
 #Check if stapisdk version is changed from last time
-TIMESTAMPS_DIR=$BUILDROOT/timestamps
 STAPISDK_VERSION_FILE=$TIMESTAMPS_DIR/stapisdk_ver
-[ -e $TIMESTAMPS_DIR ] || mkdir -p $TIMESTAMPS_DIR
 [ -e $STAPISDK_VERSION_FILE ] || touch $STAPISDK_VERSION_FILE
 STAPISDK_VERSION_PREV=`cat $STAPISDK_VERSION_FILE`
 if [ "$STAPISDK_VERSION" != "$STAPISDK_VERSION_PREV" ]; then

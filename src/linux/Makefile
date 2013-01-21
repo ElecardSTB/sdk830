@@ -45,6 +45,8 @@ $(KDIR)/.config: $(KERNEL_CONFIG) $(_ts_configkernel)
 	make -C $(KDIR) ARCH=sh CROSS_COMPILE=sh4-linux- modules_prepare
 #first time modules_prepare modify config, so copy it again:
 	$(call CONFEDIT_EXECUTE,$(KDIR))
+	rm -rf $(BUILDROOT)/rootfs/lib/modules/
+	rm -rf $(BUILDROOT)/rootfs_nfs/lib/modules/
 	touch $@
 
 $(_ts_makekernel):

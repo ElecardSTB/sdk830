@@ -1,7 +1,11 @@
 #!/bin/sh
 
-if [ ! "$PRJROOT" ]; then
+if [ -z "$PRJROOT" ]; then
 	echo "Error: PRJROOT not setted! Did you setup environment?"
+	exit 1
+fi
+if [ ! -e $BUILDROOT/timestamps/.stamp_validenvironment ]; then
+	echo "Environment is obsolete! Please setup environment again."
 	exit 1
 fi
 
