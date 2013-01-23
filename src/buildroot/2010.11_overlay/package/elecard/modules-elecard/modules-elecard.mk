@@ -4,7 +4,7 @@
 #
 #############################################################
 
-MODULES_ELECARD_DEPENDENCES=
+MODULES_ELECARD_DEPENDENCIES=
 ifeq ($(STB830_SDK),)
 
 modules-elecard-install:
@@ -13,7 +13,7 @@ modules-elecard-install:
 modules-elecard-dirclean modules-elecard-clean:
 	make -C $(PRJROOT)/src/elecard/modules clean
 
-modules-elecard: $(MODULES_ELECARD_DEPENDENCES) modules-elecard-install
+modules-elecard: $(MODULES_ELECARD_DEPENDENCIES) modules-elecard-install
 
 ifeq ($(BR2_PACKAGE_MODULES_ELECARD),y)
 TARGETS+=modules-elecard
@@ -37,4 +37,7 @@ $(MODULES_ELECARD_TARGET_EXTRACT):
 	mkdir -p $(MODULES_ELECARD_DIR)
 	tar -C $(MODULES_ELECARD_DIR) -xf $(DL_DIR)/$(MODULES_ELECARD_SOURCE)
 	@touch $@
+
+# Reinstall modules-elecard when kernel config is updated. Because /lib/modules/`uname -r` removes when kernel config is updated.
+$(MODULES_ELECARD_TARGET_INSTALL_TARGET): $(KDIR)/.config
 endif #ifeq ($(STB830_SDK),)
