@@ -11,115 +11,110 @@ mount_base="/mnt"
 RDWR=""
 
 # Log stdout and stderr
-exec 1>/tmp/automount.log
-#exec 1>/dev/console
-exec 2>&1
+exec 1>/tmp/automount.log 2>&1
+#exec 1>/dev/console 2>&1
 #set -x
 
-unmount()
-{
+unmount() {
 	mountpoint=$1
-	#mountpoint="$(echo $1 | tr "[:lower:]" "[:upper:]" | sed 's/SD\(.\)/Disk \1/' | sed 's/ \(.\)\(.\)/ \1 Partition \2/' )"
-	
-	if [ -e "${mount_base}/${mountpoint}" -a -n "${mountpoint}" ]
-	then
-		umount -f "${mount_base}/${mountpoint}"
-		rmdir "${mount_base}/${mountpoint}"
+
+	if [ -e "$mountpoint" ]; then
+		umount -f "$mountpoint"
+		rmdir "$mountpoint"
 
 		# Unmount succeeded
-		echo "==> Unmounted $MDEV (${mount_base}/${mountpoint})" >/dev/console
+		echo "==> Unmounted $MDEV ($mountpoint)" | tee /dev/console
 		exit 0
 	fi
 	exit 1
 }
 
-if [ "$ACTION" = remove ]
-then
+isMounted() {
+	grep "^$MDEV [^ ]* $1" /proc/mounts &>/dev/null && return 0 || return 1
+}
 
-	for fs in vfat ext3 ext2
-	do
-		if [ -n "$(mount -t $fs | grep "$MDEV ")" ]
-		then
+if [ -z "$MDEV" ]; then
+	echo "ERROR! Cant detect mount device."
+fi
+mountpoint=$mount_base/$MDEV
+
+if [ "$ACTION" = remove ]; then
+
+	if ! isMounted; then
+		exit 0
+	fi
+	for fs in vfat ext3 ext2 fuseblk; do
+		if isMounted $fs; then
 			echo "trying unmount $MDEV $fs"
 			# Execute filesystem specific unmount script if present
-			# Fixme: shouldn't "${mount_base}/${mountpoint}" be passed to the unmount script ?
-			[ -x /sbin/umount.${fs} ] && /sbin/umount.${fs}
+			# FIXME: If need to pass $mountpoint to the unmount script ?
+			[ -x /sbin/umount.$fs ] && /sbin/umount.$fs
 
-			unmount $MDEV
+			unmount $mountpoint
 			exit $?
 		fi
 	done
-
-	if [ -n "$(mount -t fuseblk | grep $MDEV)" ]
-	then
-		echo "trying unmount $MDEV ntfs"
-
-		unmount $MDEV
-		exit $?
-	fi
 else
-	#mountpoint="$(echo ${MDEV} | tr "[:lower:]" "[:upper:]" | sed 's/SD\(.\)/Disk \1/' | sed 's/ \(.\)\(.\)/ \1 Partition \2/' )"
-	mountpoint=$MDEV
-
-	if [ -n "${mountpoint}" ]
-	then
-		if [ -n "$(echo $MDEV | grep "sd[a-z]$")" -a "$(ls /dev/$MDEV* | grep -c $MDEV)" != "1" ]; then
-			echo "$MDEV has partitions, so skip it"
+	if echo $MDEV | grep "sd[a-z]$" &>/dev/null; then
+		if ls /dev/$MDEV[0-9]* &>/dev/null; then
+			echo "$MDEV has partitions, so don't try to mount it"
 			exit 0
 		fi
-		
-		echo "$MDEV create ${mount_base}/${mountpoint}"
-		mkdir -p "${mount_base}/${mountpoint}"
+	fi
+	if isMounted; then
+		echo "$MDEV has already mounted"
+		exit 0
+	fi
 
-		for fs in vfat ext3 ext2
-		do
-			echo "try ${MDEV} ${fs} on ${mount_base}/${mountpoint}"
+	echo "$MDEV create $mountpoint"
+	mkdir -p "$mountpoint"
+
+	for fs in vfat ext3 ext2; do
+		echo "try $MDEV $fs on $mountpoint"
+		MOUNT_OPTS=
+		if [ $fs = vfat ]; then
+[% IF CONFIG_TESTSERVER_ENABLE -%]
+			MOUNT_OPTS=",codepage=866,iocharset=utf8,errors=continue"
+[% ELSE -%]
+			MOUNT_OPTS=",codepage=866,iocharset=utf8,errors=remount-ro"
+[% END -%]
+		fi
+
+		if mount -t $fs -o noatime${RDWR}${MOUNT_OPTS} $MDEV $mountpoint; then
+			# Execute filesystem specific mount script if present
+			[ -x /sbin/mount.$fs ] && /sbin/mount.$fs $mountpoint
 			if [ $fs = vfat ]; then
-				MOUNT_OPTS=",codepage=866,iocharset=utf8,errors=continue"
-			else
-				MOUNT_OPTS=
+				echo "Check fat file system $MDEV"
+#					dosfsck -a $MDEV
 			fi
 
-			if mount -t $fs -o noatime${RDWR}${MOUNT_OPTS} $MDEV "${mount_base}/${mountpoint}"
-			then
-				# Execute filesystem specific mount script if present
-				[ -x /sbin/mount.${fs} ] && /sbin/mount.${fs} "${mount_base}/${mountpoint}"
-				if [ $fs = vfat ]; then
-					echo "Check fat file system $MDEV"
-#					dosfsck -a ${MDEV}
-				fi
-
-				# Mount succeeded
-				echo "==> Mounted $MDEV on ${mount_base}/${mountpoint}" >/dev/console
-				echo "done ${fs}"
-
-				exit 0
-			else
-				echo "Not mounted, return=$?"
-	#			ls -la "${mount_base}/${mountpoint}" >/dev/console
-			fi
-		done
-
-		echo "try ${MDEV} ntfs on ${mount_base}/${mountpoint}"
-		if ntfs-3g -o noatime${RDWR} $MDEV "${mount_base}/${mountpoint}"
-		then
 			# Mount succeeded
-			echo "==> Mounted $MDEV on ${mount_base}/${mountpoint}" >/dev/console
-			echo "done ntfs"
+			echo "==> Mounted $MDEV on $mountpoint" | tee /dev/console
+			echo "done $fs"
 
 			exit 0
 		else
 			echo "Not mounted, return=$?"
-#			ls -la "${mount_base}/${mountpoint}" >/dev/console
+#			ls -la "$mountpoint" | tee /dev/console
 		fi
+	done
 
-		umount -f "${mount_base}/${mountpoint}"
-		# Mount attempts failed... remove mount directory
+	echo "try $MDEV ntfs on $mountpoint"
+	if ntfs-3g -o noatime${RDWR} $MDEV $mountpoint; then
+		# Mount succeeded
+		echo "==> Mounted $MDEV on $mountpoint" | tee /dev/console
+		echo "done ntfs"
 
-		rmdir "${mount_base}/${mountpoint}"
-		echo "remove ${mount_base}/${mountpoint}"
+		exit 0
 	else
-		echo "cant detect mountpoint"
+		echo "Not mounted, return=$?"
+#		ls -la "$mountpoint" | tee /dev/console
 	fi
+
+	umount -f $mountpoint
+	# Mount attempts failed... remove mount directory
+
+	rmdir $mountpoint
+	echo "remove $mountpoint"
 
 fi
