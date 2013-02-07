@@ -1,0 +1,6 @@
+# Huawei E169, E180, E220, E230, E270, E870, V725 Phone (aka Vodafone 725)
+
+TargetClass=0xff
+
+HuaweiMode=1
+

@@ -1,0 +1,40 @@
+--- usb_modeswitch-1.2.5/Makefile.orig	2013-02-01 15:34:27.020524910 +0700
++++ usb_modeswitch-1.2.5/Makefile	2013-02-01 15:36:17.397597395 +0700
+@@ -1,6 +1,6 @@
+ PROG        = usb_modeswitch
+ VERS        = 1.2.5
+-CC          = gcc
++CC          ?= gcc
+ CFLAGS      += -Wall
+ LIBS        = -l usb
+ RM          = /bin/rm -f
+@@ -46,9 +46,9 @@
+ 	cd jim && $(MAKE) distclean
+ 
+ install-common: all
+-	install -D -s --mode=755 usb_modeswitch $(SBINDIR)/usb_modeswitch
+-	install -D --mode=755 usb_modeswitch.sh $(UDEVDIR)/usb_modeswitch
+-	install -D --mode=644 usb_modeswitch.conf $(ETCDIR)/usb_modeswitch.conf
++	install -D --mode=755 usb_modeswitch $(SBINDIR)/usb_modeswitch
++	#install -D --mode=755 usb_modeswitch.sh $(UDEVDIR)/usb_modeswitch
++	#install -D --mode=644 usb_modeswitch.conf $(ETCDIR)/usb_modeswitch.conf
+ 	install -D --mode=644 usb_modeswitch.1 $(MANDIR)/usb_modeswitch.1
+ 	install -d $(DESTDIR)/var/lib/usb_modeswitch
+ 
+@@ -64,13 +64,13 @@
+ 	sed 's_!/usr/bin/tclsh_!'"$$SHELL"'_' <usb_modeswitch.tcl >usb_modeswitch_dispatcher
+ 	install -D --mode=755 usb_modeswitch_dispatcher $(SBINDIR)/usb_modeswitch_dispatcher
+ 
+-install: install-common install-script
++install: install-common
+ 
+ install-shared: dispatcher-dynamic install-common
+-	install -D -s --mode=755 usb_modeswitch_dispatcher $(SBINDIR)/usb_modeswitch_dispatcher
++	install -D --mode=755 usb_modeswitch_dispatcher $(SBINDIR)/usb_modeswitch_dispatcher
+ 
+ install-static: dispatcher-static install-common
+-	install -D -s --mode=755 usb_modeswitch_dispatcher $(SBINDIR)/usb_modeswitch_dispatcher
++	install -D --mode=755 usb_modeswitch_dispatcher $(SBINDIR)/usb_modeswitch_dispatcher
+ 
+ uninstall:
+ 	$(RM) $(SBINDIR)/usb_modeswitch

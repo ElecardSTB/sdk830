@@ -1,5 +1,0 @@
-config BR2_PACKAGE_MODULES_ELECARD
-	bool "Elecard modules, private"
-	help
-	  st_dvb.
-

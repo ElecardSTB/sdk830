@@ -1,0 +1,18 @@
+#!/bin/sh
+#
+
+case "$1" in
+	start)
+		mount -t usbfs none /proc/bus/usb
+		lsusb | cut -d' ' -f6 | while read VID_PID; do
+			if [ -f "/usr/share/usb_modeswitch/$VID_PID" ]; then
+				VID=${VID_PID%:*}
+				PID=${VID_PID#*:}
+				/usr/sbin/usb_modeswitch -D -c /usr/share/usb_modeswitch/$VID_PID -v $VID -p $PID
+			fi
+		done
+		;;
+	*)
+		echo $"Usage: $0 {start}"
+		exit 1
+esac

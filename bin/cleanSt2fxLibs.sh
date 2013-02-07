@@ -25,16 +25,16 @@ USR_LIB_SO_LIBS=" \
 
 echo "$USR_LIB_SO_LIBS"
 echo "Cleaning staging $STAGINGDIR"
-pushd $STAGINGDIR/usr/lib && rm -fr $USR_LIB_SO_LIBS && popd
+pushd $STAGINGDIR/usr/lib 2>/dev/null && rm -fr $USR_LIB_SO_LIBS && popd
 
 echo "Cleaning rootfs $ROOTFS"
-pushd $ROOTFS/usr/lib && rm -fr $USR_LIB_SO_LIBS && popd
+pushd $ROOTFS/usr/lib 2>/dev/null && rm -fr $USR_LIB_SO_LIBS && popd
 
 echo "Cleaning rootfs_nfs ${ROOTFS}_nfs"
-pushd ${ROOTFS}_nfs/usr/lib && rm -fr $USR_LIB_SO_LIBS && popd
+pushd ${ROOTFS}_nfs/usr/lib 2>/dev/null && rm -fr $USR_LIB_SO_LIBS && popd
 
 echo "Cleaning multicom libraries from rootfs and rootfs_nfs"
-pushd ${ROOTFS}/root && rm -fr ./multicom* && popd
-pushd ${ROOTFS}_nfs/root && rm -fr ./multicom* && popd
+pushd ${ROOTFS}/root 2>/dev/null && rm -fr ./multicom* && popd
+pushd ${ROOTFS}_nfs/root 2>/dev/null && rm -fr ./multicom* && popd
 
 rm -f $ROOTFS_BUILD_DIR/.*_installed

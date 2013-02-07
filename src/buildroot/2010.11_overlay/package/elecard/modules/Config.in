@@ -3,3 +3,7 @@ config BR2_PACKAGE_ELECARD_MODULES
 	help
 	  Elecard STB830 modules.
 
+config BR2_PACKAGE_ELECARD_MODULES_PRIV
+	bool "Elecard modules, private part"
+	help
+	  mxl201.
