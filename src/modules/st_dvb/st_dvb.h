@@ -1,19 +1,28 @@
-#ifndef __ST_DVB_H
-#define __ST_DVB_H
-
 /*
  * Copyright (C) 2012 by Elecard-STB.
  * Written by Andrey Kuleshov <Andrey.Kuleshov@elecard.ru>
  *
  * Common header for st_dvb wrapper driver.
  */
+#ifndef __ST_DVB_H
+#define __ST_DVB_H
 
+/******************************************************************
+* EXPORTED MACROS                                                 *
+*******************************************************************/
 #define FRONTEND_NUM 2
 
+/******************************************************************
+* EXPORTED DATA                                                   *
+*******************************************************************/
 extern int pll_debug;
 extern int st_dvb_debug;
 
-static inline int get_i2c_bus(int slot_num)
+
+/******************************************************************
+* EXPORTED FUNCTIONS PROTOTYPES                                   *
+*******************************************************************/
+static inline uint32_t get_i2c_bus(int slot_num)
 {
 	switch(slot_num) {
 		case 0:
