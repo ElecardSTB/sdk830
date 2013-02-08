@@ -9,6 +9,7 @@ LINUXTV_DIR=$(BUILD_DIR)/media_build
 
 LINUXTV_DEPENDENCIES =
 LINUXTV_URL=http://smithy.elecard.net.ru/misc_repos/media_build_elc.bare
+#LINUXTV_URL=ssh://stb@smithy.elecard.net.ru/opt/elecard/DSP/misc/media_build_elc.bare
 LINUXTV_MAKE_OPTS=DIR=$(KDIR) SRCDIR=$(KDIR) ARCH=sh CROSS_COMPILE=sh4-linux- DESTDIR=$(TARGET_DIR)/ KDIR26=lib/modules/2.6.32.57_stm24_V5.0-hdk7105/linuxtv
 
 LINUXTV_MESSAGE = @echo "$(TERM_BOLD)>>> LinuxTV: $(1)$(TERM_RESET)"
