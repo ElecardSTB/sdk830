@@ -8,3 +8,6 @@ tarballs
 *.ko.cmd
 *.mod.c
 *.ko
+Module.symvers
+modules.order
+.tmp_versions/
