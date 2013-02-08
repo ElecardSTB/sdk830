@@ -10,7 +10,13 @@
 /******************************************************************
 * INCLUDE FILES                                                   *
 *******************************************************************/
-#include <dvb_frontend.h>
+#ifdef USE_LINUXTV
+#include <uapi/linux/dvb/frontend.h>
+//#include <v4l/config-compat.h>
+#else
+//#include <dvb_frontend.h>
+#endif
+
 #include <dvb-pll.h>
 
 #include "sonydvbt2.h"
@@ -56,8 +62,11 @@ typedef struct {
 /******************************************************************
 * STATIC DATA                                                     *
 *******************************************************************/
-struct cxd2820r_config	cxd2820r_cfg = {
+static struct cxd2820r_config	cxd2820r_cfg = {
 	.i2c_address = CXD2820R_I2C_U1,
+#ifdef USE_LINUXTV
+	.ts_mode     = CXD2820R_TS_PARALLEL_MSB,
+#else
 	.ts_mode     = CXD2820R_TS_PARALLEL_MSB | CXD2820R_TS_CLK_ACTIVE,
 	.if_agc_polarity = 0,
 	.if_dvbt_6  = 5000,
@@ -71,6 +80,7 @@ struct cxd2820r_config	cxd2820r_cfg = {
 	.gpio_dvbt   = { CXD2820R_GPIO_D, CXD2820R_GPIO_E | CXD2820R_GPIO_O | CXD2820R_GPIO_L, CXD2820R_GPIO_D },
 	.gpio_dvbc   = { CXD2820R_GPIO_D, CXD2820R_GPIO_E | CXD2820R_GPIO_O | CXD2820R_GPIO_L, CXD2820R_GPIO_D },
 	.gpio_dvbt2  = { CXD2820R_GPIO_D, CXD2820R_GPIO_E | CXD2820R_GPIO_O | CXD2820R_GPIO_L, CXD2820R_GPIO_D },
+#endif
 };
 
 pllDescription_t pllDescripton[] = {
@@ -129,7 +139,11 @@ int sonydvbt2_register_frontend(int slot_num, struct dvb_adapter *dvb_adapter)
 		goto error;
 	}
 
+#ifdef USE_LINUXTV
+	fe = dvb_attach(cxd2820r_attach, &cxd2820r_cfg, adapter, NULL);
+#else
 	fe = dvb_attach(cxd2820r_attach, &cxd2820r_cfg, adapter);
+#endif
 	if(!fe) {
 		dprintk("cant attach cxd2820r\n");
 		err = -1;

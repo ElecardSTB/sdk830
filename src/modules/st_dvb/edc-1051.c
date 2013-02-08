@@ -9,11 +9,15 @@
  @File   edc-1051.c
  @brief
 */
-//general
-#include "linux/module.h"
-
-//dvb
+/******************************************************************
+* INCLUDE FILES                                                   *
+*******************************************************************/
+#include <linux/module.h>
 #include <linux/i2c.h>
+
+#ifdef USE_LINUXTV
+#include <uapi/linux/dvb/frontend.h>
+#endif
 //#include <drivers/media/dvb/dvb-core/dvbdev.h>
 #include <tda1002x.h>
 #include <dvb-pll.h>
@@ -21,21 +25,14 @@
 #include "st_dvb.h"
 #include "edc-1051.h"
 
-/*** MODULE PARAMETERS *******************************************************/
-static int edc_1051_debug = 0;
-module_param_named(debug_edc_1051, edc_1051_debug, int, 0644);
-MODULE_PARM_DESC(debug_edc_1051, "enable verbose debug messages");
+/******************************************************************
+* LOCAL MACROS                                                    *
+*******************************************************************/
+#define dprintk(format, args...) if (edc_1051_debug) { printk("%s[%d]: " format, __FILE__, __LINE__, ##args); }
 
-
-//DVB_DEFINE_MOD_OPT_ADAPTER_NR(adapter_nums);
-
-/*** GLOBAL VARIABLES *********************************************************/
-
-
-/*** EXPORTED SYMBOLS ********************************************************/
-
-
-/*** LOCAL TYPES *********************************************************/
+/******************************************************************
+* LOCAL TYPEDEFS                                                  *
+*******************************************************************/
 struct EDC_1051_s {
 	struct i2c_adapter *i2c_adapter;
 	struct dvb_frontend *fe;
@@ -43,7 +40,9 @@ struct EDC_1051_s {
 	int initialised;
 };
 
-/*** LOCAL CONSTANTS ********************************************************/
+/******************************************************************
+* STATIC DATA                                                     *
+*******************************************************************/
 static struct tda10023_config EDC_1051_tda10024_config = {
 	/* the demodulator's i2c address */
 	.demod_address = 0x0c,
@@ -62,19 +61,21 @@ static struct tda10023_config EDC_1051_tda10024_config = {
 //	.deltaf = 36000000,
 };
 
-#define dprintk(format, args...) if (edc_1051_debug) { printk("%s[%d]: " format, __FILE__, __LINE__, ##args); }
-
-
-/*** LOCAL VARIABLES *********************************************************/
-
 struct EDC_1051_s edc_1051[FRONTEND_NUM] = {
 	{ .initialised = 0 },
 	{ .initialised = 0 },
 };
 
-/*** METHODS ****************************************************************/
+/******************************************************************
+* MODULE PARAMETERS                                               *
+*******************************************************************/
+static int edc_1051_debug = 0;
+module_param_named(debug_edc_1051, edc_1051_debug, int, 0644);
+MODULE_PARM_DESC(debug_edc_1051, "enable verbose debug messages");
 
-
+/******************************************************************
+* FUNCTION IMPLEMENTATION                                         *
+*******************************************************************/
 int __init edc_1051_register_frontend(int slot_num, struct dvb_adapter *dvb_adapter)
 {
 	int err     = 0;  /* No error */
@@ -136,14 +137,6 @@ error :
 	return (err);
 }
 
-
-/*=============================================================================
-
-   edc_1051_unregister_frontend
-
-   Unregister edc-1051 slot_num.
-
-  ===========================================================================*/
 void __exit edc_1051_unregister_frontend(int slot_num)
 {
 	struct EDC_1051_s *edc_1051_private;

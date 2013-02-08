@@ -12,10 +12,19 @@ $(MODULE_BASENAME)-objs := \
 
 MODULE_NAME := $(MODULE_BASENAME).ko
 
+ifeq ($(USE_LINUXTV),y)
+LINUXTV_PATH=$(BUILDROOT)/packages/buildroot/output_rootfs/build/media_build
+EXTRA_CFLAGS += -I$(LINUXTV_PATH)/linux/drivers/media/dvb-core
+EXTRA_CFLAGS += -I$(LINUXTV_PATH)/linux/drivers/media/dvb-frontends
+EXTRA_CFLAGS += -I$(LINUXTV_PATH)/linux/include
+EXTRA_CFLAGS += -I$(LINUXTV_PATH)
+EXTRA_CFLAGS += -DUSE_LINUXTV
+else
 #EXTRA_CFLAGS += -I$(KDIR)
 EXTRA_CFLAGS += -Idrivers/media/dvb/dvb-core/
 EXTRA_CFLAGS += -Idrivers/media/dvb/frontends/
 EXTRA_CFLAGS += -I$(PRJROOT)/src/modules/cxd2820r
+endif
 
 #This not acessed for SDK830 users (need full build).
 #EXTRA_CFLAGS += -I$(PRJROOT)/src/elecard/modules/mxl201
