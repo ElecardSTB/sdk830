@@ -16,6 +16,7 @@
 #include <linux/i2c.h>
 
 #ifdef USE_LINUXTV
+//#include <v4l/config-compat.h>
 #include <uapi/linux/dvb/frontend.h>
 #endif
 //#include <drivers/media/dvb/dvb-core/dvbdev.h>
