@@ -5,7 +5,7 @@ target-finalize: fs-overlays
 
 fs-overlays:
 	@$(call MESSAGE,"Overlays for $(FS_TYPE)");
-	prjfilter $(PRJROOT)/src/$(FS_TYPE)/overlay $(TARGET_DIR) -c $(BUILDROOT)/.prjconfig
+	prjfilter $(PRJROOT)/src/$(FS_TYPE)/overlay $(TARGET_DIR) -c $(BUILDROOT)/.prjconfig -c $(BASE_DIR)/.config
 ifeq ($(FS_TYPE),rootfs)
 #rootfs specific overlays
 	cp -f $(BUILDROOT)/comps/fwinfo/firmwareDesc $(TARGET_DIR)
