@@ -1,0 +1,8 @@
+#!/bin/sh
+
+# stdout and stderr to /dev/console
+exec 1>/dev/console 2>&1
+
+language='English'
+edcfg /var/etc/elecard/StbMainApp/settings.conf set LANGUAGE $language
+echo "Language set to $language" > /dev/console
