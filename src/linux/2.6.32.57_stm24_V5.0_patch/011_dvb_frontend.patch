@@ -54,24 +54,6 @@
  static void dvb_frontend_wakeup(struct dvb_frontend *fe);
  
  static void dvb_frontend_add_event(struct dvb_frontend *fe, fe_status_t status)
-@@ -308,7 +308,8 @@
- 
- #define DTV_ISDBT_LAYER_ENABLED	41
- 
--#define DTV_ISDBS_TS_ID		42
-+#define DTV_STREAM_ID		42
-+#define DTV_ISDBS_TS_ID		DTV_STREAM_ID
- 
- #define DTV_MAX_COMMAND				DTV_ISDBS_TS_ID
- 
-@@ -346,6 +347,7 @@
- } fe_delivery_system_t;
- 
- #define SYS_DVBC_ANNEX_AC       SYS_DVBC_ANNEX_A
-+#define NO_STREAM_ID_FILTER	(~0U)
- 
- struct dtv_cmds_h {
- 	char	*name;		/* A display name for debugging purposes */
 @@ -1127,21 +1174,39 @@
  	c->frequency = p->frequency;
  	c->inversion = p->inversion;
@@ -228,4 +210,23 @@
  		/* Force the CAN_INVERSION_AUTO bit on. If the frontend doesn't
  		 * do it, it is done for it. */
  		info->caps |= FE_CAN_INVERSION_AUTO;
-
+--- linux-sh4-2.6.32.57_stm24_V5.0_orig/include/linux/dvb/frontend.h	2001-05-09 04:19:05.000000000 +0700
++++ linux-sh4-2.6.32.57_stm24_V5.0/include/linux/dvb/frontend.h	2012-05-25 20:17:42.128186807 +0700
+@@ -308,7 +308,8 @@
+ 
+ #define DTV_ISDBT_LAYER_ENABLED	41
+ 
+-#define DTV_ISDBS_TS_ID		42
++#define DTV_STREAM_ID		42
++#define DTV_ISDBS_TS_ID		DTV_STREAM_ID
+ 
+ #define DTV_MAX_COMMAND				DTV_ISDBS_TS_ID
+ 
+@@ -346,6 +347,7 @@
+ } fe_delivery_system_t;
+ 
+ #define SYS_DVBC_ANNEX_AC       SYS_DVBC_ANNEX_A
++#define NO_STREAM_ID_FILTER	(~0U)
+ 
+ struct dtv_cmds_h {
+ 	char	*name;		/* A display name for debugging purposes */
