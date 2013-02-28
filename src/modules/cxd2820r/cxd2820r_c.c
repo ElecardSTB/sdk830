@@ -22,7 +22,7 @@
 #include "cxd2820r_priv.h"
 #include <linux/version.h>
 
-int cxd2820r_set_frontend_c(struct dvb_frontend *fe)
+int cxd2820r_set_frontend_c(struct dvb_frontend *fe, struct dvb_frontend_parameters *p)
 {
 	struct cxd2820r_priv *priv = fe->demodulator_priv;
 	struct dtv_frontend_properties *c = &fe->dtv_property_cache;
@@ -61,7 +61,7 @@ int cxd2820r_set_frontend_c(struct dvb_frontend *fe)
 #if (LINUX_VERSION_CODE >= KERNEL_VERSION(3,3,0))
 		fe->ops.tuner_ops.set_params(fe);
 #else
-		fe->ops.tuner_ops.set_params(fe, NULL);
+		fe->ops.tuner_ops.set_params(fe, p);
 #endif
 	}
 

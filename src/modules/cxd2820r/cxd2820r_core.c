@@ -247,7 +247,7 @@ u32 cxd2820r_div_u64_round_closest(u64 dividend, u32 divisor)
 	return div_u64(dividend + (divisor / 2), divisor);
 }
 
-static int cxd2820r_set_frontend(struct dvb_frontend *fe)
+static int cxd2820r_set_frontend(struct dvb_frontend *fe, struct dvb_frontend_parameters *p)
 {
 	struct dtv_frontend_properties *c = &fe->dtv_property_cache;
 	int ret;
@@ -258,7 +258,7 @@ static int cxd2820r_set_frontend(struct dvb_frontend *fe)
 		ret = cxd2820r_init_t(fe);
 		if (ret < 0)
 			goto err;
-		ret = cxd2820r_set_frontend_t(fe);
+		ret = cxd2820r_set_frontend_t(fe, p);
 		if (ret < 0)
 			goto err;
 		break;
@@ -266,7 +266,7 @@ static int cxd2820r_set_frontend(struct dvb_frontend *fe)
 		ret = cxd2820r_init_t(fe);
 		if (ret < 0)
 			goto err;
-		ret = cxd2820r_set_frontend_t2(fe);
+		ret = cxd2820r_set_frontend_t2(fe, p);
 		if (ret < 0)
 			goto err;
 		break;
@@ -274,7 +274,7 @@ static int cxd2820r_set_frontend(struct dvb_frontend *fe)
 		ret = cxd2820r_init_c(fe);
 		if (ret < 0)
 			goto err;
-		ret = cxd2820r_set_frontend_c(fe);
+		ret = cxd2820r_set_frontend_c(fe, p);
 		if (ret < 0)
 			goto err;
 		break;
@@ -308,9 +308,10 @@ static int cxd2820r_read_status(struct dvb_frontend *fe, fe_status_t *status)
 	return ret;
 }
 
-static int cxd2820r_get_frontend(struct dvb_frontend *fe)
+static int cxd2820r_get_frontend(struct dvb_frontend *fe, struct dvb_frontend_parameters *p)
 {
 	struct cxd2820r_priv *priv = fe->demodulator_priv;
+	struct dtv_frontend_properties *c = &fe->dtv_property_cache;
 	int ret;
 
 	dbg("%s: delsys=%d", __func__, fe->dtv_property_cache.delivery_system);
@@ -329,8 +330,27 @@ static int cxd2820r_get_frontend(struct dvb_frontend *fe)
 		ret = cxd2820r_get_frontend_c(fe);
 		break;
 	default:
-		ret = -EINVAL;
-		break;
+		return -EINVAL;
+	}
+	if (fe->dtv_property_cache.delivery_system == SYS_DVBC_ANNEX_A) {
+		p->u.qam.symbol_rate = c->symbol_rate;
+		p->u.qam.fec_inner = c->fec_inner;
+		p->u.qam.modulation = c->modulation;
+	} else {
+		if (c->bandwidth_hz == 6000000)
+			p->u.ofdm.bandwidth = BANDWIDTH_6_MHZ;
+		else if (c->bandwidth_hz == 7000000)
+			p->u.ofdm.bandwidth = BANDWIDTH_7_MHZ;
+		else if (c->bandwidth_hz == 8000000)
+			p->u.ofdm.bandwidth = BANDWIDTH_8_MHZ;
+		else
+			p->u.ofdm.bandwidth = BANDWIDTH_AUTO;
+		p->u.ofdm.code_rate_HP = c->code_rate_HP;
+		p->u.ofdm.code_rate_LP = c->code_rate_LP;
+		p->u.ofdm.constellation = c->modulation;
+		p->u.ofdm.transmission_mode = c->transmission_mode;
+		p->u.ofdm.guard_interval = c->guard_interval;
+		p->u.ofdm.hierarchy_information = c->hierarchy;
 	}
 	return ret;
 }
@@ -473,7 +493,7 @@ static int cxd2820r_get_tune_settings(struct dvb_frontend *fe,
 	return ret;
 }
 
-static enum dvbfe_search cxd2820r_search(struct dvb_frontend *fe)
+static enum dvbfe_search cxd2820r_search(struct dvb_frontend *fe, struct dvb_frontend_parameters *p)
 {
 	struct cxd2820r_priv *priv = fe->demodulator_priv;
 	struct dtv_frontend_properties *c = &fe->dtv_property_cache;
@@ -499,7 +519,7 @@ static enum dvbfe_search cxd2820r_search(struct dvb_frontend *fe)
 	}
 
 	/* set frontend */
-	ret = cxd2820r_set_frontend(fe);
+	ret = cxd2820r_set_frontend(fe, p);
 	if (ret)
 		goto error;
 
