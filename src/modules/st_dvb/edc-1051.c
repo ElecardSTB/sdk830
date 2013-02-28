@@ -32,16 +32,6 @@
 #define dprintk(format, args...) if (edc_1051_debug) { printk("%s[%d]: " format, __FILE__, __LINE__, ##args); }
 
 /******************************************************************
-* LOCAL TYPEDEFS                                                  *
-*******************************************************************/
-struct EDC_1051_s {
-	struct i2c_adapter *i2c_adapter;
-	struct dvb_frontend *fe;
-	struct dvb_adapter *dvb_adapter;
-	int initialised;
-};
-
-/******************************************************************
 * STATIC DATA                                                     *
 *******************************************************************/
 static struct tda10023_config EDC_1051_tda10024_config = {
@@ -62,11 +52,6 @@ static struct tda10023_config EDC_1051_tda10024_config = {
 //	.deltaf = 36000000,
 };
 
-struct EDC_1051_s edc_1051[FRONTEND_NUM] = {
-	{ .initialised = 0 },
-	{ .initialised = 0 },
-};
-
 /******************************************************************
 * MODULE PARAMETERS                                               *
 *******************************************************************/
@@ -77,82 +62,21 @@ MODULE_PARM_DESC(debug_edc_1051, "enable verbose debug messages");
 /******************************************************************
 * FUNCTION IMPLEMENTATION                                         *
 *******************************************************************/
-int __init edc_1051_register_frontend(int slot_num, struct dvb_adapter *dvb_adapter)
+struct dvb_frontend* edc_1051_init_frontend(struct i2c_adapter *adapter)
 {
-	int err     = 0;  /* No error */
 	struct dvb_frontend * fe = NULL;
-	struct i2c_adapter *adapter = NULL;
-	int i2c_bus = 0;
-	struct EDC_1051_s *edc_1051_private;
 
-	if( (slot_num < 0) || (slot_num >= FRONTEND_NUM) ) {
-		dprintk("slot_num=%d should be 0,1\n", slot_num);
-		err = -1;
-		goto error;
-	}
-
-	edc_1051_private = &(edc_1051[slot_num]);
-	edc_1051_private->dvb_adapter = dvb_adapter;
-
-	i2c_bus = get_i2c_bus(slot_num);
-	adapter = i2c_get_adapter(i2c_bus);
-	if( !adapter ) {
-		dprintk("cant get i2c adapter\n");
-		err = -1;
-		goto err1;
-	}
-	edc_1051_private->i2c_adapter = adapter;
 	fe = dvb_attach(tda10023_attach, &EDC_1051_tda10024_config,
-				edc_1051_private->i2c_adapter, 0);
+				adapter, 0);
 	if( !fe ) {
 		dprintk("cant attach tda10024\n");
-		err = -1;
-		goto err1;
+		return NULL;
 	}
 	dprintk("tda10023 attached\n");
-	edc_1051_private->fe = fe;
-	dvb_attach(dvb_pll_attach, edc_1051_private->fe, 0x61,
-			edc_1051_private->i2c_adapter,
+	dvb_attach(dvb_pll_attach, fe, 0x61,
+			adapter,
 			DVB_PLL_TDA665X);
-	dprintk("pll attached\n");
 
-	if (dvb_register_frontend(edc_1051_private->dvb_adapter, edc_1051_private->fe))
-	{
-	  dprintk("Frontend registration failed!\n");
-	  dvb_frontend_detach(edc_1051_private->fe);
-	  err = -1;
-	  goto err2;
-	}
-	edc_1051_private->initialised = 1;
-//	dprintk("EDC-1051 slot_num=%d i2c_bus=%d successfully initialized\n", slot_num, i2c_bus);
-	printk("EDC-1051 slot_num=%d on i2c_bus=%d successfully initialized\n", slot_num, i2c_bus);
-
-	return (0);  /* If we get here then we have succeeded */
-
-	/**************************************************************************/
-err2:
-	dvb_frontend_detach(edc_1051_private->fe);
-err1:
-
-error :
-	return (err);
+	printk("EDC-1051 successfully initialized\n");
+	return fe;
 }
-
-void __exit edc_1051_unregister_frontend(int slot_num)
-{
-	struct EDC_1051_s *edc_1051_private;
-
-	if( (slot_num < 0) || (slot_num >= FRONTEND_NUM) ) {
-		dprintk("slot_num=%d should be 0,1\n", slot_num);
-		return ;
-	}
-
-	edc_1051_private = &(edc_1051[slot_num]);
-	if(edc_1051_private->initialised) {
-		dvb_unregister_frontend(edc_1051_private->fe);
-		dvb_frontend_detach(edc_1051_private->fe);
-	}
-
-	dprintk("edc-1051 unregister slot=%d\n", slot_num);
-}
-

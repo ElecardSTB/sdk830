@@ -10,14 +10,14 @@
  @brief
 */
 //general
-#include "linux/module.h"
+#include <dvb_frontend.h>
+#include <linux/module.h>
+#include <linux/i2c.h>
 
 //local
 #include "edc-1051.h"
 #include "sonydvbt2.h"
-//#include "stv0367_tda18250.h"
 #include "st_dvb_ca_en50221.h"
-
 
 /*** MODULE INFO *************************************************************/
 
@@ -46,24 +46,25 @@ module_param_named(ci1, ci_enable[1], bool, 0644);
 MODULE_PARM_DESC(ci1, "Enable second dvb-ci");
 
 /*** LOCAL TYPES *********************************************************/
-typedef int (register_fe_func)(int slot_num, struct dvb_adapter *dvb_adapter);
-typedef void (unregister_fe_func)(int slot_num);
 
 struct frontend_ops_s {
-	char				*name;
-	register_fe_func	*register_fe;
-	unregister_fe_func  *unregister_fe;
+	char *name;
+	struct dvb_frontend* (*init_frontend)(struct i2c_adapter *);
 };
 
 struct st_dvb_s {
 	char					*name;
+	int						i2c_bus;
 	struct dvb_adapter		dvb_adapter;
+	struct dvb_frontend		*frontend;
 	struct frontend_ops_s	*fops;
 };
 
 /*** LOCAL CONSTANTS ********************************************************/
-#define dprintk(format, args...) if (st_dvb_debug) { printk("%s[%d]: " format, __FILE__, __LINE__, ##args); }
+
 #define DVB_NUMS 2
+
+#define dprintk(format, args...) if (st_dvb_debug) { printk("%s[%d]: " format, __FILE__, __LINE__, ##args); }
 
 #if 1
 #define DVB_CI_FUNC(FUNCTION, RETURN, ...) \
@@ -82,18 +83,33 @@ struct st_dvb_s {
 
 /*** LOCAL VARIABLES *********************************************************/
 struct st_dvb_s st_dvb[DVB_NUMS] = {
-	{.name = "ST DVB slot 0", .fops = NULL},
-	{.name = "ST DVB slot 1", .fops = NULL},
+	{.name = "ST DVB slot 0", .i2c_bus = 3, .frontend = NULL, .fops = NULL, },
+	{.name = "ST DVB slot 1", .i2c_bus = 2, .frontend = NULL, .fops = NULL, },
 };
 
 struct frontend_ops_s frontend_ops[] = {
-	{"EDC_1051"			,edc_1051_register_frontend				,edc_1051_unregister_frontend},
-	{"SONY_DVBT2"		,sonydvbt2_register_frontend			,sonydvbt2_unregister_frontend},
-/*	{"STV0367_TDA18250"	,stv0367_tda18250_register_frontend		,stv0367_tda18250_unregister_frontend},*/
+	{"EDC_1051"			,edc_1051_init_frontend},
+	{"SONY_DVBT2"		,sonydvbt2_init_frontend},
 };
 
-
 /*** METHODS ****************************************************************/
+
+static void st_dvb_register_frontend(int slot, struct frontend_ops_s *fe_ops_p)
+{
+	struct i2c_adapter *adapter = i2c_get_adapter(st_dvb[slot].i2c_bus);
+
+	dprintk("%s init\n", fe_ops_p->name);
+	st_dvb[slot].frontend = fe_ops_p->init_frontend(adapter);
+	if (!st_dvb[slot].frontend)
+		return;
+
+	if (dvb_register_frontend(&st_dvb[slot].dvb_adapter, st_dvb[slot].frontend)) {
+		printk(KERN_ERR ": Failed to register frontend %s\n", fe_ops_p->name);
+		dvb_frontend_detach(st_dvb[slot].frontend);
+		st_dvb[slot].frontend = 0;
+	} else
+		st_dvb[slot].fops = fe_ops_p;
+}
 
 static int __init st_dvb_init_module(void)
 {
@@ -104,9 +120,9 @@ static int __init st_dvb_init_module(void)
 				};
 	int i, j;
 
-	if(ci_enable[0] || ci_enable[1]) {
+	if (ci_enable[0] || ci_enable[1])
 		DVB_CI_FUNC(st_dvb_init_stpccrd, -1);
-	}
+
 	for(i = 0; i < DVB_NUMS; i++) {
 		struct dvb_adapter *dvb_adapter = &(st_dvb[i].dvb_adapter);
 
@@ -116,30 +132,15 @@ static int __init st_dvb_init_module(void)
 			continue;
 		}
 		//init dvb-ca
-		if(ci_enable[i]) {
+		if(ci_enable[i])
 			DVB_CI_FUNC(st_dvb_init_ca, -1, i, dvb_adapter);
-		}
 
 		//init frontend
 		for(j = 0; j < ARRAY_SIZE(frontend_ops); j++) {
-			int descrNameLen = 0;
 			struct frontend_ops_s *fe_ops_p = frontend_ops + j;
-			
-			if( fe_ops_p->name == NULL )
-				continue;
-			descrNameLen = strlen(fe_ops_p->name);
-			if(!strncmp(frontend_param[i], fe_ops_p->name, descrNameLen)) {
-				if(fe_ops_p->register_fe) {
-					dprintk("%s init\n", fe_ops_p->name);
-					fe_ops_p->register_fe(i, dvb_adapter);
-					st_dvb[i].fops = fe_ops_p;
-					break;
-				} else {
-					dprintk("ERROR: %s function register_fe=NULL.\n", fe_ops_p->name);
-				}
-			}
+			if (!strncmp(frontend_param[i], fe_ops_p->name, strlen(fe_ops_p->name)))
+				st_dvb_register_frontend(i, fe_ops_p);
 		}
-		
 	}
 	return 0;
 }
@@ -148,18 +149,17 @@ static void __exit st_dvb_cleanup_module(void)
 {
 	int i;
 	for (i = 0; i < DVB_NUMS; i++) {
-		if(st_dvb[i].fops && st_dvb[i].fops->unregister_fe)
-			st_dvb[i].fops->unregister_fe(i);
-//		else
-//			dprintk("ERROR: %s function unregister_fe=NULL.\n", st_dvb[i].fops->name);
-
+		if (st_dvb[i].frontend) {
+			dprintk("%s deinit\n", st_dvb[i].fops->name);
+			dvb_unregister_frontend(st_dvb[i].frontend);
+			dvb_frontend_detach(st_dvb[i].frontend);
+		}
 		DVB_CI_FUNC(st_dvb_release_ca, ,i);
 		dvb_unregister_adapter(&(st_dvb[i].dvb_adapter));
 		st_dvb[i].fops = NULL;
 	}
 	DVB_CI_FUNC(st_dvb_release_stpccrd,);
 }
-
 
 /*** MODULE LOADING ******************************************************/
 

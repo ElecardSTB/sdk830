@@ -13,8 +13,7 @@
 #if !(defined __ST_DVB_CA_EN502211_H__)
 #define __ST_DVB_CA_EN502211_H__
 
-/*** INCLUDES ****************************************************************/
-#include <dvbdev.h>
+struct dvb_adapter;
 
 //This functions are part of stapisdk now. See $PRJROOT/src/elecard/stapisdk/$STAPISDK_VERSION_overlay/apilib/src/stpccrd/linux/stpccrd_core/.
 /*** PROTOTYPES **************************************************************/

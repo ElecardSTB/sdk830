@@ -13,12 +13,11 @@
 #if !(defined __EDC_1051_H__)
 #define __EDC_1051_H__
 
-#include <dvbdev.h>
-
+struct dvb_frontend;
+struct i2c_adapter;
 
 /*** PROTOTYPES **************************************************************/
 
-extern int edc_1051_register_frontend(int slot_num, struct dvb_adapter *dvb_adapter);
-extern void edc_1051_unregister_frontend(int slot_num);
+struct dvb_frontend* edc_1051_init_frontend(struct i2c_adapter *adapter);
 
 #endif //#if !(define __EDC_1051_H__)

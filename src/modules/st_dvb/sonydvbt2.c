@@ -36,15 +36,6 @@
 /******************************************************************
 * LOCAL TYPEDEFS                                                  *
 *******************************************************************/
-struct sonydvbt2_status {
-	struct dvb_frontend *frontend;
-	int initialised;
-};
-
-struct sonydvbt2_status sonydvbt2_status[FRONTEND_NUM] = {
-	{ .initialised = 0, },
-	{ .initialised = 0, },
-};
 
 typedef enum {
 	ePllType_mxl201,
@@ -117,27 +108,11 @@ int sonydvbt2_check_pll(struct dvb_frontend *fe, struct i2c_adapter *adapter, un
 	return ret;
 }
 
-int sonydvbt2_register_frontend(int slot_num, struct dvb_adapter *dvb_adapter)
+struct dvb_frontend* sonydvbt2_init_frontend(struct i2c_adapter *adapter)
 {
-	int32_t		err = 0;
-	uint32_t	i2c_bus;
 	uint32_t	pllId;
-	struct i2c_adapter *adapter;
 	struct dvb_frontend *fe = NULL;
-
-	if((slot_num < 0) || (slot_num >= FRONTEND_NUM)) {
-		dprintk("slot_num=%d should be 0,1\n", slot_num);
-		err = -1;
-		goto error;
-	}
-
-	i2c_bus = get_i2c_bus(slot_num);
-	adapter = i2c_get_adapter(i2c_bus);
-	if(!adapter) {
-		dprintk("cant get i2c adapter\n");
-		err = -1;
-		goto error;
-	}
+	struct dvb_frontend *pll = NULL;
 
 #ifdef USE_LINUXTV
 	fe = dvb_attach(cxd2820r_attach, &cxd2820r_cfg, adapter, NULL);
@@ -146,75 +121,40 @@ int sonydvbt2_register_frontend(int slot_num, struct dvb_adapter *dvb_adapter)
 #endif
 	if(!fe) {
 		dprintk("cant attach cxd2820r\n");
-		err = -1;
-		goto error;
+		return NULL;
 	}
 	fe->dtv_property_cache.delivery_system = SYS_DVBT;
 	fe->ops.info.type = FE_OFDM;
-	dprintk("[%d] cxd2820r (DVB-T) attached\n", slot_num);
+	dprintk("cxd2820r (DVB-T) attached\n");
 // 	fe->dtv_property_cache.delivery_system = SYS_DVBC_ANNEX_A;
 // 	fe->ops.info.type = FE_QAM;
-// 	dprintk("[%d] cxd2820r (DVB-C) attached\n", slot_num);
-
-	sonydvbt2_status[slot_num].frontend = fe;
+// 	dprintk("cxd2820r (DVB-C) attached\n");
 
 	for(pllId = 0; pllId < ARRAY_SIZE(pllDescripton); pllId++) {
 		pllDescription_t *pllDescr = pllDescripton + pllId;
-		if(sonydvbt2_check_pll(fe, adapter, pllDescr->i2c_addr) == 1) {
+		if(sonydvbt2_check_pll(fe, adapter, pllDescr->i2c_addr) == 1)
 			break;
-		}
 	}
 	if(pllId >= ARRAY_SIZE(pllDescripton)) {
-		dprintk("[%d] failed to detect pll\n", slot_num);
-		err = -1;
+		dprintk("failed to detect pll\n");
 		goto tuner_error;
 	}
 
-	fe = NULL;
 	if(pllDescripton[pllId].type == ePllType_mxl201) {
-		fe = dvb_attach(mxl201rf_attach, sonydvbt2_status[slot_num].frontend,
+		pll = dvb_attach(mxl201rf_attach, fe,
 						adapter, pllDescripton[pllId].i2c_addr, MxL_IF_5_MHZ);
 	} else if(pllDescripton[pllId].type == ePllType_tda6651) {
-		fe = dvb_attach(dvb_pll_attach, sonydvbt2_status[slot_num].frontend,
+		pll = dvb_attach(dvb_pll_attach, fe,
 						pllDescripton[pllId].i2c_addr, adapter, DVB_PLL_TDA665X);
 	}
-	if(!fe) {
-		dprintk("[%d] cant attach %s\n", slot_num, pllDescripton[pllId].name);
-		err = -1;
+	if(!pll) {
+		dprintk("can't attach %s\n", pllDescripton[pllId].name);
 		goto tuner_error;
 	}
-	dprintk("[%d] %s attached\n", slot_num, pllDescripton[pllId].name);
-
-	if(dvb_register_frontend(dvb_adapter, sonydvbt2_status[slot_num].frontend)) {
-		dprintk("[%d] Frontend registration failed!\n", slot_num);
-		err = -1;
-		goto tuner_error;
-	}
-
-	dprintk("[%d] sonydvbt2 registered\n", slot_num);
-
-	sonydvbt2_status[slot_num].initialised = 1;
-
-	return 0;
+	dprintk("%s attached\n", pllDescripton[pllId].name);
+	return fe;
 
 tuner_error:
-	dvb_frontend_detach(sonydvbt2_status[slot_num].frontend);
-	sonydvbt2_status[slot_num].frontend = NULL;
-error:
-	return err;
-}
-
-void sonydvbt2_unregister_frontend(int slot_num)
-{
-	if((slot_num < 0) || (slot_num >= FRONTEND_NUM)) {
-		dprintk("slot_num=%d should be 0,1\n", slot_num);
-		return ;
-	}
-
-	if(sonydvbt2_status[slot_num].initialised) {
-		dvb_unregister_frontend(sonydvbt2_status[slot_num].frontend);
-		dvb_frontend_detach(sonydvbt2_status[slot_num].frontend);
-	}
-
-	dprintk("[%d] sonydvbt2 unregister\n", slot_num);
+	dvb_frontend_detach(fe);
+	return NULL;
 }

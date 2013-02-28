@@ -8,9 +8,9 @@
  * DVB-T2/T/C nim based on Sony MxL201RF and CX2820R
  */
 
-#include <dvbdev.h>
+struct i2c_adapter;
+struct dvb_frontend;
 
-int  sonydvbt2_register_frontend(int slot_num, struct dvb_adapter *dvb_adapter);
-void sonydvbt2_unregister_frontend(int slot_num);
+struct dvb_frontend* sonydvbt2_init_frontend(struct i2c_adapter *i2c_adapter);
 
 #endif // __SONY_DVBT2__
