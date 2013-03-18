@@ -18,6 +18,6 @@ TIMEOUT 3
 'OK' 'ATQ0 V1 E1 S0=0 &C1 &D2 +FCLASS=0'
 'OK' @/etc/ppp/chatscripts/mode
 'OK-AT-OK' @/etc/ppp/chatscripts/apn
-'OK' 'ATDT*99#'
+'OK' @/etc/ppp/chatscripts/phone
 TIMEOUT 30
 CONNECT ''
