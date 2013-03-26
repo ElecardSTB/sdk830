@@ -9,26 +9,29 @@ $(MODULE_BASENAME)-objs := \
 			st_dvb_main.o \
 			edc-1051.o \
 			sonydvbt2.o \
+			sp9680.o \
 
 MODULE_NAME := $(MODULE_BASENAME).ko
 
 ifeq ($(USE_LINUXTV),y)
 LINUXTV_PATH=$(BUILDROOT)/packages/buildroot/output_rootfs/build/media_build
-EXTRA_CFLAGS += -I$(LINUXTV_PATH)/linux/drivers/media/dvb-core
-EXTRA_CFLAGS += -I$(LINUXTV_PATH)/linux/drivers/media/dvb-frontends
-EXTRA_CFLAGS += -I$(LINUXTV_PATH)/linux/include
-EXTRA_CFLAGS += -I$(LINUXTV_PATH)
-EXTRA_CFLAGS += -DUSE_LINUXTV
+ccflags-y += -I$(LINUXTV_PATH)/linux/drivers/media/dvb-core
+ccflags-y += -DUSE_LINUXTV
+
+ccflags-y += -include $(LINUXTV_PATH)/v4l/compat.h
+
+# Needed for kernel 2.6.29 or up
+LINUXINCLUDE    := -I$(LINUXTV_PATH)/linux/include -I$(LINUXTV_PATH)/linux/include/uapi/linux $(LINUXINCLUDE) -I$(LINUXTV_PATH)/v4l
 else
-#EXTRA_CFLAGS += -I$(KDIR)
-EXTRA_CFLAGS += -Idrivers/media/dvb/dvb-core/
-EXTRA_CFLAGS += -Idrivers/media/dvb/frontends/
-EXTRA_CFLAGS += -I$(PRJROOT)/src/modules/cxd2820r
+#ccflags-y += -I$(KDIR)
+ccflags-y += -Idrivers/media/dvb/dvb-core/
+ccflags-y += -Idrivers/media/dvb/frontends/
+ccflags-y += -I$(PRJROOT)/src/modules/cxd2820r
 endif
 
 #This not acessed for SDK830 users (need full build).
-#EXTRA_CFLAGS += -I$(PRJROOT)/src/elecard/modules/mxl201
-#EXTRA_CFLAGS += -I$(DVD_ROOT)/stpccrd/linux/stpccrd_core
+#ccflags-y += -I$(PRJROOT)/src/elecard/modules/mxl201
+
 
 # PWD is the current working directory and the location of our module
 # source files.

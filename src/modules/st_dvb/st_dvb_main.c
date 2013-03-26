@@ -10,6 +10,9 @@
  @brief
 */
 //general
+#ifdef USE_LINUXTV
+#include <dvb/frontend.h>
+#endif
 #include <dvb_frontend.h>
 #include <linux/module.h>
 #include <linux/i2c.h>

@@ -11,11 +11,9 @@
 * INCLUDE FILES                                                   *
 *******************************************************************/
 #ifdef USE_LINUXTV
-#include <v4l/config-compat.h>
-#include <uapi/linux/dvb/frontend.h>
-#else
-//#include <dvb_frontend.h>
+#include <dvb/frontend.h>
 #endif
+#include <dvb_frontend.h>
 
 #include <dvb-pll.h>
 
