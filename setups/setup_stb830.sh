@@ -1,6 +1,8 @@
 #!/bin/bash
 
-export PRJROOT=`pwd`
+PRJROOT_DIRTY=`dirname ${BASH_SOURCE[0]}`
+export PRJROOT=`readlink -f $PRJROOT_DIRTY`
+unset PRJROOT_DIRTY
 
 unset CONFIG
 
