@@ -1,7 +1,7 @@
 #!/bin/bash
 
 PRJROOT_DIRTY=`dirname ${BASH_SOURCE[0]}`
-export PRJROOT=`readlink -f $PRJROOT_DIRTY`
+export PRJROOT=`readlink -f ${PRJROOT_DIRTY%/setups}`
 unset PRJROOT_DIRTY
 
 unset CONFIG
