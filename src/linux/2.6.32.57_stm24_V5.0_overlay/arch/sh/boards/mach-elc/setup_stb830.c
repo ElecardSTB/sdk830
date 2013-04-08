@@ -29,11 +29,14 @@
 #include <linux/spi/spi.h>
 #include <linux/spi/flash.h>
 #include <asm/irq-ilc.h>
+#include <linux/tm1668.h>
 
 #include <linux/stm/pio.h>
 #include <linux/i2c.h>
 
+#include "setup.h"
 
+#if 0
 static struct platform_device elcStb830_leds = {
 	.name = "leds-gpio",
 	.id = 0,
@@ -99,6 +102,45 @@ static struct platform_device elcStb830_leds = {
 		},
 	},
 };
+#endif
+
+
+static struct tm1668_key elcStb830_front_panel_keys[] = {
+	{0x01000000, KEY_UP,	"FP CH+"},
+	{0x00080000, KEY_DOWN,	"FP CH-"},
+	{0x00010000, KEY_RIGHT,	"FP VOL+"},
+	{0x00000800, KEY_LEFT,	"FP VOL-"},
+	{0x00020000, KEY_ENTER,	"FP OK"},
+	{0x00001000, KEY_SPACE,	"FP MENU"},
+};
+
+
+static struct tm1668_character elcStb830_front_panel_characters[] = {
+	TM1668_7_SEG_LETTERS_ELECARD,
+	TM1668_7_SEG_HEX_DIGITS,
+	TM1668_7_SEG_HEX_DIGITS_WITH_DOT,
+	TM1668_7_SEG_SEGMENTS,
+};
+
+static struct platform_device elcStb830_front_panel = {
+	.name = "ct1628",
+	.id = -1,
+	.dev.platform_data = &(struct tm1668_platform_data) {
+		.gpio_dio = stm_gpio(11, 2),
+		.gpio_sclk = stm_gpio(11, 3),
+		.gpio_stb = stm_gpio(11, 4),
+
+		.keys_num = ARRAY_SIZE(elcStb830_front_panel_keys),
+		.keys = elcStb830_front_panel_keys,
+		.keys_poll_period = DIV_ROUND_UP(HZ, 5),
+
+		.brightness = 4,
+		.characters_num = ARRAY_SIZE(elcStb830_front_panel_characters),
+		.characters = elcStb830_front_panel_characters,
+		.text = "boot",
+	},
+};
+
 
 
 /* Configuration for NAND Flash */
@@ -209,7 +251,8 @@ static struct i2c_board_info __initdata rtc_i2c_board_info[] = {
 extern void device_init_pci(void);
 
 static struct platform_device *hdk7105_devices[] __initdata = {
-	&elcStb830_leds
+// 	&elcStb830_leds,
+	&elcStb830_front_panel,
 };
 
 int __init device_init_stb830(int ver)
@@ -219,13 +262,13 @@ int __init device_init_stb830(int ver)
 
 //printk("%s[%d] ****************** lo=%d, hi=%d \n", __FILE__, __LINE__, pdk7105_pci_config.idsel_lo, pdk7105_pci_config.idsel_hi);
 //setting up keyscanner pio
-	stpio_request_set_pin(5, 0, "key scanner", STPIO_ALT_OUT, 0);
-	stpio_request_set_pin(5, 1, "key scanner", STPIO_ALT_OUT, 0);
-	stpio_request_set_pin(5, 2, "key scanner", STPIO_ALT_OUT, 0);
-
-	stpio_request_set_pin(5, 4, "key scanner", STPIO_IN, 0);
-	stpio_request_set_pin(5, 5, "key scanner", STPIO_IN, 0);
-	stpio_request_set_pin(5, 6, "key scanner", STPIO_IN, 0);
+// 	stpio_request_set_pin(5, 0, "key scanner", STPIO_ALT_OUT, 0);
+// 	stpio_request_set_pin(5, 1, "key scanner", STPIO_ALT_OUT, 0);
+// 	stpio_request_set_pin(5, 2, "key scanner", STPIO_ALT_OUT, 0);
+// 
+// 	stpio_request_set_pin(5, 4, "key scanner", STPIO_IN, 0);
+// 	stpio_request_set_pin(5, 5, "key scanner", STPIO_IN, 0);
+// 	stpio_request_set_pin(5, 6, "key scanner", STPIO_IN, 0);
 
 //	stpio_request_set_pin(7, 0, "test AV", STPIO_ALT_OUT, 0);
 //stpio_request_set_pin(3, 3, "reset_nah", STPIO_BIDIR, 1);

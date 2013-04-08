@@ -2,6 +2,8 @@
 #
 # Start stb830 keyscanner
 #
+[% SKIPFILE %]
+#This already not used, because for stb830 keyscanner changed on ct1628 chip
 
 BOARD_NAME=${board_name%.*}
 
