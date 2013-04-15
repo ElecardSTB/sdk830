@@ -96,7 +96,7 @@ struct st_dvb_s st_dvb[DVB_NUMS] = {
 struct frontend_ops_s frontend_ops[] = {
 	{"EDC_1051"			,edc_1051_init_frontend},
 	{"SONY_DVBT2"		,sonydvbt2_init_frontend},
-	{"NIM_MN88472"		,sp9680_init_frontend},
+	{"NIM_SP9680"		,sp9680_init_frontend},
 };
 
 /*** METHODS ****************************************************************/
@@ -165,17 +165,21 @@ static int __init st_dvb_init_module(void)
 static void __exit st_dvb_cleanup_module(void)
 {
 	int i;
-	for (i = 0; i < DVB_NUMS; i++) {
-		if (st_dvb[i].frontend) {
+	for(i = 0; i < DVB_NUMS; i++) {
+		if(st_dvb[i].frontend) {
 			dprintk("%s deinit\n", st_dvb[i].fops->name);
 			dvb_unregister_frontend(st_dvb[i].frontend);
 			dvb_frontend_detach(st_dvb[i].frontend);
 		}
-		DVB_CI_FUNC(st_dvb_release_ca, i);
+		if(ci_enable[i]) {
+			DVB_CI_FUNC(st_dvb_release_ca, i);
+		}
 		dvb_unregister_adapter(&(st_dvb[i].dvb_adapter));
 		st_dvb[i].fops = NULL;
 	}
-	DVB_CI_FUNC(st_dvb_release_stpccrd);
+	if(ci_enable[0] || ci_enable[1]) {
+		DVB_CI_FUNC(st_dvb_release_stpccrd);
+	}
 }
 
 /*** MODULE LOADING ******************************************************/
