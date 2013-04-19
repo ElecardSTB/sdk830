@@ -13,25 +13,11 @@ $(MODULE_BASENAME)-objs := \
 
 MODULE_NAME := $(MODULE_BASENAME).ko
 
-ifeq ($(USE_LINUXTV),y)
-LINUXTV_PATH=$(BUILDROOT)/packages/buildroot/output_rootfs/build/media_build
-ccflags-y += -I$(LINUXTV_PATH)/linux/drivers/media/dvb-core
-ccflags-y += -DUSE_LINUXTV
-
-ccflags-y += -include $(LINUXTV_PATH)/v4l/compat.h
-
-# Needed for kernel 2.6.29 or up
-LINUXINCLUDE    := -I$(LINUXTV_PATH)/linux/include -I$(LINUXTV_PATH)/linux/include/uapi/linux $(LINUXINCLUDE) -I$(LINUXTV_PATH)/v4l
-else
-#ccflags-y += -I$(KDIR)
-ccflags-y += -Idrivers/media/dvb/dvb-core/
-ccflags-y += -Idrivers/media/dvb/frontends/
-ccflags-y += -I$(PRJROOT)/src/modules/cxd2820r
+ELC_DVB_DRIVER := y
+include $(PRJROOT)/src/modules/linuxtv_common/linuxtv_kernel.mk
+ifeq ($(call get_linuxtv_config_variable,CONFIG_DVB_CXD2820R),)
+  ccflags-y += -I$(PRJROOT)/src/modules/cxd2820r
 endif
-
-#This not acessed for SDK830 users (need full build).
-#ccflags-y += -I$(PRJROOT)/src/elecard/modules/mxl201
-
 
 # PWD is the current working directory and the location of our module
 # source files.

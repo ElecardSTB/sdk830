@@ -10,14 +10,11 @@
  @brief
 */
 //general
-#ifdef USE_LINUXTV
-#include <dvb/frontend.h>
-#endif
-#include <dvb_frontend.h>
 #include <linux/module.h>
 #include <linux/i2c.h>
 
 //local
+#include "st_dvb.h"
 #include "edc-1051.h"
 #include "sonydvbt2.h"
 #include "sp9680.h"

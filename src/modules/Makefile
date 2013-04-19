@@ -1,16 +1,20 @@
 
 include ../../etc/envvars.mk
+include linuxtv_common/linuxtv_common.mk
 
 _ts_makekernelmodules=$(KDIR)/.ts_makelinuxmodules
 _ts_makekernel=$(KDIR)/.ts_makelinux
+OTHER_CXD2820R_DRIVER := $(call get_linuxtv_config_variable,CONFIG_DVB_CXD2820R)
 
 .PHONY: all
 
-all: install_kernelmodules
+all: build
+
+build: install_kernelmodules
 	$(call ECHO_MESSAGE,Building elecard drivers)
-	make -C ./keyscanner install
+#	make -C ./keyscanner install
 	make -C ./st_dvb install
-ifneq ($(USE_LINUXTV),y)
+ifeq ($(OTHER_CXD2820R_DRIVER),)
 	make -C ./cxd2820r install
 endif
 
@@ -24,14 +28,13 @@ $(_ts_makekernelmodules): $(_ts_makekernel)
 	make -C $(KDIR) ARCH=sh CROSS_COMPILE=sh4-linux- INSTALL_MOD_PATH=$(ROOTFS) modules
 	touch $@
 
-$(_ts_makekernel):
-
 clean:
 	$(call ECHO_MESSAGE,Cleaning elecard drivers)
-	make -C ./keyscanner clean
+#	make -C ./keyscanner clean
 	make -C ./st_dvb clean
-ifneq ($(USE_LINUXTV),y)
+ifeq ($(OTHER_CXD2820R_DRIVER),)
 	make -C ./cxd2820r clean
 endif
 #	$(call ECHO_MESSAGE,Cleaning kernel modules)
 
+$(_ts_makekernel):

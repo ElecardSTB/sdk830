@@ -10,16 +10,11 @@
 /******************************************************************
 * INCLUDE FILES                                                   *
 *******************************************************************/
-#ifdef USE_LINUXTV
-#include <dvb/frontend.h>
-#endif
-#include <dvb_frontend.h>
-
+#include "st_dvb.h"
 #include <dvb-pll.h>
+#include <cxd2820r.h>
 
 #include "sonydvbt2.h"
-#include "st_dvb.h"
-#include "cxd2820r.h"
 #include "mxl201rf_tuner.h"
 //#include "MxL201RF_Common.h"
 
@@ -53,11 +48,14 @@ typedef struct {
 *******************************************************************/
 static struct cxd2820r_config	cxd2820r_cfg = {
 	.i2c_address = CXD2820R_I2C_U1,
-#ifdef USE_LINUXTV
-	.ts_mode     = CXD2820R_TS_PARALLEL_MSB,
-#else
+#if (LINUX_VERSION_CODE < KERNEL_VERSION(3,0,0))
 	.ts_mode     = CXD2820R_TS_PARALLEL_MSB | CXD2820R_TS_CLK_ACTIVE,
+#else
+	.ts_mode     = CXD2820R_TS_PARALLEL_MSB,
+#endif
 	.if_agc_polarity = 0,
+	.spec_inv = 0,
+#if (LINUX_VERSION_CODE < KERNEL_VERSION(3,3,0))
 	.if_dvbt_6  = 5000,
 	.if_dvbt_7  = 5000,
 	.if_dvbt_8  = 5000,
@@ -66,6 +64,8 @@ static struct cxd2820r_config	cxd2820r_cfg = {
 	.if_dvbt2_7 = 5000,
 	.if_dvbt2_8 = 5000,
 	.if_dvbc    = 5000,
+#endif
+#if (LINUX_VERSION_CODE < KERNEL_VERSION(3,7,0))
 	.gpio_dvbt   = { CXD2820R_GPIO_D, CXD2820R_GPIO_E | CXD2820R_GPIO_O | CXD2820R_GPIO_L, CXD2820R_GPIO_D },
 	.gpio_dvbc   = { CXD2820R_GPIO_D, CXD2820R_GPIO_E | CXD2820R_GPIO_O | CXD2820R_GPIO_L, CXD2820R_GPIO_D },
 	.gpio_dvbt2  = { CXD2820R_GPIO_D, CXD2820R_GPIO_E | CXD2820R_GPIO_O | CXD2820R_GPIO_L, CXD2820R_GPIO_D },
@@ -112,10 +112,14 @@ struct dvb_frontend* sonydvbt2_init_frontend(struct i2c_adapter *adapter)
 	struct dvb_frontend *fe = NULL;
 	struct dvb_frontend *pll = NULL;
 
-#ifdef USE_LINUXTV
-	fe = dvb_attach(cxd2820r_attach, &cxd2820r_cfg, adapter, NULL);
+#if (LINUX_VERSION_CODE < KERNEL_VERSION(3,0,0))
+	fe = dvb_attach(cxd2820r_attach, &cxd2820r_cfg, adapter); //there no third arg in cxd2820r_attach in our driver
+#elif (LINUX_VERSION_CODE < KERNEL_VERSION(3,3,0))
+	fe = dvb_attach(cxd2820r_attach, &cxd2820r_cfg, adapter, NULL); //from 3.0-3.3 appear third arg in cxd2820r_attach: struct dvb_frontend *fe
+#elif (LINUX_VERSION_CODE < KERNEL_VERSION(3,7,0))
+	fe = dvb_attach(cxd2820r_attach, &cxd2820r_cfg, adapter); //from 3.3-3.7 there no third arg in cxd2820r_attach
 #else
-	fe = dvb_attach(cxd2820r_attach, &cxd2820r_cfg, adapter);
+	fe = dvb_attach(cxd2820r_attach, &cxd2820r_cfg, adapter, NULL); //from 3.7 appear third arg in cxd2820r_attach: int *gpio_chip_base
 #endif
 	if(!fe) {
 		dprintk("cant attach cxd2820r\n");

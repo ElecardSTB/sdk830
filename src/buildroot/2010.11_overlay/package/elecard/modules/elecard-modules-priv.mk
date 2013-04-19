@@ -5,13 +5,18 @@
 #############################################################
 
 ELECARD_MODULES_PRIV_DEPENDENCIES=
+
+ifneq ($(BR2_PACKAGE_LINUXTV),)
+ELECARD_MODULES_PRIV_DEPENDENCIES += linuxtv
+endif
+
 ifeq ($(STB830_SDK),)
 
 elecard-modules-priv-install:
-	USE_LINUXTV=$(BR2_PACKAGE_LINUXTV) make -C $(PRJROOT)/src/elecard/modules all
+	make -C $(PRJROOT)/src/elecard/modules all
 
 elecard-modules-priv-dirclean elecard-modules-priv-clean:
-	USE_LINUXTV=$(BR2_PACKAGE_LINUXTV) make -C $(PRJROOT)/src/elecard/modules clean
+	make -C $(PRJROOT)/src/elecard/modules clean
 
 elecard-modules-priv: $(ELECARD_MODULES_PRIV_DEPENDENCIES) elecard-modules-priv-install
 

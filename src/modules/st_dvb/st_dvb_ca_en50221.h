@@ -13,10 +13,15 @@
 #if !(defined __ST_DVB_CA_EN502211_H__)
 #define __ST_DVB_CA_EN502211_H__
 
-struct dvb_adapter;
+/******************************************************************
+* INCLUDE FILES                                                   *
+*******************************************************************/
+#include "st_dvb.h"
 
 //This functions are part of stapisdk now. See $PRJROOT/src/elecard/stapisdk/$STAPISDK_VERSION_overlay/apilib/src/stpccrd/linux/stpccrd_core/.
-/*** PROTOTYPES **************************************************************/
+/******************************************************************
+* EXPORTED FUNCTIONS PROTOTYPES               <Module>_<Word>+    *
+*******************************************************************/
 int  st_dvb_init_stpccrd(void);
 void st_dvb_release_stpccrd(void);
 int  st_dvb_init_ca(int slot_num, struct dvb_adapter *dvb_adapter);

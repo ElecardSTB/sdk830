@@ -6,18 +6,21 @@
  * 
  */
 /**
- @File   st_dvb.h
+ @File   edc-1051.h
  @brief
 */
 
 #if !(defined __EDC_1051_H__)
 #define __EDC_1051_H__
 
-struct dvb_frontend;
-struct i2c_adapter;
+/******************************************************************
+* INCLUDE FILES                                                   *
+*******************************************************************/
+#include "st_dvb.h"
 
-/*** PROTOTYPES **************************************************************/
-
+/******************************************************************
+* EXPORTED FUNCTIONS PROTOTYPES               <Module>_<Word>+    *
+*******************************************************************/
 struct dvb_frontend* edc_1051_init_frontend(struct i2c_adapter *adapter);
 
 #endif //#if !(define __EDC_1051_H__)

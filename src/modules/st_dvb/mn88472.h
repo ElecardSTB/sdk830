@@ -4,11 +4,19 @@
  * Copyright (C) 2013 Andrey Kuleshov <andrey.kuleshov@elecard.ru>
  */
 
-#ifndef MN88472_H
-#define MN88472_H
+#ifndef __MN88472_H__
+#define __MN88472_H__
 
-#include <linux/dvb/frontend.h>
+/******************************************************************
+* INCLUDE FILES                                                   *
+*******************************************************************/
+#include "st_dvb.h"
 
+//This is header of closed driver for mn88472. See $PRJROOT/src/elecard/modules/mn88472/ if have access.
+
+/******************************************************************
+* EXPORTED TYPEDEFS                                               *
+*******************************************************************/
 struct mn88472_config {
 	/* Demodulator I2C address SADR pin state
 	 * The lower bit of the slave adresses
@@ -18,6 +26,9 @@ struct mn88472_config {
 	u8 i2c_sadr;
 };
 
+/******************************************************************
+* EXPORTED FUNCTIONS PROTOTYPES               <Module>_<Word>+    *
+*******************************************************************/
 struct dvb_frontend *mn88472_attach(const struct mn88472_config *config, struct i2c_adapter *i2c);
 
-#endif /* MN88472_H */
+#endif /* __MN88472_H__ */

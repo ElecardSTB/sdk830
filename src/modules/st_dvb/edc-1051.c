@@ -15,15 +15,10 @@
 #include <linux/module.h>
 #include <linux/i2c.h>
 
-#ifdef USE_LINUXTV
-#include <dvb/frontend.h>
-#endif
-#include <dvb_frontend.h>
-
+#include "st_dvb.h"
 #include <tda1002x.h>
 #include <dvb-pll.h>
 
-#include "st_dvb.h"
 #include "edc-1051.h"
 
 /******************************************************************
