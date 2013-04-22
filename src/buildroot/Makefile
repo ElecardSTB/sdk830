@@ -51,11 +51,9 @@ $(_ts_untarbuildroot)_rootfs:
 	ln -s buildroot-$(BUILDROOT_VERSION) $(BUILDROOT_ROOT)
 	touch $(_ts_untarbuildroot)_rootfs
 
-$(BUILDROOT_ROOT)/output_%:
-	mkdir -p $@
-
-$(BUILDROOT_ROOT)/output_%/.config: ./buildroot-$(BUILDROOT_VERSION)_%.config | $(_ts_patchbuildroot)_rootfs $(BUILDROOT_ROOT)/output_%
+$(BUILDROOT_ROOT)/output_%/.config: ./buildroot-$(BUILDROOT_VERSION)_%.config | $(_ts_patchbuildroot)_rootfs 
 	$(call ECHO_MESSAGE,Configuring $*)
+	mkdir -p $(BUILDROOT_ROOT)/output_$*
 # 	$(call CONFEDIT_INIT,$(BUILDROOT_ROOT)/output_$*/,$(PRJROOT)/src/buildroot/buildroot-$(BUILDROOT_VERSION)_$*.config)
 # 	$(call CONFEDIT_SET_STRING,$(BUILDROOT_ROOT)/output_$*,BR2_TOOLCHAIN_EXTERNAL_PATH,/opt/STM/STLinux-$(LINUX_VERSION)/devkit/sh4)
 # 	$(call CONFEDIT_EXECUTE,$(BUILDROOT_ROOT)/output_$*)
