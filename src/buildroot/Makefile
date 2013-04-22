@@ -49,15 +49,20 @@ $(_ts_untarbuildroot)_rootfs:
 	$(call ECHO_MESSAGE,Unpackage buildroot)
 	tar -xzf $(TARBALLS_DIR)/$(BUILDROOT_PACK_NAME) -C $(PACKAGES_DIR)
 	ln -s buildroot-$(BUILDROOT_VERSION) $(BUILDROOT_ROOT)
-	mkdir -p $(BUILDROOT_ROOT)/output_rootfs $(BUILDROOT_ROOT)/output_initramfs
 	touch $(_ts_untarbuildroot)_rootfs
 
+$(BUILDROOT_ROOT)/output_%:
+	mkdir -p $@
 
-$(BUILDROOT_ROOT)/output_%/.config: ./buildroot-$(BUILDROOT_VERSION)_%.config
+$(BUILDROOT_ROOT)/output_%/.config: ./buildroot-$(BUILDROOT_VERSION)_%.config | $(_ts_patchbuildroot)_rootfs $(BUILDROOT_ROOT)/output_%
 	$(call ECHO_MESSAGE,Configuring $*)
-	$(call CONFEDIT_INIT,$(BUILDROOT_ROOT)/output_$*/,$(PRJROOT)/src/buildroot/buildroot-$(BUILDROOT_VERSION)_$*.config)
-	$(call CONFEDIT_SET_STRING,$(BUILDROOT_ROOT)/output_$*,BR2_TOOLCHAIN_EXTERNAL_PATH,/opt/STM/STLinux-$(LINUX_VERSION)/devkit/sh4)
-	$(call CONFEDIT_EXECUTE,$(BUILDROOT_ROOT)/output_$*)
+# 	$(call CONFEDIT_INIT,$(BUILDROOT_ROOT)/output_$*/,$(PRJROOT)/src/buildroot/buildroot-$(BUILDROOT_VERSION)_$*.config)
+# 	$(call CONFEDIT_SET_STRING,$(BUILDROOT_ROOT)/output_$*,BR2_TOOLCHAIN_EXTERNAL_PATH,/opt/STM/STLinux-$(LINUX_VERSION)/devkit/sh4)
+# 	$(call CONFEDIT_EXECUTE,$(BUILDROOT_ROOT)/output_$*)
+	[ ! -e $(BUILDROOT_ROOT)/output_$*/.config ] || mv $(BUILDROOT_ROOT)/output_$*/.config $(BUILDROOT_ROOT)/output_$*/.config_`date +%Y%m%d_%H%M%S`
+	cp -f $(PRJROOT)/src/buildroot/buildroot-$(BUILDROOT_VERSION)_$*.config $(BUILDROOT_ROOT)/output_$*/.config
+# 	sed -i 's/BR2_TOOLCHAIN_EXTERNAL_PATH=.*/BR2_TOOLCHAIN_EXTERNAL_PATH="/opt/STM/STLinux-$(LINUX_VERSION)/devkit/sh4"/' $(BUILDROOT_ROOT)/output_$*/.config
+	edcfg $(BUILDROOT_ROOT)/output_$*/.config set BR2_TOOLCHAIN_EXTERNAL_PATH \"/opt/STM/STLinux-$(LINUX_VERSION)/devkit/sh4\"
 	make -C $(BUILDROOT_ROOT) O=output_$* FS_TYPE=$* oldconfig
 	touch $@
 
