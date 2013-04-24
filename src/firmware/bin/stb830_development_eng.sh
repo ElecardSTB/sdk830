@@ -13,7 +13,8 @@ cat << EOF > $PRJROOT/src/rootfs/overlay/etc/defaults/elecard/StbMainApp/setting
 LANGUAGE=English
 EOF
 
-make -C $PRJROOT firmware
+# -- Build firmware --------------------------------
+prjmake firmware
 
 rm -f $PRJROOT/src/rootfs/overlay/etc/defaults/elecard/StbMainApp/settings.conf
 rmdir $PRJROOT/src/rootfs/overlay/etc/defaults/elecard/StbMainApp 2>/dev/null

@@ -1,7 +1,6 @@
 #!/bin/sh
 
-SCRIPT_DIR=$(dirname $0)
-source $SCRIPT_DIR/default_pre.sh
+source `dirname ${BASH_SOURCE[0]}`/../../../etc/checkEnvs.sh
 
 #Comment that add to firmware pack name
 export SHORT_COMMENT=${SHORT_COMMENT:-$1}

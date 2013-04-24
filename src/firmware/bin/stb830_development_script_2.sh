@@ -9,4 +9,5 @@ UPD_CONFIG=dev
 BUILD_SCRIPT_FW=test
 BUILD_WITHOUT_COMPONENTS_FW=1
 
-make -C $PRJROOT firmware
+# -- Build firmware --------------------------------
+prjmake firmware

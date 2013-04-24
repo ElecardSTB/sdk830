@@ -60,7 +60,7 @@ setConfig		$BUILDROOT_ROOTFS_CFG	BR2_TARGET_ROOTFS_JFFS2_CUSTOM_EBSIZE		0x40000
 setConfig		$BUILDROOT_ROOTFS_CFG	BR2_TARGET_ROOTFS_JFFS2_PAGESIZE			0x1000
 setConfig		$BUILDROOT_ROOTFS_CFG	BR2_TARGET_ROOTFS_JFFS2_EBSIZE				0x40000
 
-#Build firmware
-prjmake -C $PRJROOT firmware
+# -- Build firmware --------------------------------
+prjmake firmware
 
 returnOrigConfig

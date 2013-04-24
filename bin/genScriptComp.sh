@@ -9,18 +9,23 @@ COMPONENT_DIR=$BUILDROOT/comps
 SCRIPT_COMP_SEARCH_DIRS="$PRJROOT/src/firmware/scriptComponents \
 						$PRJROOT/src/elecard/firmware/scriptComponents"
 
+SCRIPT_COMP_SEARCH_NEW_DIRS="$PRJROOT/src/firmware/src \
+						$PRJROOT/src/elecard/firmware/src"
+
 searchScriptDir() {
 	[ -z "$1" ] && return
 
 	foundScriptDir=
-	for scriptComp_dir in $SCRIPT_COMP_SEARCH_DIRS; do
-		if [ -d $scriptComp_dir/$1 ]; then
-			foundScriptDir=$scriptComp_dir/$1
-			break;
+	for dir in `find $SCRIPT_COMP_SEARCH_NEW_DIRS -maxdepth 1 -type d -name $1`; do
+		if [ -d "$dir/script" ]; then
+			foundScriptDir=$dir/script
+			return 0;
 		fi
 	done
+	#old paths
+	foundScriptDir=`find $SCRIPT_COMP_SEARCH_DIRS -maxdepth 1 -type d -name $1 | head -n 1`
 	if [ -z "$foundScriptDir" ]; then
-		echo "ERROR: Cant find \"$BUILD_SCRIPT_FW\" script folder. Search in: $SCRIPT_COMP_SEARCH_DIRS"
+		echo "ERROR: Cant find \"$BUILD_SCRIPT_FW\" script folder. Search in: $SCRIPT_COMP_SEARCH_NEW_DIRS $SCRIPT_COMP_SEARCH_DIRS"
 		exit -1
 	fi
 }

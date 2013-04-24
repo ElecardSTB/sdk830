@@ -19,4 +19,5 @@ BUILD_ADD_KEYS_TO_FW=elecard
 #Comment that add to firmware pack name
 #SHORT_COMMENT="something"
 
-make -C $PRJROOT firmware
+# -- Build firmware --------------------------------
+prjmake firmware

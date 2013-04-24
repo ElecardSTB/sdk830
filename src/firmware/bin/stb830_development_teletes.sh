@@ -11,8 +11,7 @@ BUILD_SCRIPT_FW=teletes
 SHORT_COMMENT=teletes_updateaddr
 
 export ENABLE_TELETES=1
-make -C $PRJROOT/src/apps/StbMainApp clean
-make -C $PRJROOT firmware
 
-#export -n ENABLE_TELETES
-make -C $PRJROOT/src/apps/StbMainApp clean
+# -- Build firmware --------------------------------
+prjmake firmware
+

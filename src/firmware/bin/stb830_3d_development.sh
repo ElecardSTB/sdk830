@@ -3,9 +3,6 @@
 source $(dirname $0)/default_env.sh
 
 update3Dcomponents() {
-	#clean only StbMainApp, because it always builds
-	prjmake -C $PRJROOT/src/apps/StbMainApp clean
-
 	prjmake stsdk sub=purge_apilib MODULE=sthdmi
 	#Rebuild also stfrontend, to fix linking errors: undefined reference to `STFRONTEND_*'
 	for i in sthdmi stfrontend; do 
@@ -27,7 +24,7 @@ SHORT_COMMENT=3D
 export ENABLE_3DRENDERING=1
 update3Dcomponents
 
-# Build firmware
+# -- Build firmware --------------------------------
 prjmake firmware
 
 # Rebuild STAPI module to avoid building 3D firmares afterwards
