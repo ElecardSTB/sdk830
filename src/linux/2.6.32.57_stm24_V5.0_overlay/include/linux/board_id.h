@@ -14,6 +14,7 @@ typedef enum g_board_type_e {
 	eSTB840_ch7162,
 	eSTB830_reference,
 	eSTB_pioneer,
+	eSTB850,
   
 } g_board_type_t;
 

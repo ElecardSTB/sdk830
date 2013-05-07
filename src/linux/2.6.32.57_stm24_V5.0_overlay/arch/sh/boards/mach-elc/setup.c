@@ -47,22 +47,24 @@ struct board_config_s {
 };
 
 struct board_descr_s board_descr[] __initdata = {
-  {eSTB830,				"stb830_st",		device_init_stb830},
-  {eSTB840_PromSvyaz,	"stb840_promSvyaz",	device_init_stb840_promSvyaz},
-  {eSTB840_PromWad,		"stb840_promWad",	device_init_stb840_promWad},
-  {eSTB840_ch7162,		"stb840_ch7162",	device_init_stb840_ch7162},
-  {eSTB830_reference,	"stb830_reference",	device_init_stb830_reference},
-  {eSTB_pioneer,		"stb_pioneer",		device_init_stb_pioneer},
+	{eSTB830,			"stb830_st",		device_init_stb830},
+	{eSTB840_PromSvyaz,	"stb840_promSvyaz",	device_init_stb840_promSvyaz},
+	{eSTB840_PromWad,	"stb840_promWad",	device_init_stb840_promWad},
+	{eSTB840_ch7162,	"stb840_ch7162",	device_init_stb840_ch7162},
+	{eSTB830_reference,	"stb830_reference",	device_init_stb830_reference},
+	{eSTB_pioneer,		"stb_pioneer",		device_init_stb_pioneer},
+	{eSTB850,			"stb850",			device_init_stb850},
 };
 
 struct board_config_s board_config[]  = {
-  {eSTB830,				0,	{0, 1} },
-  {eSTB830,				2,	{0, 0} },
-  {eSTB840_PromSvyaz,	-1,	{0, 1} },
-  {eSTB840_PromWad,		-1,	{1, 1} },
-  {eSTB840_ch7162,		-1,	{0, 1} },
-  {eSTB830_reference,	-1,	{0, 1} },
-  {eSTB_pioneer,		-1,	{0, 1} },
+	{eSTB830,			0,	{0, 1} },
+	{eSTB830,			2,	{0, 0} },
+	{eSTB840_PromSvyaz,	-1,	{0, 1} },
+	{eSTB840_PromWad,	-1,	{1, 1} },
+	{eSTB840_ch7162,	-1,	{0, 1} },
+	{eSTB830_reference,	-1,	{0, 1} },
+	{eSTB_pioneer,		-1,	{0, 1} },
+	{eSTB850,			-1,	{0, 0} },
 };
 
 static g_board_type_t g_board_type = eSTB830;
