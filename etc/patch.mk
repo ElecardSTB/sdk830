@@ -1,3 +1,4 @@
+#!/usr/bin/make
 
 # Macro: createPatchOverlayScriptTarget
 # Creates target dependence from patches, overlays and scripts.
@@ -50,5 +51,4 @@ $(1): $(5) $$($(4)_OVERLAY_FILES) $$($(4)_PATCH_FILES) $$($(4)_SCRIPT_FILES)
 	touch $(1)
 
 endef
-
 

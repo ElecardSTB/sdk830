@@ -1,4 +1,4 @@
-
+#!/usr/bin/make
 
 ifneq "$(__ENVVARS_DEFINED__)" "y"
 export __ENVVARS_DEFINED__:=y
@@ -56,6 +56,9 @@ define ECHO_MESSAGE
 	@printf "##   %-65s##\n" "$(1)"
 	@echo   "************************************************************************"
 endef
+
+# Force use bash
+SHELL := /bin/bash
 
 TARBALLS_DIR := $(PRJROOT)/tarballs
 FIRMWARE_DIR := $(BUILDROOT)/firmware
