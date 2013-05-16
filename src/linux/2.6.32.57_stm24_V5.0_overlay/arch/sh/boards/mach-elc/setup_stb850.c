@@ -38,6 +38,20 @@
 
 #define HDK7105_PIO_PHY_RESET stm_gpio(15, 5)
 
+static struct platform_device stb850_leds = {
+	.name = "leds-gpio",
+	.id = 0,
+	.dev.platform_data = &(struct gpio_led_platform_data) {
+		.num_leds = 1,
+		.leds = (struct gpio_led[]) {
+			{
+				.name = "POWER",
+				.gpio = stm_gpio(11, 7),
+				.active_low = 0,
+			},
+		},
+	},
+};
 
 static struct tm1668_key stb850_front_panel_keys[] = {
 
@@ -150,6 +164,7 @@ static struct i2c_board_info __initdata rtc_i2c_board_info[] = {
 };
 
 static struct platform_device *hdk7105_devices[] __initdata = {
+	&stb850_leds,
 	&stb850_front_panel,
 };
 
@@ -208,15 +223,26 @@ int __init device_init_stb850(int ver)
 
 	stx7105_configure_usb(0, &(struct stx7105_usb_config) {
 			.ovrcur_mode = stx7105_usb_ovrcur_active_low,
-			.pwr_enabled = 1,
+			.pwr_enabled = 0,
 			.routing.usb0.ovrcur = stx7105_usb0_ovrcur_pio4_4,
 			.routing.usb0.pwr = stx7105_usb0_pwr_pio4_5, });
 	stx7105_configure_usb(1, &(struct stx7105_usb_config) {
 			.ovrcur_mode = stx7105_usb_ovrcur_active_low,
-			.pwr_enabled = 1,
+			.pwr_enabled = 0,
 			.routing.usb1.ovrcur = stx7105_usb1_ovrcur_pio4_6,
 			.routing.usb1.pwr = stx7105_usb1_pwr_pio4_7, });
+//SergA: work around: for seting 0 on usb power
+	stpio_request_set_pin(4, 5, "usb power0", STPIO_OUT, 0);
+	stpio_request_set_pin(4, 7, "usb power1", STPIO_OUT, 0);
 
+//HDMI switcher:
+// PIO10.0  - S1  SoC
+// PIO10.1  - S2  HDMI in2
+// PIO10.2  - S3  HDMI in3
+//  set default HDMI from SoC
+//	stpio_request_set_pin(10, 0, "HDMI SoC", STPIO_OUT, 1);
+//	stpio_request_set_pin(10, 1, "HDMI SoC", STPIO_OUT, 0);
+//	stpio_request_set_pin(10, 2, "HDMI SoC", STPIO_OUT, 0);
 
 	gpio_request(HDK7105_PIO_PHY_RESET, "eth_phy_reset");
 	gpio_direction_output(HDK7105_PIO_PHY_RESET, 1);
@@ -243,7 +269,7 @@ int __init device_init_stb850(int ver)
 
 	stx7105_configure_nand(&stm_nand_device);
 
-	i2c_register_board_info(1, rtc_i2c_board_info, ARRAY_SIZE(rtc_i2c_board_info));
+	i2c_register_board_info(3, rtc_i2c_board_info, ARRAY_SIZE(rtc_i2c_board_info));
 
 	return platform_add_devices(hdk7105_devices,
 			ARRAY_SIZE(hdk7105_devices));
