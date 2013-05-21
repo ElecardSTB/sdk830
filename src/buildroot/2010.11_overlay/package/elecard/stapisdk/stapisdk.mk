@@ -6,6 +6,13 @@
 
 STAPISDK_DEPENDENCIES = zlib tiff libpng jpeg freetype directfb openssl commonlib linuxtv-dvb-apps bzip2 elcdrpclib
 STAPISDK_DEPENDENCIES += cjsonlib
+ifeq ($(BR2_PACKAGE_GARB),y)
+  STAPISDK_DEPENDENCIES += garb
+endif
+ifeq ($(BR2_PACKAGE_OSCAM),y)
+  STAPISDK_DEPENDENCIES += oscam
+endif
+
 STAPISDK_APILIB_DEPENDENCIES =
 
 cjsonlib:
