@@ -7,39 +7,43 @@ include package/elecard/sdk_env
 
 SDK830_INSTALLED_OPTPACKS_FILE := $(BUILD_DIR)/installedOptPacks
 
-%-install-adjast-with-config: $(SDK830_INSTALLED_OPTPACKS_FILE)
+target-finalize: uninstall-optional-packs
+
+ifeq ($(wildcard $(SDK830_INSTALLED_OPTPACKS_FILE).forbid),)
+initialize-opt-packs-cfg: $(SDK830_INSTALLED_OPTPACKS_FILE).prev
+	@echo "" >$(SDK830_INSTALLED_OPTPACKS_FILE)
+
+%-install-adjast-with-opt-packs-cfg: initialize-opt-packs-cfg
 	@if ! grep "$*" $(SDK830_INSTALLED_OPTPACKS_FILE) >/dev/null; then \
-		if [ `stat -c %s $(SDK830_INSTALLED_OPTPACKS_FILE)` -eq 0 ]; then \
-			echo "$*" > $(SDK830_INSTALLED_OPTPACKS_FILE); \
-		else \
-			sed -i "1 i $*" $(SDK830_INSTALLED_OPTPACKS_FILE); \
-		fi; \
+		sed -i "1 i $*" $(SDK830_INSTALLED_OPTPACKS_FILE); \
 	fi
+	@if ! grep "$*" $(SDK830_INSTALLED_OPTPACKS_FILE).prev >/dev/null; then \
+		sed -i "1 i $*" $(SDK830_INSTALLED_OPTPACKS_FILE).prev; \
+	fi
+else
+%-install-adjast-with-opt-packs-cfg:
+	@true
+endif
 
-%-uninstall-adjast-with-config: $(SDK830_INSTALLED_OPTPACKS_FILE)
-	@if grep "$*" $(SDK830_INSTALLED_OPTPACKS_FILE) >/dev/null; then \
-		sed -i "/$*/d" $(SDK830_INSTALLED_OPTPACKS_FILE);\
-	fi;
-
-target-finalize: uninstall-additional
-
-uninstall-additional: $(SDK830_INSTALLED_OPTPACKS_FILE) $(SDK830_INSTALLED_OPTPACKS_FILE).prev
+uninstall-optional-packs: initialize-opt-packs-cfg
 	@$(call MESSAGE,"Uninstall optional packages")
-	cat $^
-#copy installedOptPacks because it can be changed while uninstalling unused packages
-	cp -f $(SDK830_INSTALLED_OPTPACKS_FILE) $(SDK830_INSTALLED_OPTPACKS_FILE).copy
+	cat $(SDK830_INSTALLED_OPTPACKS_FILE)
+	cat $(SDK830_INSTALLED_OPTPACKS_FILE).prev
+	touch $(SDK830_INSTALLED_OPTPACKS_FILE).forbid
 	cat $(SDK830_INSTALLED_OPTPACKS_FILE).prev | cut -d':' -f1 | \
 	while read pack_name; do \
+		[ -z "$$pack_name" ] && continue; \
 		echo "pack_name=$$pack_name"; \
-		if ! grep $$pack_name $(SDK830_INSTALLED_OPTPACKS_FILE).copy >/dev/null; then \
+		if ! grep $$pack_name $(SDK830_INSTALLED_OPTPACKS_FILE) >/dev/null; then \
 			make $${pack_name}-uninstall O=$(O) FS_TYPE=$(FS_TYPE); \
 		fi; \
 	done
-	rm -f $(SDK830_INSTALLED_OPTPACKS_FILE).copy
+	rm $(SDK830_INSTALLED_OPTPACKS_FILE).forbid
 	mv -f $(SDK830_INSTALLED_OPTPACKS_FILE) $(SDK830_INSTALLED_OPTPACKS_FILE).prev
 
-$(SDK830_INSTALLED_OPTPACKS_FILE) $(SDK830_INSTALLED_OPTPACKS_FILE).prev:
-	touch $@
+$(SDK830_INSTALLED_OPTPACKS_FILE).prev:
+	echo "" >>$@
+
 
 ELC_OVERLAY_VERBOSE:=1
 
@@ -61,19 +65,19 @@ $$($(2)_TARGET_EXTRACT):
 # Install to target dir
 $$($(2)_TARGET_INSTALL_TARGET):
 	@$$(call MESSAGE,"Installing to target")
-	source $(PRJROOT)/etc/overlay.sh; overlay $$($(2)_DIR)/overlay $(TARGET_DIR) 1 $(ELC_OVERLAY_VERBOSE)
+	$(Q)source $(PRJROOT)/etc/overlay.sh; overlay $$($(2)_DIR)/overlay $(TARGET_DIR) 1 $(ELC_OVERLAY_VERBOSE)
 	$(Q)touch $$@
 
 # Install to staging dir
 $$($(2)_TARGET_INSTALL_STAGING):
 	@$$(call MESSAGE,"Installing to staging")
-	source $(PRJROOT)/etc/overlay.sh; overlay $$($(2)_DIR)/overlay $(STAGING_DIR) 1 $(ELC_OVERLAY_VERBOSE)
+	$(Q)source $(PRJROOT)/etc/overlay.sh; overlay $$($(2)_DIR)/overlay $(STAGING_DIR) 1 $(ELC_OVERLAY_VERBOSE)
 	$(Q)touch $$@
 
 # Uninstall package from target and staging
 $$($(2)_TARGET_UNINSTALL):
 	@$$(call MESSAGE,"Uninstalling")
-	source $(PRJROOT)/etc/overlay.sh; \
+	$(Q)source $(PRJROOT)/etc/overlay.sh; \
 	echo "Uninstall from rootfs"; \
 	overlay $$($(2)_DIR)/overlay $(TARGET_DIR) 0 $(ELC_OVERLAY_VERBOSE); \
 	echo "Uninstall from staging"; \
@@ -82,11 +86,11 @@ $$($(2)_TARGET_UNINSTALL):
 		echo "Uninstall from rootfs_nfs"; \
 		overlay $$($(2)_DIR)/overlay $(BUILDROOT)/rootfs_nfs 0 $(ELC_OVERLAY_VERBOSE); \
 	fi
-	rm -f $$($(2)_TARGET_INSTALL_TARGET)
-	rm -f $$($(2)_TARGET_INSTALL_STAGING)
+	$(Q)rm -f $$($(2)_TARGET_INSTALL_TARGET)
+	$(Q)rm -f $$($(2)_TARGET_INSTALL_STAGING)
 
-$(1)-install: $(1)-install-adjast-with-config
-$(1)-uninstall: $(1)-uninstall-adjast-with-config
+$(1)-install: $(1)-install-adjast-with-opt-packs-cfg
+#$(1)-uninstall: $(1)-uninstall-adjast-with-opt-packs-cfg
 
 endef #define OVERLAY_TEMPLATE_INNER
 
