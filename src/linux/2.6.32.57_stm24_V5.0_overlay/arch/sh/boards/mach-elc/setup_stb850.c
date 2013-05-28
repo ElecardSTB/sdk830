@@ -54,11 +54,40 @@ static struct platform_device stb850_leds = {
 };
 
 static struct tm1668_key stb850_front_panel_keys[] = {
-
+	{0x00000800, KEY_UP,	"FP UP"},
+	{0x00000100, KEY_DOWN,	"FP DOWN"},
+	{0x00080000, KEY_RIGHT,	"FP RIGHT"},
+	{0x00010000, KEY_LEFT,	"FP LEFT"},
+	{0x00000001, KEY_ENTER,	"FP OK"},
+	{0x00000008, KEY_SPACE,	"FP MENU"},
 };
 
 static struct tm1668_character stb850_front_panel_characters[] = {
-
+//			byte num, bit mask
+		{ 'A', 0x0640 },
+		{ 'a', 0x0640 },
+		{ '1', 0x0640 },
+		{ 'B', 0x0680 },
+		{ 'b', 0x0680 },
+		{ '2', 0x0680 },
+		{ 'C', 0x0440 },
+		{ 'c', 0x0440 },
+		{ '3', 0x0440 },
+		{ 'D', 0x0480 },
+		{ 'd', 0x0480 },
+		{ '4', 0x0480 },
+		{ 'E', 0x0040 },
+		{ 'e', 0x0040 },
+		{ '5', 0x0040 },
+		{ 'F', 0x0080 },
+		{ 'f', 0x0080 },
+		{ '6', 0x0080 },
+		{ 'G', 0x0240 },
+		{ 'g', 0x0240 },
+		{ '7', 0x0240 },
+		{ 'H', 0x0280 },
+		{ 'h', 0x0280 },
+		{ '8', 0x0280 },
 };
 
 static struct platform_device stb850_front_panel = {
@@ -76,7 +105,7 @@ static struct platform_device stb850_front_panel = {
 		.brightness = 4,
 		.characters_num = ARRAY_SIZE(stb850_front_panel_characters),
 		.characters = stb850_front_panel_characters,
-		.text = NULL,
+		.text = "12345678",
 	},
 };
 

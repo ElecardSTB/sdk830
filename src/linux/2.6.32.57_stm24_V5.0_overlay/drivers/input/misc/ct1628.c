@@ -23,6 +23,7 @@
 #include <linux/gpio.h>
 #include <linux/tm1668.h>
 // #include <linux/stm/pio.h>
+#include <linux/board_id.h>
 
 
 #define DRIVER_NAME "ct1628"
@@ -72,6 +73,8 @@ struct ct1628_chip {
 	struct tm1668_key *keys;
 	struct delayed_work keys_work;
 	unsigned long keys_poll_period;
+
+	g_board_type_t board_type;
 };
 
 
@@ -130,24 +133,17 @@ static void ct1628_recv(struct ct1628_chip *chip, u8 command,
 		void *buf, int len)
 {
 	u8 *data = buf;
-// 	u8 data2[5];
 	int i;
 
 	gpio_set_value(chip->gpio_stb, 0);
 	udelay(T_WAIT);
 	ct1628_writeb(chip, command);
 	udelay(T_WAIT);
-//	gpio_set_value(chip->gpio_dio, 1);
+
 	gpio_direction_input(chip->gpio_dio);
 	for (i = 0; i < len; i++)
 		ct1628_readb(chip, data++);
-// 	for (i = 0; i < 5; i++)
-// 		ct1628_readb(chip, data2+i);
-// 	printk("%s[%d]: ", __FILE__, __LINE__);
-// 	for(i = 0; i < 5; i++)
-// 		printk("0x%02x ", data2[i]);
-// 	printk("\n");
-// 	memcpy(buf, data2, len);
+
 	gpio_direction_output(chip->gpio_dio, 1);
 	udelay(T_WAIT);
 	gpio_set_value(chip->gpio_stb, 1);
@@ -162,30 +158,25 @@ static void ct1628_keys_poll(struct work_struct *work)
 	struct ct1628_chip *chip = container_of(work, struct ct1628_chip,
 			keys_work.work);
 	u32 keys, diff;
-// 	char	buf[6];
 	int i;
 
 	spin_lock(&chip->lock);
-
 	ct1628_recv(chip, CT1628_CMD_DATA(0, 1, 1), &keys, sizeof(keys));
-// 	ct1628_recv(chip, CT1628_CMD_DATA(0, 1, 1), buf, 5);
-// 	keys = *((int *)buf);
 
 	spin_unlock(&chip->lock);
 
 	diff = keys ^ chip->keys_prev;
-// printk("\n%s[%d]: buf:\n", __FILE__, __LINE__);
-// 	for(i = 0; i < 6; i++)
-// 		printk("0x%02x", buf[i]);
-	for (i = 0; i < chip->keys_num; i++) {
-		struct tm1668_key *key = &chip->keys[i];
+	if(diff) {
+		dev_dbg(&(chip->input->dev), "keys=0x%08x, chip->keys_prev=0x%08x, diff=0x%08x\n", keys, chip->keys_prev, diff);
 
-		if (diff & key->mask) {
-//printk("\n%s[%d]: keys=0x%08x, diff=0x%08x, key->mask=0x%08x, key->code=0x%08x, key->desc=%s\n", __FILE__, __LINE__, keys, diff, key->mask, key->code, key->desc);
-//printk("%s[%d]: keys_poll_period=%d\n", __FILE__, __LINE__, chip->keys_poll_period);
-			input_event(chip->input, EV_KEY, key->code,
-					!!(keys & key->mask));
-			input_sync(chip->input);
+		for (i = 0; i < chip->keys_num; i++) {
+			struct tm1668_key *key = &chip->keys[i];
+
+			if(diff & key->mask) {
+				dev_dbg(&(chip->input->dev), "pressed '%s'\n", key->desc ? key->desc : "unknown");
+				input_event(chip->input, EV_KEY, key->code, !!(keys & key->mask));
+				input_sync(chip->input);
+			}
 		}
 	}
 
@@ -279,30 +270,48 @@ static DEVICE_ATTR(brightness, S_IRUSR | S_IWUSR, ct1628_brightness_show,
 
 static void ct1628_print(struct ct1628_chip *chip, const char *text)
 {
-	u16 data[CT1628_DISPLAY_MAX_DIGITS] = { 0, };
 	int i, j;
-	u16 keyMask[] = { 0x0002, 0x0100, 0x0200, 0x0080, 0x0004 };
-//SergA
+	u16 data[CT1628_DISPLAY_MAX_DIGITS] = { 0, };
+
 	for(i = 0; i < sizeof(data)/sizeof(data[0]); i++)
 		data[i] = 0;
 
 	BUG_ON(chip->characters_num <= 0 || !chip->characters);
 	BUG_ON(!text);
 
-	for (i = 0; i < 5 && *text; i++, text++)
-		for (j = 0; j < chip->characters_num; j++) {
-			if (chip->characters[j].character == *text) {
-				int z;
-				char val = chip->characters[j].value;
-				if(i == 4) {
-					data[5] |= keyMask[4];
-				} else {
-					for(z = 0; z < 7; z++)
-						data[z] |= (val&(1<<z))?keyMask[i]:0x0000;
+	if(chip->board_type == eSTB850) {
+		while(*text) {
+			u8 *data_u8 = (u8 *)data;
+			for (j = 0; j < chip->characters_num; j++) {
+				if (chip->characters[j].character == *text) {
+					u8 byte = (chip->characters[j].value >> 8) & 0xff;
+					u8 mask = chip->characters[j].value & 0xff;
+//printk("%s[%d]: char=%c, byte=0x%02x, mask=0x%02x\n", __FILE__, __LINE__, *text, byte, mask);
+					if(byte < (CT1628_DISPLAY_MAX_DIGITS * 2))
+						data_u8[byte] |= mask;
+					break;
 				}
-				break;
 			}
+//printk("%s[%d]: **** SergA trace\n", __FILE__, __LINE__);
+			text++;
 		}
+	} else {
+		u16 keyMask[] = { 0x0002, 0x0100, 0x0200, 0x0080, 0x0004 };
+		for (i = 0; i < 5 && *text; i++, text++)
+			for (j = 0; j < chip->characters_num; j++) {
+				if (chip->characters[j].character == *text) {
+					int z;
+					char val = chip->characters[j].value;
+					if(i == 4) {
+						data[5] |= keyMask[4];
+					} else {
+						for(z = 0; z < 7; z++)
+							data[z] |= (val&(1<<z))?keyMask[i]:0x0000;
+					}
+					break;
+				}
+			}
+	}
 
 	ct1628_send(chip, CT1628_CMD_DATA(0, 1, 0), NULL, 0);
 	ct1628_send(chip, CT1628_CMD_ADDRESS(0), data, sizeof(data));
@@ -412,12 +421,12 @@ static int __init ct1628_probe(struct platform_device *pdev)
 		goto error_request_gpio_stb;
 	gpio_direction_output(chip->gpio_stb, 1);
 
-	/* Initialize the chip */
+	chip->board_type = elc_get_board_type();
 
+	/* Initialize the chip */
 	ct1628_send(chip, CT1628_CMD_DISPLAY_MODE(1), NULL, 0);
 
 	/* Initialize keyboard interface */
-
 	chip->input = input_allocate_device();
 	if (!chip->input) {
 		err = -ENOMEM;
