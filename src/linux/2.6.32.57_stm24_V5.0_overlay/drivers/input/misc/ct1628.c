@@ -34,6 +34,11 @@
 #define CT1628_DISPLAY_MAX_DIGITS 7
 #define CT1628_KEYBOARD_BUFFER_SIZE 4
 
+/******************************************************************
+* MODULE PARAMETERS                                               *
+*******************************************************************/
+static int disable = 0;
+
 //SergA
 #define CT1628_CMD_DISPLAY_MODE(mode_10x7) \
 		(0x00 | \
@@ -160,28 +165,30 @@ static void ct1628_keys_poll(struct work_struct *work)
 	u32 keys, diff;
 	int i;
 
-	spin_lock(&chip->lock);
-	ct1628_recv(chip, CT1628_CMD_DATA(0, 1, 1), &keys, sizeof(keys));
+	if (!disable)
+	{
+		spin_lock(&chip->lock);
+		ct1628_recv(chip, CT1628_CMD_DATA(0, 1, 1), &keys, sizeof(keys));
 
-	spin_unlock(&chip->lock);
+		spin_unlock(&chip->lock);
 
-	diff = keys ^ chip->keys_prev;
-	if(diff) {
-		dev_dbg(&(chip->input->dev), "keys=0x%08x, chip->keys_prev=0x%08x, diff=0x%08x\n", keys, chip->keys_prev, diff);
+		diff = keys ^ chip->keys_prev;
+		if(diff) {
+			dev_dbg(&(chip->input->dev), "keys=0x%08x, chip->keys_prev=0x%08x, diff=0x%08x\n", keys, chip->keys_prev, diff);
 
-		for (i = 0; i < chip->keys_num; i++) {
-			struct tm1668_key *key = &chip->keys[i];
+			for (i = 0; i < chip->keys_num; i++) {
+				struct tm1668_key *key = &chip->keys[i];
 
-			if(diff & key->mask) {
-				dev_dbg(&(chip->input->dev), "pressed '%s'\n", key->desc ? key->desc : "unknown");
-				input_event(chip->input, EV_KEY, key->code, !!(keys & key->mask));
-				input_sync(chip->input);
+				if(diff & key->mask) {
+					dev_dbg(&(chip->input->dev), "pressed '%s'\n", key->desc ? key->desc : "unknown");
+					input_event(chip->input, EV_KEY, key->code, !!(keys & key->mask));
+					input_sync(chip->input);
+				}
 			}
 		}
+
+		chip->keys_prev = keys;
 	}
-
-	chip->keys_prev = keys;
-
 	schedule_delayed_work(&chip->keys_work, chip->keys_poll_period);
 }
 
@@ -267,6 +274,44 @@ static ssize_t ct1628_brightness_store(struct device *dev,
 
 static DEVICE_ATTR(brightness, S_IRUSR | S_IWUSR, ct1628_brightness_show,
 		ct1628_brightness_store);
+
+static ssize_t ct1628_disabled_show(struct device *dev,
+		struct device_attribute *attr, char *buf)
+{
+	int result;
+	struct ct1628_chip *chip = dev_get_drvdata(dev);
+
+	spin_lock(&chip->lock);
+
+	result = sprintf(buf, "%d\n", disable);
+
+	spin_unlock(&chip->lock);
+
+	return result;
+}
+
+static ssize_t ct1628_disabled_store(struct device *dev,
+		struct device_attribute *attr,
+		const char *buf, size_t size)
+{
+	ssize_t result;
+	struct ct1628_chip *chip = dev_get_drvdata(dev);
+	unsigned int value;
+
+	result = strict_strtoul(buf, 10, &value);
+	if (result == 0) {
+		spin_lock(&chip->lock);
+		disable = value;
+		spin_unlock(&chip->lock);
+
+		result = size;
+	}
+
+	return result;
+}
+
+static DEVICE_ATTR(disabled, S_IRUSR | S_IWUSR, ct1628_disabled_show,
+		ct1628_disabled_store);
 
 static void ct1628_print(struct ct1628_chip *chip, const char *text)
 {
@@ -475,6 +520,9 @@ static int __init ct1628_probe(struct platform_device *pdev)
 		ct1628_print(chip, plat_data->text);
 
 	err = device_create_file(&pdev->dev, &dev_attr_brightness);
+
+	err = device_create_file(&pdev->dev, &dev_attr_disabled);
+
 	if (err != 0)
 		goto error_create_attr_brightness;
 
