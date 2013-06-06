@@ -109,6 +109,10 @@ static struct platform_device stb850_front_panel = {
 	},
 };
 
+static struct platform_device stb850_lcd = {
+	.name = "ssd1307",
+	.id = -1,
+};
 
 static int hdk7105_phy_reset(void *bus)
 {
@@ -194,6 +198,7 @@ static struct i2c_board_info __initdata rtc_i2c_board_info[] = {
 
 static struct platform_device *hdk7105_devices[] __initdata = {
 	&stb850_leds,
+	&stb850_lcd,
 	&stb850_front_panel,
 };
 
