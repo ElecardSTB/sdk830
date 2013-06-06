@@ -39,6 +39,13 @@ MODULE_PARM_DESC(fe0, "First frontend name");
 module_param_named(fe1, frontend_param[1], charp, 0644);
 MODULE_PARM_DESC(fe1, "Second frontend name");
 
+static int32_t frontend_i2c_bus[2] = { 3, 2 };
+module_param_named(fe0_i2c_bus, frontend_i2c_bus[0], int, 0644);
+MODULE_PARM_DESC(fe0_i2c_bus, "First frontend i2c bus");
+
+module_param_named(fe1_i2c_bus, frontend_i2c_bus[1], int, 0644);
+MODULE_PARM_DESC(fe1_i2c_bus, "Second frontend i2c bus");
+
 static bool ci_enable[2] = { 0, 0 };
 module_param_named(ci0, ci_enable[0], bool, 0644);
 MODULE_PARM_DESC(ci0, "Enable first dvb-ci");
@@ -55,7 +62,6 @@ struct frontend_ops_s {
 
 struct st_dvb_s {
 	char					*name;
-	int						i2c_bus;
 	struct dvb_adapter		dvb_adapter;
 	struct dvb_frontend		*frontend;
 	struct frontend_ops_s	*fops;
@@ -86,8 +92,8 @@ struct st_dvb_s {
 
 /*** LOCAL VARIABLES *********************************************************/
 struct st_dvb_s st_dvb[DVB_NUMS] = {
-	{.name = "ST DVB slot 0", .i2c_bus = 3, .frontend = NULL, .fops = NULL, },
-	{.name = "ST DVB slot 1", .i2c_bus = 2, .frontend = NULL, .fops = NULL, },
+	{.name = "ST DVB slot 0", .frontend = NULL, .fops = NULL, },
+	{.name = "ST DVB slot 1", .frontend = NULL, .fops = NULL, },
 };
 
 struct frontend_ops_s frontend_ops[] = {
@@ -98,17 +104,18 @@ struct frontend_ops_s frontend_ops[] = {
 
 /*** METHODS ****************************************************************/
 
-static void st_dvb_register_frontend(struct st_dvb_s *p_st_dvb, struct frontend_ops_s *fe_ops_p)
+static void st_dvb_register_frontend(struct st_dvb_s *p_st_dvb, struct frontend_ops_s *fe_ops_p, struct i2c_adapter *i2c_adap)
 {
-	struct i2c_adapter *i2c_adap = i2c_get_adapter(p_st_dvb->i2c_bus);
-
 	dprintk("%s init\n", fe_ops_p->name);
 
-	p_st_dvb->frontend = fe_ops_p->init_frontend(i2c_adap);
-	if(!p_st_dvb->frontend)
+	if(fe_ops_p->init_frontend == NULL)
 		return;
 
-	if(dvb_register_frontend(&p_st_dvb->dvb_adapter, p_st_dvb->frontend)) {
+	p_st_dvb->frontend = fe_ops_p->init_frontend(i2c_adap);
+	if(p_st_dvb->frontend == NULL)
+		return;
+
+	if(dvb_register_frontend(&p_st_dvb->dvb_adapter, p_st_dvb->frontend) != 0) {
 		printk(KERN_ERR ": Failed to register frontend %s\n", fe_ops_p->name);
 		dvb_frontend_detach(p_st_dvb->frontend);
 		p_st_dvb->frontend = 0;
@@ -134,7 +141,10 @@ static int __init st_dvb_init_module(void)
 	for(i = 0; i < DVB_NUMS; i++) {
 		struct st_dvb_s *p_st_dvb = st_dvb + i;
 		struct dvb_adapter *dvb_adap = &(p_st_dvb->dvb_adapter);
-		struct i2c_adapter *i2c_adap = i2c_get_adapter(p_st_dvb->i2c_bus);
+		struct i2c_adapter *i2c_adap = i2c_get_adapter(frontend_i2c_bus[i]);
+
+		if(i2c_adap == NULL)
+			continue;
 
 		adapter_nums[0] = i;
 		// Use i2c_adap->dev for correct work dev_*() functions
@@ -152,7 +162,7 @@ static int __init st_dvb_init_module(void)
 		for(j = 0; j < ARRAY_SIZE(frontend_ops); j++) {
 			struct frontend_ops_s *fe_ops_p = frontend_ops + j;
 			if (!strncmp(frontend_param[i], fe_ops_p->name, strlen(fe_ops_p->name))) {
-				st_dvb_register_frontend(p_st_dvb, fe_ops_p);
+				st_dvb_register_frontend(p_st_dvb, fe_ops_p, i2c_adap);
 			}
 		}
 	}
