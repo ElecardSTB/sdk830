@@ -9,6 +9,8 @@ case "$1" in
 	start)
 		if [ "$BOARD_NAME" = "stb850" ]; then
 			modprobe em28xx
+			#disable sd/mmc
+			echo 0 >/sys/bus/usb/devices/1-1.3/bConfigurationValue &
 		fi
 		;;
 	stop)
