@@ -88,7 +88,7 @@ static int heartbeat = WATCHDOG_HEARTBEAT;	/* in seconds */
 
 //ricor:
 //static int nowayout = WATCHDOG_NOWAYOUT;
-static int nowayout = 1;
+static int nowayout = 0;
 
 /**
  * 	sh_wdt_start - Start the Watchdog
@@ -297,16 +297,15 @@ static int sh_wdt_open(struct inode *inode, struct file *file)
 static int sh_wdt_close(struct inode *inode, struct file *file)
 {
 //ricor:
-/*
 	if (shwdt_expect_close == 42) {
 		//ricor:
-		//sh_wdt_stop();
+		sh_wdt_stop();
 	} else {
 		printk(KERN_CRIT PFX "Unexpected close, not "
 		       "stopping watchdog!\n");
 		sh_wdt_keepalive();
 	}
-*/
+
 	clear_bit(0, &shwdt_is_open);
 	shwdt_expect_close = 0;
 
