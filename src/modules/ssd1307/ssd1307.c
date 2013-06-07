@@ -152,7 +152,7 @@ static void ssd1307_update_display(struct ssd1307_par *par)
 {
 	u8 *vmem = par->info->screen_base;
 	int i, j, k;
-
+	ssd1307_write_cmd(par, SSD1307FB_DISPLAY_ON);
 	for (i = 0; i < (SSD1307FB_HEIGHT / 8); i++) {
 		ssd1307_write_cmd(par, SSD1307FB_START_PAGE_ADDRESS + (i));
 		ssd1307_write_cmd(par, 0x00);
@@ -328,7 +328,7 @@ static int __init ssd1307_probe(struct platform_device *pdev)
 	ssd1307_write_cmd(par, 0xA1);
 
 	// Включение дисплея
-	ssd1307_write_cmd(par, SSD1307FB_DISPLAY_ON);
+	//ssd1307_write_cmd(par, SSD1307FB_DISPLAY_ON);
 
 	//================
 	// Initialization
@@ -359,7 +359,8 @@ static int ssd1307_remove(struct platform_device *pdev)
 	struct ssd1307_par *par;
 
 	par = info->par;
-	ssd1307_write_cmd(par, SSD1307FB_DISPLAY_OFF);
+	//#warning "Вернуть обратно"
+	//ssd1307_write_cmd(par, SSD1307FB_DISPLAY_ON);
 
 	// gpio_free(par->gpio_dio);
 	// gpio_free(par->gpio_sclk);

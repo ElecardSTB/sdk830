@@ -14,14 +14,11 @@ PWD   := $(shell pwd)
 MODULE_NAME := $(MODULE_BASENAME).ko
 LDFLAGS:=
 
-ifndef ($(OLDPWD),)
-KDIR?=$(OLDPWD)/tmp/work/dm800se-oe-linux/linux-dm800se-2.6.18-r19.0/linux-2.6.18
-endif
+install:
+	$(MAKE) -C $(KDIR) M=$(PWD) ARCH=sh INSTALL_MOD_DIR=elecard INSTALL_MOD_PATH=$(ROOTFS) CROSS_COMPILE=sh4-linux- modules_install
 
 default:
-# 830
-	$(MAKE) -C $(KDIR) ARCH=sh CROSS_COMPILE=sh4-linux- M=$(PWD) modules V=0
-
+	$(MAKE) -C $(KDIR) ARCH=sh CROSS_COMPILE=sh4-linux- M=$(PWD) modules
 
 $(MODULE_NAME): default
 
