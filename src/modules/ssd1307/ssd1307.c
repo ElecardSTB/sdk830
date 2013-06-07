@@ -215,13 +215,6 @@ static void ssd1307_deferred_io(struct fb_info *info,
 {
 	ssd1307_update_display(info->par);
 }
-/* definition to expand macro then apply to pragma message */
-#define VALUE_TO_STRING(x) #x
-#define VALUE(x) VALUE_TO_STRING(x)
-#define VAR_NAME_VALUE(var) #var "="  VALUE(var)
- 
-/* Some example here */
-#pragma message(VAR_NAME_VALUE(CONFIG_FB_DEFERRED_IO))
 
 
 //static struct fb_deferred_io ssd1307_defio;
