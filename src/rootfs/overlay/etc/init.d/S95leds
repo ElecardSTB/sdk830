@@ -15,6 +15,16 @@ case "$1" in
 			echo "0" > /sys/class/leds/RED/brightness
 			echo "1" > /sys/class/leds/GREEN/brightness
 		fi
+		if [ "$BOARD_NAME" = "stb850" ]; then
+			echo "1" > /sys/devices/platform/ct1628/disabled
+			modprobe ssd1307
+			SSD_FB_DEV=/dev/fb1
+			[ ! -e /dev/fb1 ] && SSD_FB_DEV=/dev/fb0
+			usleep 50000
+			cat /opt/elecard/share/logo.bin > $SSD_FB_DEV
+			modprobe -r ssd1307
+			echo "0" > /sys/devices/platform/ct1628/disabled
+                fi
 		frontpanel
 		;;
 	stop)
