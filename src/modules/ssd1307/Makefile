@@ -14,7 +14,7 @@ PWD   := $(shell pwd)
 MODULE_NAME := $(MODULE_BASENAME).ko
 LDFLAGS:=
 
-install:
+install: default
 	$(MAKE) -C $(KDIR) M=$(PWD) ARCH=sh INSTALL_MOD_DIR=elecard INSTALL_MOD_PATH=$(ROOTFS) CROSS_COMPILE=sh4-linux- modules_install
 
 default:
