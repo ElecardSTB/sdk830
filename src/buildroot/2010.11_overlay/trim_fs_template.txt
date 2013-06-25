@@ -26,6 +26,7 @@
 [%ROOTFS%]/etc/init.d/S70lirc
 [%ROOTFS%]/etc/init.d/S55userfs
 [%ROOTFS%]/etc/init.d/S91smb
+[%ROOTFS%]/etc/init.d/S50sshd
 
 [%ROOTFS%]/etc/network/if-post-down.d/wlan0
 [%ROOTFS%]/etc/network/if-up.d/eth0
