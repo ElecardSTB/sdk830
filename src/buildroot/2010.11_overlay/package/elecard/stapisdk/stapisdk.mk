@@ -14,6 +14,9 @@ ifeq ($(BR2_PACKAGE_OSCAM),y)
 endif
 
 STAPISDK_APILIB_DEPENDENCIES =
+ifeq ($(BR2_PACKAGE_LINUXTV),y)
+  STAPISDK_APILIB_DEPENDENCIES += linuxtv
+endif
 
 cjsonlib:
 	make CROSS_COMPILE=sh4-linux- BUILD_TARGET=sh4/ -C $(PRJROOT)/src/apps/cJSON
