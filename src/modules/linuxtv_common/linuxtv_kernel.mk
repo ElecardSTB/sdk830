@@ -9,7 +9,6 @@ ifeq ($(if $(call get_linuxtv_config_variable,CONFIG_VIDEO_V4L2),$(ELC_V4L_DRIVE
 endif
 
 ifeq ($(ADD_LINUXTV_ENV),y)
-  LINUXTV_PATH := $(BUILDROOT)/packages/buildroot/output_rootfs/build/media_build
   ELC_KERNEL_INCLUDE_PATH := $(LINUXTV_PATH)/linux
   ccflags-y += -include $(LINUXTV_PATH)/v4l/compat.h
 
