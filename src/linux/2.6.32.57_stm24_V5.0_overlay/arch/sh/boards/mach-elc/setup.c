@@ -24,6 +24,7 @@
 
 #include <linux/stm/pio.h>
 #include <linux/i2c.h>
+#include <linux/proc_fs.h>
 #include <linux/board_id.h>
 
 #include "setup.h"
@@ -71,6 +72,7 @@ static g_board_type_t g_board_type = eSTB830;
 static int g_board_version = 0;
 static int g_board_type_Id = 0;
 static int g_board_config_Id = -1;
+static char g_board_name[32] = "stb830_st";
 
 
 static void __init hdk7105_setup(char **cmdline_p)
@@ -139,6 +141,8 @@ static int __init board_cmdline_opt(char *str)
 				continue;
 			g_board_type = board_descr[i].type;
 			g_board_type_Id = i;
+			strncpy(g_board_name, board_descr[i].name, sizeof(g_board_name));
+			g_board_name[sizeof(g_board_name) - 1] = 0;
 			break;
 		}
 	}
@@ -154,6 +158,37 @@ static int __init board_cmdline_opt(char *str)
 //early_param("board_name=", board_cmdline_opt);
 __setup("board_name=", board_cmdline_opt);
 
+
+static int proc_read_board_name(char *page, char **start, off_t off, int count, int *eof, void *data)
+{
+	return sprintf(page, "%s\n", g_board_name);
+}
+
+static int proc_read_board_ver(char *page, char **start, off_t off, int count, int *eof, void *data)
+{
+	return sprintf(page, "%d\n", g_board_version);
+}
+
+static int proc_read_board_id(char *page, char **start, off_t off, int count, int *eof, void *data)
+{
+	return sprintf(page, "%d\n", g_board_type);
+}
+
+static int __init procfs_boardid_init(void)
+{
+	struct proc_dir_entry *board_dir;
+
+	board_dir = proc_mkdir("board", NULL);
+	if(board_dir == NULL) {
+		return -1;
+	}
+	create_proc_read_entry("name", 0444, board_dir, proc_read_board_name, NULL);
+	create_proc_read_entry("ver", 0444, board_dir, proc_read_board_ver, NULL);
+	create_proc_read_entry("id", 0444, board_dir, proc_read_board_id, NULL);
+	return 0;
+}
+
+device_initcall(procfs_boardid_init);
 
 
 static int __init hdk7105_device_init(void)
@@ -183,7 +218,7 @@ static int __init hdk7105_device_init(void)
 	}
 
 	if( board_descr[g_board_type_Id].init_func ) {
-		printk("*Board: %s, ver=%d\n", board_descr[g_board_type_Id].name, g_board_version);
+		printk("*Board: %s, ver=%d\n", g_board_name, g_board_version);
 		board_descr[g_board_type_Id].init_func(g_board_version);
 	} else {
 		printk("Init fucnction not setted!!!\n");
