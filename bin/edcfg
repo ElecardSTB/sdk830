@@ -1,45 +1,41 @@
 #!/bin/sh
 
-usage ()
-{
- echo "Usage: ${0##*/} <config-file> {set|get|del} <param_name> [<param_value>]" >&2
+usage() {
+	echo "Usage: ${0##*/} <config-file> {set|get|del} <param_name> [<param_value>]" >&2
 }
 
-if [ -z "$1" -o -z "$2" -o -z "$3" ]; then
- usage;
- exit 1
-fi
-
 CONFIG=$1
+FUNC=$2
 PARAM=$3
 VALUE=$4
 
-case "$2" in 
-    "set")
-	TMP=`mktemp /tmp/edcfg-XXXXXX` || exit $?
-	cat $CONFIG | sed "s|^$PARAM=.*|$PARAM=$VALUE|" > $TMP || exit $?
-	STR=`cat $TMP | grep "^$PARAM=" | head -n1`
-	if [ "$STR" = "" ]; then
-	    echo -ne "$PARAM=$VALUE\n" >> $TMP || exit $?
-	fi
-	mv $TMP $CONFIG
-	rc=$?
-    ;;
-    "get")
-	STR=`cat $CONFIG | grep "^$PARAM=" | tail -1`
- 	echo $STR | sed "s/$PARAM=//"
-	rc=`test "$STR"`
-    ;;
-    "del")
-	TMP=`mktemp /tmp/edcfg-XXXXXX` || exit $?
-	cat $CONFIG | grep -v "^$PARAM=" > $TMP || exit $?
-	mv $TMP $CONFIG
-	rc=$?
-    ;;
-    *)
+if [ -z "$CONFIG" -o -z "$FUNC" -o -z "$PARAM" ]; then
 	usage;
 	exit 1
-    ;;
+fi
+
+case "$2" in 
+	"set")
+		if grep "^$PARAM=" $CONFIG >/dev/null; then
+			sed -i "s|^$PARAM=.*|$PARAM=$VALUE|" $CONFIG
+		else
+			echo "$PARAM=$VALUE" >>$CONFIG
+		fi
+		rc=$?
+		;;
+	"get")
+		STR=`grep "^$PARAM=" $CONFIG | tail -1`
+		echo $STR | sed "s|^$PARAM=||"
+		rc=`test "$STR"`
+		;;
+	"del")
+		sed -i "/^$PARAM=.*/d" $CONFIG
+		rc=$?
+		;;
+	*)
+		usage;
+		exit 1
+		;;
 esac
 
 exit $rc
