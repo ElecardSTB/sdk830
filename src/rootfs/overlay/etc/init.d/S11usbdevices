@@ -10,12 +10,11 @@ case "$1" in
 		for usbDevDir in `ls $USB_DEVICES | grep -Ev ":|usb"`; do
 			VID=`cat $USB_DEVICES/$usbDevDir/idVendor`
 			PID=`cat $USB_DEVICES/$usbDevDir/idProduct`
+# 			echo "trying usb device ${VID}:${PID}"
 			#search usb modems for software reboot it
 			if [ -f "/usr/share/usb_modeswitch/${VID}:${PID}" ]; then
-				#Drop configure value for device, and then restore it. This almost the same as reset.
-				prevConfigure=`cat $USB_DEVICES/$usbDevDir/bConfigurationValue`
-				echo "0" >$USB_DEVICES/$usbDevDir/bConfigurationValue
-				echo "$prevConfigure" >$USB_DEVICES/$usbDevDir/bConfigurationValue
+#				echo "This is modem. Use modeswitch for it."
+				/usr/sbin/usb_modeswitch -D -c /usr/share/usb_modeswitch/${VID}:${PID} -v $VID -p $PID
 			fi
 		done
 		;;

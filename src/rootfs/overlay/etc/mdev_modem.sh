@@ -5,12 +5,15 @@ if [ -n "$DEVNAME" ]; then
 		/usr/sbin/pppd call mobile-noauth
 	else
 		timeout=3
-		while [ $timeout -gt 0 ]; do
-			killall pppd || break
-			sleep 1
+		killall pppd
+		while killall pppd; do
 			let timeout=timeout-1
+			if [ $timeout -le 0 ]; then
+				killall -9 pppd
+				break
+			fi
+			sleep 1
 		done
-		killall -9 pppd
 	fi
 fi
 
