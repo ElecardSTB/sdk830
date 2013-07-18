@@ -10,10 +10,15 @@ case "$1" in
 		for usbDevDir in `ls $USB_DEVICES | grep -Ev ":|usb"`; do
 			VID=`cat $USB_DEVICES/$usbDevDir/idVendor`
 			PID=`cat $USB_DEVICES/$usbDevDir/idProduct`
-# 			echo "trying usb device ${VID}:${PID}"
+			echo "trying usb device ${VID}:${PID}"
 			#search usb modems for software reboot it
 			if [ -f "/usr/share/usb_modeswitch/${VID}:${PID}" ]; then
-#				echo "This is modem. Use modeswitch for it."
+				echo "This is modem. Use modeswitch for it."
+				#for already mode switched devices:
+				echo "0" >$USB_DEVICES/$usbDevDir/authorized
+				echo "1" >$USB_DEVICES/$usbDevDir/authorized
+				usleep 100000
+				#this for not switched devices:
 				/usr/sbin/usb_modeswitch -D -c /usr/share/usb_modeswitch/${VID}:${PID} -v $VID -p $PID
 			fi
 		done
