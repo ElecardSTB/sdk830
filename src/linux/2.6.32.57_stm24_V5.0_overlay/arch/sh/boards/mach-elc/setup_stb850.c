@@ -191,9 +191,7 @@ static struct stm_nand_config stm_nand_device = {
 };
 
 static struct i2c_board_info __initdata rtc_i2c_board_info[] = {
-	{ //rtc Seico s35390a
-		I2C_BOARD_INFO("s35390a", 0x30),
-	},
+//	{ I2C_BOARD_INFO("s35390a", 0x30)},//rtc Seico s35390a
 };
 
 static struct platform_device *hdk7105_devices[] __initdata = {
