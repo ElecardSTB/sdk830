@@ -57,6 +57,10 @@ if [ $INITRAMFS -eq 0 ]; then
 else
 	dmesg >$SYSTEM_REPORT_DIR/dmesg
 fi
+cp /proc/cmdline /proc/version $SYSTEM_REPORT_DIR
+if [ "$BOARD" = "stb830" ]; then
+	cp /sys/class/thermal/thermal_zone0/temp $SYSTEM_REPORT_DIR/temp
+fi
 
 #logs
 LOGS_REPORT_DIR=$TMP_DEST_DIR/logs
