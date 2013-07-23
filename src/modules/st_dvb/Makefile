@@ -10,6 +10,7 @@ $(MODULE_BASENAME)-objs := \
 			edc-1051.o \
 			sonydvbt2.o \
 			sp9680.o \
+			sp5650.o \
 
 MODULE_NAME := $(MODULE_BASENAME).ko
 

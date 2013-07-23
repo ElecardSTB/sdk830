@@ -18,6 +18,7 @@
 #include "edc-1051.h"
 #include "sonydvbt2.h"
 #include "sp9680.h"
+#include "sp5650.h"
 #include "st_dvb_ca_en50221.h"
 
 /*** MODULE INFO *************************************************************/
@@ -98,6 +99,7 @@ struct frontend_ops_s frontend_ops[] = {
 	{"EDC_1051"			,edc_1051_init_frontend},
 	{"SONY_DVBT2"		,sonydvbt2_init_frontend},
 	{"NIM_SP9680"		,sp9680_init_frontend},
+	{"NIM_SP5650"		,sp5650_init_frontend},
 };
 
 /*** METHODS ****************************************************************/
