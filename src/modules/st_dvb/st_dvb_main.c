@@ -71,8 +71,6 @@ struct st_dvb_s {
 
 #define DVB_NUMS 2
 
-#define dprintk(format, args...) if (st_dvb_debug) { printk("%s[%d]: " format, __FILE__, __LINE__, ##args); }
-
 #if 1
 #define DVB_CI_FUNC(FUNCTION, ARGS...) \
 ({ \

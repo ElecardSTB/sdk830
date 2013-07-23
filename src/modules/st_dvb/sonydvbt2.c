@@ -24,7 +24,6 @@
 #define  CXD2820R_I2C_U1 0x6c
 #define  CXD2820R_I2C_U2 0x6d
 
-#define dprintk(format, args...) if (st_dvb_debug) { printk("%s[%d]: " format, __FILE__, __LINE__, ##args); }
 
 /******************************************************************
 * LOCAL TYPEDEFS                                                  *
