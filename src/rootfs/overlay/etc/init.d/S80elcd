@@ -14,6 +14,7 @@ STAPISDK_ROOT=/root
 #STAPISDK_ROOT=/root_33.1
 APP=main_sdk7105_7105_ST40_LINUX_32BITS.out
 APP_PATH=$STAPISDK_ROOT/$APP
+APP_PVR=StbPvr
 #URL=udp://234.5.5.10:1239
 
 
@@ -26,6 +27,9 @@ case "$1" in
 		while [ ! -e /tmp/elcd.sock ]; do
 			usleep 100000
 		done
+[% IF (ENV.ENABLE_PVR == 1) -%]
+		$APP_PVR >>/var/log/StbPvr.log 2>&1 &
+[% END -%]
 		mainapp.sh &
 	fi
 
