@@ -20,7 +20,7 @@
 
 
 #include "cxd2820r_priv.h"
-#include <linux/version.h>
+#include <linuxtv_common/linuxtv.h>
 
 int cxd2820r_set_frontend_c(struct dvb_frontend *fe, struct dvb_frontend_parameters *p)
 {
@@ -28,7 +28,7 @@ int cxd2820r_set_frontend_c(struct dvb_frontend *fe, struct dvb_frontend_paramet
 	struct dtv_frontend_properties *c = &fe->dtv_property_cache;
 	int ret, i;
 	u8 buf[2];
-	u32 if_freq;
+	u32 if_freq = 0;
 	u16 if_ctl;
 	u64 num;
 	struct reg_val_mask tab[] = {
@@ -79,15 +79,15 @@ int cxd2820r_set_frontend_c(struct dvb_frontend *fe, struct dvb_frontend_paramet
 
 #if (LINUX_VERSION_CODE >= KERNEL_VERSION(3,2,0))
 	/* program IF frequency */
-	if (fe->ops.tuner_ops.get_if_frequency) {
+	if(fe->ops.tuner_ops.get_if_frequency) {
 		ret = fe->ops.tuner_ops.get_if_frequency(fe, &if_freq);
-		if (ret)
+		if(ret)
 			goto error;
-	} else
-		if_freq = 0;
-#else
-	if_freq = priv->cfg.if_dvbc * 1000;
+	}
 #endif
+	if(if_freq == 0) {
+		if_freq = priv->cfg.if_dvbc * 1000;
+	}
 
 	dbg("%s: if_freq=%d", __func__, if_freq);
 

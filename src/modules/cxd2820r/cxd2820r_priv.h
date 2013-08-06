@@ -40,6 +40,14 @@
 #undef warn
 #define warn(f, arg...) printk(KERN_WARNING LOG_PREFIX": " f "\n" , ## arg)
 
+
+#if (LINUX_VERSION_CODE >= KERNEL_VERSION(3,3,0))
+//dummy struct
+struct dvb_frontend_parameters {
+	uint32_t d;
+};
+#endif
+
 struct reg_val_mask {
 	u32 reg;
 	u8  val;

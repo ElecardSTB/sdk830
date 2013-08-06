@@ -13,17 +13,20 @@ $(MODULE_BASENAME)-objs := \
 
 MODULE_NAME := $(MODULE_BASENAME).ko
 
-EXTRA_CFLAGS += -Idrivers/media/dvb/dvb-core/
+#default target
+default: build
+
+ELC_DVB_DRIVER := y
+include $(PRJROOT)/src/modules/linuxtv_common/linuxtv_kernel.mk
 
 # PWD is the current working directory and the location of our module
 # source files.
 PWD   := $(shell pwd)
 
-$(MODULE_NAME): default
-default:
+build:
 	$(MAKE) -C $(KDIR) M=$(PWD) ARCH=sh CROSS_COMPILE=sh4-linux- modules
 
-install: default
+install: build
 #	sh4-linux-strip --remove-section=.comment --remove-section=.note --strip-unneeded $(MODULE_NAME)
 	$(MAKE) -C $(KDIR) M=$(PWD) ARCH=sh INSTALL_MOD_DIR=elecard INSTALL_MOD_PATH=$(ROOTFS) CROSS_COMPILE=sh4-linux- modules_install
 

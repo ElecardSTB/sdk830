@@ -20,7 +20,7 @@
 
 
 #include "cxd2820r_priv.h"
-#include <linux/version.h>
+#include <linuxtv_common/linuxtv.h>
 
 int cxd2820r_debug;
 module_param_named(debug, cxd2820r_debug, int, 0644);
@@ -308,10 +308,13 @@ static int cxd2820r_read_status(struct dvb_frontend *fe, fe_status_t *status)
 	return ret;
 }
 
+#if (LINUX_VERSION_CODE >= KERNEL_VERSION(3,3,0))
+static int cxd2820r_get_frontend(struct dvb_frontend *fe)
+#else
 static int cxd2820r_get_frontend(struct dvb_frontend *fe, struct dvb_frontend_parameters *p)
+#endif
 {
 	struct cxd2820r_priv *priv = fe->demodulator_priv;
-	struct dtv_frontend_properties *c = &fe->dtv_property_cache;
 	int ret;
 
 	dbg("%s: delsys=%d", __func__, fe->dtv_property_cache.delivery_system);
@@ -332,11 +335,14 @@ static int cxd2820r_get_frontend(struct dvb_frontend *fe, struct dvb_frontend_pa
 	default:
 		return -EINVAL;
 	}
+#if (LINUX_VERSION_CODE < KERNEL_VERSION(3,3,0))
 	if (fe->dtv_property_cache.delivery_system == SYS_DVBC_ANNEX_A) {
+		struct dtv_frontend_properties *c = &fe->dtv_property_cache;
 		p->u.qam.symbol_rate = c->symbol_rate;
 		p->u.qam.fec_inner = c->fec_inner;
 		p->u.qam.modulation = c->modulation;
 	} else {
+		struct dtv_frontend_properties *c = &fe->dtv_property_cache;
 		if (c->bandwidth_hz == 6000000)
 			p->u.ofdm.bandwidth = BANDWIDTH_6_MHZ;
 		else if (c->bandwidth_hz == 7000000)
@@ -352,6 +358,7 @@ static int cxd2820r_get_frontend(struct dvb_frontend *fe, struct dvb_frontend_pa
 		p->u.ofdm.guard_interval = c->guard_interval;
 		p->u.ofdm.hierarchy_information = c->hierarchy;
 	}
+#endif
 	return ret;
 }
 
@@ -493,7 +500,11 @@ static int cxd2820r_get_tune_settings(struct dvb_frontend *fe,
 	return ret;
 }
 
+#if (LINUX_VERSION_CODE >= KERNEL_VERSION(3,3,0))
+static enum dvbfe_search cxd2820r_search(struct dvb_frontend *fe)
+#else
 static enum dvbfe_search cxd2820r_search(struct dvb_frontend *fe, struct dvb_frontend_parameters *p)
+#endif
 {
 	struct cxd2820r_priv *priv = fe->demodulator_priv;
 	struct dtv_frontend_properties *c = &fe->dtv_property_cache;
@@ -519,7 +530,11 @@ static enum dvbfe_search cxd2820r_search(struct dvb_frontend *fe, struct dvb_fro
 	}
 
 	/* set frontend */
+#if (LINUX_VERSION_CODE >= KERNEL_VERSION(3,3,0))
+	ret = cxd2820r_set_frontend(fe, NULL);
+#else
 	ret = cxd2820r_set_frontend(fe, p);
+#endif
 	if (ret)
 		goto error;
 

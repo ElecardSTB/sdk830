@@ -23,7 +23,7 @@
 #define CXD2820R_H
 
 #include <linux/dvb/frontend.h>
-#include <linux/version.h>
+#include <linuxtv_common/linuxtv.h>
 
 #define CXD2820R_GPIO_D (0 << 0) /* disable */
 #define CXD2820R_GPIO_E (1 << 0) /* enable */
@@ -71,7 +71,7 @@ struct cxd2820r_config {
 	 */
 	bool spec_inv;
 
-#if (LINUX_VERSION_CODE < KERNEL_VERSION(3,2,0))
+//#if (LINUX_VERSION_CODE < KERNEL_VERSION(3,3,0))
 	/* IFs for all used modes.
 	 * Default: none, must set
 	 * Values: <kHz>
@@ -84,8 +84,8 @@ struct cxd2820r_config {
 	u16 if_dvbt2_7;
 	u16 if_dvbt2_8;
 	u16 if_dvbc;
-#endif
-
+//#endif
+//#if (LINUX_VERSION_CODE < KERNEL_VERSION(3,7,0))
 	/* GPIOs for all used modes.
 	 * Default: none, disabled
 	 * Values: <see above>
@@ -93,6 +93,7 @@ struct cxd2820r_config {
 	u8 gpio_dvbt[3];
 	u8 gpio_dvbt2[3];
 	u8 gpio_dvbc[3];
+//#endif
 };
 
 

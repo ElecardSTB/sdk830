@@ -20,14 +20,15 @@
 
 
 #include "cxd2820r_priv.h"
-#include <linux/version.h>
+#include <linuxtv_common/linuxtv.h>
 
 int cxd2820r_set_frontend_t(struct dvb_frontend *fe, struct dvb_frontend_parameters *p)
 {
 	struct cxd2820r_priv *priv = fe->demodulator_priv;
 	struct dtv_frontend_properties *c = &fe->dtv_property_cache;
 	int ret, i, bw_i;
-	u32 if_freq, if_ctl;
+	u32 if_ctl;
+	u32 if_freq = 0;
 	u64 num;
 	u8 buf[3], bw_param;
 	u8 bw_params1[][5] = {
@@ -103,27 +104,27 @@ int cxd2820r_set_frontend_t(struct dvb_frontend *fe, struct dvb_frontend_paramet
 
 #if (LINUX_VERSION_CODE >= KERNEL_VERSION(3,2,0))
 	/* program IF frequency */
-	if (fe->ops.tuner_ops.get_if_frequency) {
+	if(fe->ops.tuner_ops.get_if_frequency) {
 		ret = fe->ops.tuner_ops.get_if_frequency(fe, &if_freq);
 		if (ret)
 			goto error;
-	} else
-		if_freq = 0;
-#else
-	switch (c->bandwidth_hz) {
-	case 6000000:
-		if_freq = priv->cfg.if_dvbt_6 * 1000;
-		break;
-	case 7000000:
-		if_freq = priv->cfg.if_dvbt_7 * 1000;
-		break;
-	case 8000000:
-		if_freq = priv->cfg.if_dvbt_8 * 1000;
-		break;
-	default:
-		return -EINVAL;
 	}
 #endif
+	if(if_freq == 0) { //get from config
+		switch (c->bandwidth_hz) {
+		case 6000000:
+			if_freq = priv->cfg.if_dvbt_6 * 1000;
+			break;
+		case 7000000:
+			if_freq = priv->cfg.if_dvbt_7 * 1000;
+			break;
+		case 8000000:
+			if_freq = priv->cfg.if_dvbt_8 * 1000;
+			break;
+		default:
+			return -EINVAL;
+		}
+	}
 
 	dbg("%s: if_freq=%d", __func__, if_freq);
 
