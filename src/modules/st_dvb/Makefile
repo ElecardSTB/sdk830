@@ -17,7 +17,7 @@ MODULE_NAME := $(MODULE_BASENAME).ko
 ELC_DVB_DRIVER := y
 include $(PRJROOT)/src/modules/linuxtv_common/linuxtv_kernel.mk
 ifeq ($(call get_linuxtv_config_variable,CONFIG_DVB_CXD2820R),)
-  ccflags-y += -I$(PRJROOT)/src/modules/cxd2820r
+  ccflags-y += -DUSE_INTERNAL_CXD2820
 endif
 
 # PWD is the current working directory and the location of our module

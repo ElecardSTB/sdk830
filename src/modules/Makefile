@@ -4,7 +4,8 @@ include linuxtv_common/linuxtv_common.mk
 
 _ts_makekernelmodules=$(KDIR)/.ts_makelinuxmodules
 _ts_makekernel=$(KDIR)/.ts_makelinux
-OTHER_CXD2820R_DRIVER := $(call get_linuxtv_config_variable,CONFIG_DVB_CXD2820R)
+LINUXTV_CXD2820R_DRIVER := $(call get_linuxtv_config_variable,CONFIG_DVB_CXD2820R)
+#Now cxd2820 disabled in LinuxTV. We use our cxd2820 driver for better support dvb-t2 (with internal patches).
 
 .PHONY: all
 
@@ -15,7 +16,7 @@ build: install_kernelmodules
 #	make -C ./keyscanner install
 	make -C ./st_dvb install
 	make -C ./ssd1307 install
-ifeq ($(OTHER_CXD2820R_DRIVER),)
+ifeq ($(LINUXTV_CXD2820R_DRIVER),)
 	make -C ./cxd2820r install
 endif
 
@@ -34,7 +35,7 @@ clean:
 #	make -C ./keyscanner clean
 	make -C ./st_dvb clean
 	make -C ./ssd1307 clean
-ifeq ($(OTHER_CXD2820R_DRIVER),)
+ifeq ($(LINUXTV_CXD2820R_DRIVER),)
 	make -C ./cxd2820r clean
 endif
 #	$(call ECHO_MESSAGE,Cleaning kernel modules)
