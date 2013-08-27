@@ -71,10 +71,8 @@ $(STMFB_FIRMWARE_TARGET_EXTRACT):
 
 
 ########################## FB LOGO #########################
-$(PRJROOT)/src/apps/fb_logo/fb_logo: $(wildcard $(PRJROOT)/src/apps/fb_logo/*.c)
-	make -C $(PRJROOT)/src/apps/fb_logo CROSS_COMPILE=sh4-linux-
-
-fb_logo-build: $(PRJROOT)/src/apps/fb_logo/fb_logo
+fb_logo-build:
+	make CROSS_COMPILE=sh4-linux- -C $(PRJROOT)/src/apps/fb_logo
 
 fb_logo-install: fb_logo-build
 	$(INSTALL) -D -m 0755 $(PRJROOT)/src/apps/fb_logo/fb_logo $(TARGET_DIR)/opt/elecard/bin/
@@ -82,7 +80,7 @@ fb_logo-install: fb_logo-build
 fb_logo: fb_logo-install
 
 fb_logo-clean:
-	make -C $(PRJROOT)/src/apps/fb_logo CROSS_COMPILE=sh4-linux- clean
+	make CROSS_COMPILE=sh4-linux- -C $(PRJROOT)/src/apps/fb_logo clean
 
 
 ifeq ($(BR2_PACKAGE_STMFB_LOGO),y)
