@@ -37,8 +37,13 @@ null::sysinit:/bin/hostname -F /etc/hostname
 [% IF CONFIG_TESTSERVER_ENABLE || CONFIG_TESTTOOL_ENABLE -%]
 ::sysinit:/opt/elecard/bin/test.sh start
 [% END -%]
-[% IF ENV.UPD_CONFIG != "rel" -%]
+
+[% IF ! ENV.ROOTFS_DISABLE_CONSOLE_SHELL -%]
+[% IF ENV.ROOTFS_DISABLE_AUTO_LOGIN -%]
+::respawn:-/bin/login </dev/console
+[% ELSE -%]
 ::respawn:-/bin/sh --login
+[% END -%]
 [% END -%]
 
 # Stuff to do for the 3-finger salute

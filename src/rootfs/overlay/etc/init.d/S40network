@@ -37,7 +37,7 @@ case "$1" in
 	brctl setfd br0 0
     fi
 
-	if [ ! -d /sys/class/net/wlan0 -a "WAN" = "wlan0" ]; then
+	if [ ! -d /sys/class/net/wlan0 -a "$WAN" = "wlan0" ]; then
 		echo
 		echo "Wi-Fi not found! Falling back to Ethernet"
 		edcfg /var/etc/ifcfg-wlan0 set WAN_MODE 0
@@ -60,7 +60,7 @@ case "$1" in
 	# Add multicast route
 	route add -net 224.0.0.0 netmask 240.0.0.0 $WAN
 
-[% IF ENV.UPD_CONFIG != "rel" -%]
+[% IF ! ENV.ROOTFS_DISABLE_TELNETD -%]
 	echo -n "telnet "
 	telnetd
 [% END -%]
