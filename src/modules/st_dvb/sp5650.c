@@ -39,10 +39,12 @@ static struct lgdt3305_config lgdt3305_cfg = {
 //	unsigned int spectral_inversion:1;
 
 	/* use RF AGC loop - 0:disabled 1:enabled */
-//	unsigned int rf_agc_loop:1;
+	.rf_agc_loop = 1,
 
 	.mpeg_mode = LGDT3305_MPEG_PARALLEL,
-	.tpclk_edge = LGDT3305_TPCLK_RISING_EDGE,
+//	.mpeg_mode = LGDT3305_MPEG_SERIAL,
+	.tpclk_edge = LGDT3305_TPCLK_FALLING_EDGE,//originaly mean: "TPDATA, TPSOP, nTPERR and TPVALID is changed at the falling edge of TPCLK"
+//	.tpclk_edge = LGDT3305_TPCLK_RISING_EDGE,
 	.tpvalid_polarity = LGDT3305_TP_VALID_HIGH,
 	.demod_chip = LGDT3305,
 };
