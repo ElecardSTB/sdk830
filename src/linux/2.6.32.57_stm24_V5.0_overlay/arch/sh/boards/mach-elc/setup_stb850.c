@@ -30,6 +30,10 @@
 #include <linux/spi/spi.h>
 #include <linux/spi/flash.h>
 #include <asm/irq-ilc.h>
+#include <linux/ssd1307.h>
+#include <linux/ct1628.h>
+#include <linux/mutex.h>
+
 
 #include <linux/stm/pio.h>
 #include <linux/i2c.h>
@@ -53,7 +57,7 @@ static struct platform_device stb850_leds = {
 	},
 };
 
-static struct tm1668_key stb850_front_panel_keys[] = {
+static struct ct1628_key stb850_front_panel_keys[] = {
 	{0x00000800, KEY_UP,	"FP UP"},
 	{0x00000100, KEY_DOWN,	"FP DOWN"},
 	{0x00080000, KEY_RIGHT,	"FP RIGHT"},
@@ -62,7 +66,7 @@ static struct tm1668_key stb850_front_panel_keys[] = {
 	{0x00000008, KEY_SPACE,	"FP MENU"},
 };
 
-static struct tm1668_character stb850_front_panel_characters[] = {
+static struct ct1628_character stb850_front_panel_characters[] = {
 //			byte num, bit mask
 		{ 'A', 0x0640 },
 		{ 'a', 0x0640 },
@@ -90,14 +94,24 @@ static struct tm1668_character stb850_front_panel_characters[] = {
 		{ '8', 0x0280 },
 };
 
+static DEFINE_MUTEX(spi_stb850_lock);
+
+/* 
+  About GPIOlock lock parameter:
+  When two ore more drivers share one GPIO-spi software bus, we have to choose 
+  which one will requesting and register GPIO from kernel.
+  Other driver wouldn't make request.
+  Only one driver can lock GPIO (GPIOlock = 1). Other must have GPIOlock = 0.
+*/
+
 static struct platform_device stb850_front_panel = {
 	.name = "ct1628",
 	.id = -1,
-	.dev.platform_data = &(struct tm1668_platform_data) {
+	.dev.platform_data = &(struct ct1628_platform_data) {
 		.gpio_dio = stm_gpio(11, 2),
 		.gpio_sclk = stm_gpio(11, 3),
 		.gpio_stb = stm_gpio(11, 4),
-
+		.GPIOlock = 1,						
 		.keys_num = ARRAY_SIZE(stb850_front_panel_keys),
 		.keys = stb850_front_panel_keys,
 		.keys_poll_period = DIV_ROUND_UP(HZ, 5),
@@ -106,12 +120,22 @@ static struct platform_device stb850_front_panel = {
 		.characters_num = ARRAY_SIZE(stb850_front_panel_characters),
 		.characters = stb850_front_panel_characters,
 		.text = "12345678",
+
+		.spi_lock_mutex = &spi_stb850_lock,
 	},
 };
 
 static struct platform_device stb850_lcd = {
 	.name = "ssd1307",
 	.id = -1,
+	.dev.platform_data = &(struct ssd1307_platform_data) {
+		.gpio_dio = stm_gpio(11, 2),
+		.gpio_sclk = stm_gpio(11, 3),
+		.gpio_stb = stm_gpio(11, 4),
+		.gpio_12power = stm_gpio(11, 5),
+		.GPIOlock = 0,						
+		.spi_lock_mutex = &spi_stb850_lock,
+	},
 };
 
 static int hdk7105_phy_reset(void *bus)

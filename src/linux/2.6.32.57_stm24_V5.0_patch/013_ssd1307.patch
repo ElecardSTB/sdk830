@@ -1,0 +1,32 @@
+--- linux-sh4-2.6.32.57_stm24_V5.0/drivers/video/Makefile_o	2013-07-31 17:16:50.250902560 +0700
++++ linux-sh4-2.6.32.57_stm24_V5.0/drivers/video/Makefile	2013-09-02 15:11:39.298498781 +0700
+@@ -140,6 +140,7 @@
+ obj-$(CONFIG_FB_BFIN_T350MCQB)	  += bfin-t350mcqb-fb.o
+ obj-$(CONFIG_FB_MX3)		  += mx3fb.o
+ obj-$(CONFIG_FB_DA8XX)		  += da8xx-fb.o
++obj-$(CONFIG_FB_SSD1307)          += ssd1307.o
+ 
+ # the test framebuffer is last
+ obj-$(CONFIG_FB_VIRTUAL)          += vfb.o
+--- linux-sh4-2.6.32.57_stm24_V5.0/drivers/video/Kconfig_o	2013-07-31 17:16:50.000000000 +0700
++++ linux-sh4-2.6.32.57_stm24_V5.0/drivers/video/Kconfig	2013-09-02 15:22:31.410524246 +0700
+@@ -2171,6 +2171,19 @@
+ 	  and could also have been called by other names when coupled with
+ 	  a bridge adapter.
+ 
++config FB_SSD1307
++       tristate "Solomon SSD1307 framebuffer support"
++       depends on FB
++       depends on GPIOLIB
++       select FB_SYS_FOPS
++       select FB_SYS_FILLRECT
++       select FB_SYS_COPYAREA
++       select FB_SYS_IMAGEBLIT
++       select FB_DEFERRED_IO
++       help
++         This driver implements support for the Solomon SSD1307
++         OLED controller over gpio SPI.
++
+ source "drivers/video/omap/Kconfig"
+ 
+ source "drivers/video/backlight/Kconfig"

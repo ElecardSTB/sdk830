@@ -5,7 +5,7 @@
  * May be copied or modified under the terms of the GNU General Public
  * License.  See linux/COPYING for more information.
  * 
- * See <include/linux/tm1668.h> file for platform data definitions.
+ * See <include/linux/ct1628.h> file for platform data definitions.
  *
  * /sys/.../ct1628/ files:
  *   /text - displays written string (via platform characters table)
@@ -21,14 +21,13 @@
 #include <linux/delay.h>
 #include <linux/input.h>
 #include <linux/gpio.h>
-#include <linux/tm1668.h>
+//#include <linux/tm1668.h>
 // #include <linux/stm/pio.h>
 #include <linux/board_id.h>
-
+#include <linux/ct1628.h>
+#include <linux/mutex.h>
 
 #define DRIVER_NAME "ct1628"
-
-
 
 #define CT1628_DISPLAY_BUFFER_SIZE 14
 #define CT1628_DISPLAY_MAX_DIGITS 7
@@ -37,8 +36,6 @@
 /******************************************************************
 * MODULE PARAMETERS                                               *
 *******************************************************************/
-static int disable = 0;
-
 //SergA
 #define CT1628_CMD_DISPLAY_MODE(mode_10x7) \
 		(0x00 | \
@@ -70,14 +67,17 @@ struct ct1628_chip {
 
 	int brightness;
 	int characters_num;
-	struct tm1668_character *characters;
+	struct ct1628_character *characters;
 
 	struct input_dev *input;
 	u32 keys_prev;
 	int keys_num;
-	struct tm1668_key *keys;
+	struct ct1628_key *keys;
 	struct delayed_work keys_work;
 	unsigned long keys_poll_period;
+
+	uint32_t GPIOlock;
+	struct mutex *spi_lock_mutex;
 
 	g_board_type_t board_type;
 };
@@ -132,6 +132,7 @@ static void ct1628_send(struct ct1628_chip *chip, u8 command,
 	udelay(T_WAIT);
 	gpio_set_value(chip->gpio_stb, 1);
 	udelay(2*T_WAIT);
+
 }
 
 static void ct1628_recv(struct ct1628_chip *chip, u8 command,
@@ -139,7 +140,6 @@ static void ct1628_recv(struct ct1628_chip *chip, u8 command,
 {
 	u8 *data = buf;
 	int i;
-
 	gpio_set_value(chip->gpio_stb, 0);
 	udelay(T_WAIT);
 	ct1628_writeb(chip, command);
@@ -165,30 +165,31 @@ static void ct1628_keys_poll(struct work_struct *work)
 	u32 keys, diff;
 	int i;
 
-	if (!disable)
-	{
-		spin_lock(&chip->lock);
-		ct1628_recv(chip, CT1628_CMD_DATA(0, 1, 1), &keys, sizeof(keys));
+	if(chip->spi_lock_mutex) mutex_lock(chip->spi_lock_mutex);
+	spin_lock(&chip->lock);
 
-		spin_unlock(&chip->lock);
+	ct1628_recv(chip, CT1628_CMD_DATA(0, 1, 1), &keys, sizeof(keys));
 
-		diff = keys ^ chip->keys_prev;
-		if(diff) {
-			dev_dbg(&(chip->input->dev), "keys=0x%08x, chip->keys_prev=0x%08x, diff=0x%08x\n", keys, chip->keys_prev, diff);
+	spin_unlock(&chip->lock);
+	if(chip->spi_lock_mutex) mutex_unlock(chip->spi_lock_mutex);
 
-			for (i = 0; i < chip->keys_num; i++) {
-				struct tm1668_key *key = &chip->keys[i];
+	diff = keys ^ chip->keys_prev;
+	if(diff) {
+		dev_dbg(&(chip->input->dev), "keys=0x%08x, chip->keys_prev=0x%08x, diff=0x%08x\n", keys, chip->keys_prev, diff);
 
-				if(diff & key->mask) {
-					dev_dbg(&(chip->input->dev), "pressed '%s'\n", key->desc ? key->desc : "unknown");
-					input_event(chip->input, EV_KEY, key->code, !!(keys & key->mask));
-					input_sync(chip->input);
-				}
+		for (i = 0; i < chip->keys_num; i++) {
+			struct ct1628_key *key = &chip->keys[i];
+
+			if(diff & key->mask) {
+				dev_dbg(&(chip->input->dev), "pressed '%s'\n", key->desc ? key->desc : "unknown");
+				input_event(chip->input, EV_KEY, key->code, !!(keys & key->mask));
+				input_sync(chip->input);
 			}
 		}
-
-		chip->keys_prev = keys;
 	}
+
+	chip->keys_prev = keys;
+
 	schedule_delayed_work(&chip->keys_work, chip->keys_poll_period);
 }
 
@@ -198,11 +199,13 @@ static ssize_t ct1628_keys_show(struct device *dev,
 	struct ct1628_chip *chip = dev_get_drvdata(dev);
 	u32 keys;
 
+	if(chip->spi_lock_mutex) mutex_lock(chip->spi_lock_mutex);
 	spin_lock(&chip->lock);
 
 	ct1628_recv(chip, CT1628_CMD_DATA(0, 1, 1), &keys, sizeof(keys));
 
 	spin_unlock(&chip->lock);
+	if(chip->spi_lock_mutex) mutex_unlock(chip->spi_lock_mutex);
 
 	return sprintf(buf, "0x%08x\n", keys);
 }
@@ -262,9 +265,14 @@ static ssize_t ct1628_brightness_store(struct device *dev,
 
 	result = strict_strtoul(buf, 10, &value);
 	if (result == 0) {
+
+		if(chip->spi_lock_mutex) mutex_lock(chip->spi_lock_mutex);
 		spin_lock(&chip->lock);
+
 		ct1628_set_brightness(chip, value);
+
 		spin_unlock(&chip->lock);
+		if(chip->spi_lock_mutex) mutex_unlock(chip->spi_lock_mutex);
 
 		result = size;
 	}
@@ -274,44 +282,6 @@ static ssize_t ct1628_brightness_store(struct device *dev,
 
 static DEVICE_ATTR(brightness, S_IRUSR | S_IWUSR, ct1628_brightness_show,
 		ct1628_brightness_store);
-
-static ssize_t ct1628_disabled_show(struct device *dev,
-		struct device_attribute *attr, char *buf)
-{
-	int result;
-	struct ct1628_chip *chip = dev_get_drvdata(dev);
-
-	spin_lock(&chip->lock);
-
-	result = sprintf(buf, "%d\n", disable);
-
-	spin_unlock(&chip->lock);
-
-	return result;
-}
-
-static ssize_t ct1628_disabled_store(struct device *dev,
-		struct device_attribute *attr,
-		const char *buf, size_t size)
-{
-	ssize_t result;
-	struct ct1628_chip *chip = dev_get_drvdata(dev);
-	unsigned int value;
-
-	result = strict_strtoul(buf, 10, &value);
-	if (result == 0) {
-		spin_lock(&chip->lock);
-		disable = value;
-		spin_unlock(&chip->lock);
-
-		result = size;
-	}
-
-	return result;
-}
-
-static DEVICE_ATTR(disabled, S_IRUSR | S_IWUSR, ct1628_disabled_show,
-		ct1628_disabled_store);
 
 static void ct1628_print(struct ct1628_chip *chip, const char *text)
 {
@@ -367,12 +337,14 @@ static ssize_t ct1628_text_store(struct device *dev,
 		const char *buf, size_t size)
 {
 	struct ct1628_chip *chip = dev_get_drvdata(dev);
-
+	
+	if(chip->spi_lock_mutex) mutex_lock(chip->spi_lock_mutex);
 	spin_lock(&chip->lock);
 
 	ct1628_print(chip, buf);
 
 	spin_unlock(&chip->lock);
+	if(chip->spi_lock_mutex)  mutex_unlock(chip->spi_lock_mutex);
 
 	return size;
 }
@@ -387,12 +359,14 @@ static ssize_t ct1628_raw_show(struct device *dev,
 {
 	struct ct1628_chip *chip = dev_get_drvdata(dev);
 
+	if(chip->spi_lock_mutex) mutex_lock(chip->spi_lock_mutex);
 	spin_lock(&chip->lock);
 
 	ct1628_recv(chip, CT1628_CMD_DATA(0, 1, 1), buf,
 			CT1628_KEYBOARD_BUFFER_SIZE);
 
 	spin_unlock(&chip->lock);
+	if(chip->spi_lock_mutex) mutex_unlock(chip->spi_lock_mutex);
 
 	return CT1628_KEYBOARD_BUFFER_SIZE;
 }
@@ -406,12 +380,14 @@ static ssize_t ct1628_raw_store(struct device *dev,
 
 	strncpy(data, buf, CT1628_DISPLAY_BUFFER_SIZE);
 
+	if(chip->spi_lock_mutex) mutex_lock(chip->spi_lock_mutex);
 	spin_lock(&chip->lock);
 
 	ct1628_send(chip, CT1628_CMD_DATA(0, 1, 0), NULL, 0);
 	ct1628_send(chip, CT1628_CMD_ADDRESS(0), data, sizeof(data));
 
 	spin_unlock(&chip->lock);
+	if(chip->spi_lock_mutex) mutex_unlock(chip->spi_lock_mutex);
 
 	return size;
 }
@@ -425,7 +401,7 @@ static int __init ct1628_probe(struct platform_device *pdev)
 {
 	int err;
 	struct ct1628_chip *chip;
-	struct tm1668_platform_data *plat_data = pdev->dev.platform_data;
+	struct ct1628_platform_data *plat_data = pdev->dev.platform_data;
 	int i;
 
 	BUG_ON(!plat_data);
@@ -448,28 +424,36 @@ static int __init ct1628_probe(struct platform_device *pdev)
 // 		dio = stpio_request_pin(stm_gpio_port(plat_data->gpio_dio), stm_gpio_pin(plat_data->gpio_dio), "****", STPIO_BIDIR);
 // 		stpio_free_pin(dio);
 // 	}
-	chip->gpio_dio = plat_data->gpio_dio;
-	err = gpio_request(chip->gpio_dio, dev_name(&pdev->dev));
-	if (err != 0)
-		goto error_request_gpio_dio;
-	gpio_direction_output(chip->gpio_dio, 1);
 
+	chip->gpio_dio =  plat_data->gpio_dio;
 	chip->gpio_sclk = plat_data->gpio_sclk;
-	err = gpio_request(chip->gpio_sclk, dev_name(&pdev->dev));
-	if (err != 0)
-		goto error_request_gpio_sclk;
-	gpio_direction_output(chip->gpio_sclk, 1);
+	chip->gpio_stb =  plat_data->gpio_stb;	
+	chip->GPIOlock =  plat_data->GPIOlock;
+	chip->spi_lock_mutex = plat_data->spi_lock_mutex;
 
-	chip->gpio_stb = plat_data->gpio_stb;
-	err = gpio_request(chip->gpio_stb, dev_name(&pdev->dev));
-	if (err != 0)
-		goto error_request_gpio_stb;
-	gpio_direction_output(chip->gpio_stb, 1);
+	if (chip->GPIOlock) {
+		err = gpio_request(chip->gpio_dio, dev_name(&pdev->dev));
+		if (err != 0)
+			goto error_request_gpio_dio;
+		gpio_direction_output(chip->gpio_dio, 1);
+	
+		err = gpio_request(chip->gpio_sclk, dev_name(&pdev->dev));
+		if (err != 0)
+			goto error_request_gpio_sclk;
+		gpio_direction_output(chip->gpio_sclk, 1);
+	
+		err = gpio_request(chip->gpio_stb, dev_name(&pdev->dev));
+		if (err != 0)
+			goto error_request_gpio_stb;
+		gpio_direction_output(chip->gpio_stb, 1);
+	}
 
 	chip->board_type = elc_get_board_type();
 
 	/* Initialize the chip */
+	if(chip->spi_lock_mutex) mutex_lock(chip->spi_lock_mutex);
 	ct1628_send(chip, CT1628_CMD_DISPLAY_MODE(1), NULL, 0);
+	if(chip->spi_lock_mutex) mutex_unlock(chip->spi_lock_mutex);
 
 	/* Initialize keyboard interface */
 	chip->input = input_allocate_device();
@@ -486,8 +470,11 @@ static int __init ct1628_probe(struct platform_device *pdev)
 	chip->input->id.product = 0x1668;
 	chip->input->id.version = 0x0100;
 
+	if(chip->spi_lock_mutex) mutex_lock(chip->spi_lock_mutex);
 	ct1628_recv(chip, CT1628_CMD_DATA(0, 1, 1), &chip->keys_prev,
 			sizeof(chip->keys_prev));
+	if(chip->spi_lock_mutex) mutex_unlock(chip->spi_lock_mutex);
+
 	chip->keys_num = plat_data->keys_num;
 	chip->keys = plat_data->keys;
 	BUG_ON(chip->keys_num > 0 && !chip->keys);
@@ -511,18 +498,17 @@ static int __init ct1628_probe(struct platform_device *pdev)
 		goto error_create_attr_keys;
 
 	/* Initialize display interface */
-
+	
+	if(chip->spi_lock_mutex) mutex_lock(chip->spi_lock_mutex);
 	ct1628_clear(chip);
 	ct1628_set_brightness(chip, plat_data->brightness);
 	chip->characters_num = plat_data->characters_num;
 	chip->characters = plat_data->characters;
 	if (chip->characters_num > 0)
 		ct1628_print(chip, plat_data->text);
+	if(chip->spi_lock_mutex) mutex_unlock(chip->spi_lock_mutex);
 
 	err = device_create_file(&pdev->dev, &dev_attr_brightness);
-
-	err = device_create_file(&pdev->dev, &dev_attr_disabled);
-
 	if (err != 0)
 		goto error_create_attr_brightness;
 
@@ -571,14 +557,23 @@ static int __exit ct1628_remove(struct platform_device *pdev)
 	device_remove_file(&pdev->dev, &dev_attr_raw);
 
 	if (chip->characters_num > 0)
-		device_remove_file(&pdev->dev, &dev_attr_text);
+	device_remove_file(&pdev->dev, &dev_attr_text);
 	device_remove_file(&pdev->dev, &dev_attr_brightness);
+
+	if(chip->spi_lock_mutex) mutex_lock(chip->spi_lock_mutex);
 	ct1628_set_brightness(chip, 0);
+	if(chip->spi_lock_mutex) mutex_unlock(chip->spi_lock_mutex);
 
 	device_remove_file(&pdev->dev, &dev_attr_keys);
 	cancel_delayed_work_sync(&chip->keys_work);
 
 	input_unregister_device(chip->input);
+
+	if (chip->GPIOlock) {
+		gpio_free(chip->gpio_stb);
+		gpio_free(chip->gpio_sclk);
+		gpio_free(chip->gpio_dio);
+	}
 
 	kfree(chip);
 
@@ -602,6 +597,7 @@ module_init(ct1628_init);
 static void __exit ct1628_exit(void)
 {
 	platform_driver_unregister(&ct1628_driver);
+	printk("ct1628: Goodbye!\n");
 }
 module_exit(ct1628_exit);
 
