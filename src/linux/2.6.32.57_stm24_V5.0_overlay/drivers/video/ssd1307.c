@@ -157,6 +157,21 @@ static inline int ssd1307_write_data(struct ssd1307_par *par, u8 data)
 	return ssd1307_write_data_array(par, &data, 1);
 }
 
+
+static void ssd1307_clear_GDDRAM(struct ssd1307_par *par)
+{
+	u8 buffer[SSD1307FB_WIDTH];
+	int i;
+
+	memset(buffer, 0, sizeof(buffer));
+	for (i = 0; i < (SSD1307FB_HEIGHT / 8); i++) {
+		ssd1307_write_cmd(par, SSD1307FB_START_PAGE_ADDRESS + (i));
+		ssd1307_write_cmd(par, 0x00);
+		ssd1307_write_cmd(par, 0x10);
+		ssd1307_write_data_array(par, buffer, sizeof(buffer));
+	}
+}
+
 static void ssd1307_update_display(struct ssd1307_par *par)
 {
 	u8 *vmem = par->info->screen_base;
@@ -323,6 +338,9 @@ static inline void ssd1307_controller_init(struct ssd1307_par *par)
 	//	Remap (column address 127 is mapped to SEG0 )
 	ssd1307_write_cmd(par, 0xA1);
 
+	//	Clear internal ssd1307 memory
+	ssd1307_clear_GDDRAM(par);
+
 	// Display on
 	ssd1307_write_cmd(par, SSD1307FB_DISPLAY_ON);
 }
@@ -371,16 +389,21 @@ static int __init ssd1307_probe(struct platform_device *pdev)
 	par = info->par;
 	par->info = info;
 
-	if(registered_fb[0] == NULL) {			//Trick
-		registered_fb[0] = (void *)info;	//We have to reserve FB0 node for "elcd"
-		registered_fb_changed = 1;			//Palm off dymmy FB0 info
+	//Trick    We have to reserve FB0 and FB2 node for "elcd"
+	if(registered_fb[0] == NULL) {
+		registered_fb[0] = (void *)info;
+		registered_fb_changed |= 0x01;			//Insert dymmy FB0 info
+	}
+	if(registered_fb[1] == NULL) {
+		registered_fb[1] = (void *)info;
+		registered_fb_changed  |= 0x02;			//Insert dymmy FB1 info
 	}
 
 	ret = register_framebuffer(info);		//Register ssd1307 frame buffer
 
-	if(registered_fb_changed) {				//End of Trick
-		registered_fb[0] = NULL;			//Remove dymmy FB0 info
-	}
+	if(0x01 & registered_fb_changed) 	registered_fb[0] = NULL;	// Remove dymmy FB0 info		
+	if(0x02 & registered_fb_changed) 	registered_fb[1] = NULL;	// Remove dymmy FB1 info							
+	//End of Trick
 
 	if (ret) {
 		dev_err(&pdev->dev, "Couldn't register the framebuffer\n");

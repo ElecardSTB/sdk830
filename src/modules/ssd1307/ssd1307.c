@@ -18,8 +18,10 @@
 #include <linux/ctype.h>
 #include <linux/input.h>
 #include <linux/gpio.h>
-#include <linux/tm1668.h>
+//#include <linux/tm1668.h>
 #include <linux/board_id.h>
+#include <linux/ssd1307.h>
+#include <linux/mutex.h>
 
 /******************************************************************
 * MODULE PARAMETERS                                               *
@@ -31,8 +33,8 @@ MODULE_PARM_DESC(debug, "enable verbose debug");
 /******************************************************************
 * MODULE DESCRIPTION                                              *
 *******************************************************************/
-MODULE_AUTHOR("Ruslan Baryshnikov");
-MODULE_DESCRIPTION("ssd1307 LCD chip driver");
+MODULE_AUTHOR("Maxime Ripard <maxime.ripard@free-electrons.com>");
+MODULE_DESCRIPTION("FB driver for the Solomon SSD1307 OLED controler");
 MODULE_LICENSE("GPL");
 
  /******************************************************************
@@ -50,20 +52,27 @@ MODULE_LICENSE("GPL");
 #define SSD1307FB_SEG_REMAP_ON			0xa1
 #define SSD1307FB_DISPLAY_OFF			0xae
 #define SSD1307FB_DISPLAY_ON			0xaf
+#define SSD1307FB_DISPLAY_NORMAL		0xA6
+#define SSD1307FB_DISPLAY_INVERSE		0xA7
 #define SSD1307FB_START_PAGE_ADDRESS	0xb0
+
 #define T_WAIT 							(1)
 
 #define DRIVER_NAME 					"ssd1307"
+
 
 /******************************************************************
 * STATIC DATA                                                     *
 *******************************************************************/
 struct ssd1307_par {
 	struct fb_info *info;
-	int reset;
+	u8 brightness;
+	uint32_t GPIOlock;
 	unsigned gpio_dio;
 	unsigned gpio_sclk;
 	unsigned gpio_stb;
+	unsigned gpio_12power;
+	struct mutex *spi_lock_mutex;
 };
 
 static struct fb_fix_screeninfo ssd1307_fix = {
@@ -148,11 +157,27 @@ static inline int ssd1307_write_data(struct ssd1307_par *par, u8 data)
 	return ssd1307_write_data_array(par, &data, 1);
 }
 
+
+static void ssd1307_clear_GDDRAM(struct ssd1307_par *par)
+{
+	u8 buffer[SSD1307FB_WIDTH];
+	int i;
+
+	memset(buffer, 0, sizeof(buffer));
+	for (i = 0; i < (SSD1307FB_HEIGHT / 8); i++) {
+		ssd1307_write_cmd(par, SSD1307FB_START_PAGE_ADDRESS + (i));
+		ssd1307_write_cmd(par, 0x00);
+		ssd1307_write_cmd(par, 0x10);
+		ssd1307_write_data_array(par, buffer, sizeof(buffer));
+	}
+}
+
 static void ssd1307_update_display(struct ssd1307_par *par)
 {
 	u8 *vmem = par->info->screen_base;
+	u8 buffer[SSD1307FB_WIDTH];
 	int i, j, k;
-	ssd1307_write_cmd(par, SSD1307FB_DISPLAY_ON);
+
 	for (i = 0; i < (SSD1307FB_HEIGHT / 8); i++) {
 		ssd1307_write_cmd(par, SSD1307FB_START_PAGE_ADDRESS + (i));
 		ssd1307_write_cmd(par, 0x00);
@@ -168,8 +193,9 @@ static void ssd1307_update_display(struct ssd1307_par *par)
 				bit = bit >> (j % 8);
 				buf |= bit << k;
 			}
-			ssd1307_write_data(par, buf);
+			buffer[j] = buf;
 		}
+		ssd1307_write_data_array(par, buffer, sizeof(buffer));
 	}
 }
 
@@ -197,7 +223,9 @@ static ssize_t ssd1307_write(struct fb_info *info, const char __user *buf,
 	if (copy_from_user(dst, buf, count))
 		return -EFAULT;
 
+	if(par->spi_lock_mutex) mutex_lock(par->spi_lock_mutex);
 	ssd1307_update_display(par);
+	if(par->spi_lock_mutex) mutex_unlock(par->spi_lock_mutex);
 
 	*ppos += count;
 
@@ -217,20 +245,115 @@ static void ssd1307_deferred_io(struct fb_info *info,
 }
 
 
-//static struct fb_deferred_io ssd1307_defio;
 static struct fb_deferred_io ssd1307_defio = {
 	.delay			= HZ,
 	.deferred_io	= ssd1307_deferred_io,
 };
+
+static int32_t ssd1307_brightness_set(struct ssd1307_par *par, u8 brightness)
+{
+	u8 tmp_buffer[2];
+	par->brightness = brightness;
+
+	// Contrast  (select 1 out of 256 contrast steps)
+	tmp_buffer[0] = SSD1307FB_CONTRAST;
+	tmp_buffer[1] = brightness;
+	ssd1307_write_cmd_array(par,tmp_buffer,2);
+	return 0;
+}
+
+static ssize_t ssd1307_brightness_show(struct device *dev,
+		struct device_attribute *attr, char *buf)
+{
+	int result = 0;
+	struct fb_info *info = dev_get_drvdata(dev);
+	struct ssd1307_par *par = info->par;
+
+	result = sprintf(buf, "%d\n", par->brightness);
+
+	return result;
+	
+}
+
+static ssize_t ssd1307_brightness_store(struct device *dev,
+		struct device_attribute *attr,
+		const char *buf, size_t size)
+{
+	ssize_t result = 0;
+	struct fb_info *info = dev_get_drvdata(dev);
+	struct ssd1307_par *par = info->par;
+	long unsigned int value;
+
+
+	result = strict_strtoul(buf, 10, &value);
+
+	if (result == 0) {
+		if(value > 0xff) {
+			value = 0xff;
+		} else if(value < 0) {
+			value = 0;
+		}
+
+		if(par->spi_lock_mutex) mutex_lock(par->spi_lock_mutex);
+		ssd1307_brightness_set(par, (u8)value);
+		if(par->spi_lock_mutex) mutex_unlock(par->spi_lock_mutex);
+		result = size;
+	}
+	
+	return result;
+}
+
+static DEVICE_ATTR(brightness, S_IRUSR | S_IWUSR, ssd1307_brightness_show,
+		ssd1307_brightness_store);
+
+static inline void ssd1307_controller_init(struct ssd1307_par *par)
+{
+	u8 tmp_buffer[2];
+
+	// Display off
+	ssd1307_write_cmd(par, SSD1307FB_DISPLAY_OFF);
+
+	// The starting line. Shift relative to the memory strings.
+	// 0x40 + x. Where x - number of lines shifted.
+	ssd1307_write_cmd(par, 0x40);
+
+	// Setting the MUX (number of rows displayed)
+	// 0x23 = 35d. 35 - 4 = 31
+	tmp_buffer[0] = 0xA8;
+	tmp_buffer[1] = 0x20;
+	ssd1307_write_cmd_array(par,tmp_buffer,2);
+
+
+	// Shift the display to the x lines.
+	tmp_buffer[0] = 0xD3;
+	tmp_buffer[1] = 35;
+	ssd1307_write_cmd_array(par,tmp_buffer,2);
+
+	// Contrast
+	ssd1307_brightness_set(par, 0x7f);
+
+	// Normal display (Set Normal/Inverse Display)
+	ssd1307_write_cmd(par, 0xA6);
+
+	//	Remap (column address 127 is mapped to SEG0 )
+	ssd1307_write_cmd(par, 0xA1);
+
+	//	Clear internal ssd1307 memory
+	ssd1307_clear_GDDRAM(par);
+
+	// Display on
+	ssd1307_write_cmd(par, SSD1307FB_DISPLAY_ON);
+}
 
 static int __init ssd1307_probe(struct platform_device *pdev)
 {
 	struct fb_info *info;
 	u32 vmem_size = SSD1307FB_WIDTH * SSD1307FB_HEIGHT / 8;
 	struct ssd1307_par *par;
-	//struct tm1668_platform_data *plat_data = pdev->dev.platform_data;
+	struct ssd1307_platform_data *plat_data = pdev->dev.platform_data;
 	u8 *vmem;
 	int ret;
+	int registered_fb_changed = 0;
 
 	info = framebuffer_alloc(sizeof(struct ssd1307_par), &pdev->dev);
 	if (!info) {
@@ -266,66 +389,68 @@ static int __init ssd1307_probe(struct platform_device *pdev)
 	par = info->par;
 	par->info = info;
 
-	ret = register_framebuffer(info);
+	//Trick    We have to reserve FB0 and FB2 node for "elcd"
+	if(registered_fb[0] == NULL) {
+		registered_fb[0] = (void *)info;
+		registered_fb_changed |= 0x01;			//Insert dymmy FB0 info
+	}
+	if(registered_fb[1] == NULL) {
+		registered_fb[1] = (void *)info;
+		registered_fb_changed  |= 0x02;			//Insert dymmy FB1 info
+	}
+
+	ret = register_framebuffer(info);		//Register ssd1307 frame buffer
+
+	if(0x01 & registered_fb_changed) 	registered_fb[0] = NULL;	// Remove dymmy FB0 info		
+	if(0x02 & registered_fb_changed) 	registered_fb[1] = NULL;	// Remove dymmy FB1 info							
+	//End of Trick
+
 	if (ret) {
 		dev_err(&pdev->dev, "Couldn't register the framebuffer\n");
 		goto fbreg_error;
 	}
 
-	par->gpio_dio = stm_gpio(11, 2);
-	// ret = gpio_request(par->gpio_dio, dev_name(&pdev->dev));
-	// if (ret != 0)
-		// goto error_request_gpio_dio;
-	// gpio_direction_output(par->gpio_dio, 1);
+	par->gpio_dio =  plat_data->gpio_dio;
+	par->gpio_sclk = plat_data->gpio_sclk;
+	par->gpio_stb =  plat_data->gpio_stb;
+	par->gpio_12power =  plat_data->gpio_12power;  //this PIO controls 12V power for OLED display (0/1 - off/on state)
+	par->GPIOlock =  plat_data->GPIOlock;
+	par->spi_lock_mutex = plat_data->spi_lock_mutex;
 
-	par->gpio_sclk = stm_gpio(11, 3);
-	// ret = gpio_request(par->gpio_sclk, dev_name(&pdev->dev));
-	// if (ret != 0)
-		// goto error_request_gpio_sclk;
-	// gpio_direction_output(par->gpio_sclk, 1);
+	if (par->GPIOlock) {
+		ret = gpio_request(par->gpio_dio, dev_name(&pdev->dev));
+		if (ret != 0)
+			goto error_request_gpio_dio;
+		gpio_direction_output(par->gpio_dio, 1);
+	
+		ret = gpio_request(par->gpio_sclk, dev_name(&pdev->dev));
+		if (ret != 0)
+			goto error_request_gpio_sclk;
+		gpio_direction_output(par->gpio_sclk, 1);
+	
+		ret = gpio_request(par->gpio_stb, dev_name(&pdev->dev));
+		if (ret != 0)
+			goto error_request_gpio_stb;
+		gpio_direction_output(par->gpio_stb, 1);
+	}
 
-	par->gpio_stb = stm_gpio(11, 4);
-	// ret = gpio_request(par->gpio_stb, dev_name(&pdev->dev));
-	// if (ret != 0)
-		// goto error_request_gpio_stb;
-	// gpio_direction_output(par->gpio_stb, 1);
+	ret = gpio_request(par->gpio_12power, dev_name(&pdev->dev));
+	if (ret != 0)
+		goto error_request_gpio_12power;
+	gpio_direction_output(par->gpio_12power, 1);
 
-	//================
-	// Initialization
-	//================
+	//Power ON OLED display
+	gpio_set_value(par->gpio_12power, 1);
 
-	// Выключение дисплея
-	ssd1307_write_cmd(par, SSD1307FB_DISPLAY_OFF);
+	//Controller init
+	if(par->spi_lock_mutex) mutex_lock(par->spi_lock_mutex);
+	ssd1307_controller_init(par);
+	if(par->spi_lock_mutex) mutex_unlock(par->spi_lock_mutex);
 
-	// Стартовая строчка. Сдвиг памяти относительно строк.
-	// 0x40 + x. Где x - количество сдвигаемых строк.
-	ssd1307_write_cmd(par, 0x40);
+	ret = device_create_file(&pdev->dev, &dev_attr_brightness);
 
-	// Установка MUX (количество отображаемых строк)
-	// 0x23 = 35d. 35 - 4 = 31
-	ssd1307_write_cmd(par, 0xA8);
-	ssd1307_write_cmd(par, 0x20);
-
-	// Сдвиг дисплея на x строк.
-	ssd1307_write_cmd(par, 0xD3);
-	ssd1307_write_cmd(par, 35);
-
-	// Contrast
-	ssd1307_write_cmd(par, SSD1307FB_CONTRAST);
-	ssd1307_write_cmd(par, 0x40);
-
-	// Normal display
-	ssd1307_write_cmd(par, 0xA6);
-
-	//	Remap
-	ssd1307_write_cmd(par, 0xA1);
-
-	// Включение дисплея
-	//ssd1307_write_cmd(par, SSD1307FB_DISPLAY_ON);
-
-	//================
-	// Initialization
-	//================
+	if (ret != 0)
+		goto error_create_attr_brightness;
 
 	dev_info(&pdev->dev, "fb%d: %s framebuffer device registered, using %d bytes of video memory\n", info->node, info->fix.id, vmem_size);
 
@@ -333,6 +458,10 @@ static int __init ssd1307_probe(struct platform_device *pdev)
 
 	return 0;
 
+error_create_attr_brightness:
+	unregister_framebuffer(info);
+error_request_gpio_12power:
+	gpio_free(par->gpio_stb);
 error_request_gpio_stb:
 	gpio_free(par->gpio_sclk);
 error_request_gpio_sclk:
@@ -346,23 +475,31 @@ fb_alloc_error:
 	return ret;
 }
 
-static int ssd1307_remove(struct platform_device *pdev)
+static int __exit ssd1307_remove(struct platform_device *pdev)
 {
 	struct fb_info *info = platform_get_drvdata(pdev);
 	struct ssd1307_par *par;
 
 	par = info->par;
-	//#warning "Вернуть обратно"
-	//ssd1307_write_cmd(par, SSD1307FB_DISPLAY_ON);
 
-	// gpio_free(par->gpio_dio);
-	// gpio_free(par->gpio_sclk);
-	// gpio_free(par->gpio_stb);
+	if(par->spi_lock_mutex) mutex_lock(par->spi_lock_mutex);
+	ssd1307_write_cmd(par, SSD1307FB_DISPLAY_OFF);
+	if(par->spi_lock_mutex) mutex_unlock(par->spi_lock_mutex);
+
+	if (par->GPIOlock) {
+		gpio_free(par->gpio_dio);
+		gpio_free(par->gpio_sclk);
+		gpio_free(par->gpio_stb);
+	}
+	
+	gpio_free(par->gpio_12power);
 
 	unregister_framebuffer(info);
 	fb_deferred_io_cleanup(info);
 	framebuffer_release(info);
+	device_remove_file(&pdev->dev, &dev_attr_brightness);
 
+	printk("ssd1307: Framebuffer device unregistered\n");
 	return 0;
 }
 
@@ -384,5 +521,6 @@ module_init(ssd1307_init);
 static void __exit ssd1307_exit(void)
 {
 	platform_driver_unregister(&ssd1307_driver);
+	printk("ssd1307: Goodbye!\n");
 }
 module_exit(ssd1307_exit);
