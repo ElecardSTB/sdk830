@@ -13,9 +13,6 @@ case "$1" in
 			echo "0" > /sys/class/leds/RED/brightness
 			echo "1" > /sys/class/leds/GREEN/brightness
 		fi
-		if [ "$BOARD_NAME" = "stb850" ]; then
-			/opt/elecard/bin/stb850_led.sh &
-		fi
 		frontpanel
 		;;
 	stop)

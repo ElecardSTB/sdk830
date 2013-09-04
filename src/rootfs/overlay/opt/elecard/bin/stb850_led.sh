@@ -1,4 +1,6 @@
 #!/bin/sh
+#not used now
+[% SKIPFILE %]
 
 DELAY=1000000
 
