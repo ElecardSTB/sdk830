@@ -20,6 +20,7 @@
 #include <linux/gpio.h>
 #include <linux/phy.h>
 #include <linux/tm1668.h>
+#include <linux/ct1628.h>
 #include <linux/stm/platform.h>
 #include <linux/stm/stx7105.h>
 #include <linux/stm/emi.h>
@@ -63,7 +64,7 @@ static struct platform_device pdk7105_leds = {
 	},
 };
 
-static struct tm1668_key hdk7105_front_panel_keys[] = {
+static struct ct1628_key stb840_front_panel_keys[] = {
 	{0x01000000, KEY_UP,	"FP CH+"},
 	{0x00080000, KEY_DOWN,	"FP CH-"},
 	{0x00010000, KEY_RIGHT,	"FP VOL+"},
@@ -73,7 +74,7 @@ static struct tm1668_key hdk7105_front_panel_keys[] = {
 };
 
 
-static struct tm1668_character hdk7105_front_panel_characters[] = {
+static struct ct1628_character stb840_front_panel_characters[] = {
 	TM1668_7_SEG_LETTERS_ELECARD,
 	TM1668_7_SEG_HEX_DIGITS,
 	TM1668_7_SEG_HEX_DIGITS_WITH_DOT,
@@ -83,19 +84,21 @@ static struct tm1668_character hdk7105_front_panel_characters[] = {
 static struct platform_device hdk7105_front_panel = {
 	.name = "ct1628",
 	.id = -1,
-	.dev.platform_data = &(struct tm1668_platform_data) {
+	.dev.platform_data = &(struct ct1628_platform_data) {
 		.gpio_dio = stm_gpio(11, 2),
 		.gpio_sclk = stm_gpio(11, 3),
 		.gpio_stb = stm_gpio(11, 4),
 
-		.keys_num = ARRAY_SIZE(hdk7105_front_panel_keys),
-		.keys = hdk7105_front_panel_keys,
+		.keys_num = ARRAY_SIZE(stb840_front_panel_keys),
+		.keys = stb840_front_panel_keys,
 		.keys_poll_period = DIV_ROUND_UP(HZ, 5),
 
 		.brightness = 4,
-		.characters_num = ARRAY_SIZE(hdk7105_front_panel_characters),
-		.characters = hdk7105_front_panel_characters,
+		.characters_num = ARRAY_SIZE(stb840_front_panel_characters),
+		.characters = stb840_front_panel_characters,
 		.text = "boot",
+		
+		.GPIOlock = 1,
 	},
 };
 
