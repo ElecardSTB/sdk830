@@ -30,7 +30,7 @@
 #include <linux/spi/flash.h>
 #include <asm/irq-ilc.h>
 #include <linux/tm1668.h>
-
+#include <linux/ct1628.h>
 #include <linux/stm/pio.h>
 #include <linux/i2c.h>
 
@@ -105,7 +105,7 @@ static struct platform_device elcStb830_leds = {
 #endif
 
 
-static struct tm1668_key elcStb830_front_panel_keys[] = {
+static struct ct1628_key elcStb830_front_panel_keys[] = {
 	{0x01000000, KEY_UP,	"FP CH+"},
 	{0x00080000, KEY_DOWN,	"FP CH-"},
 	{0x00010000, KEY_RIGHT,	"FP VOL+"},
@@ -115,7 +115,7 @@ static struct tm1668_key elcStb830_front_panel_keys[] = {
 };
 
 
-static struct tm1668_character elcStb830_front_panel_characters[] = {
+static struct ct1628_character elcStb830_front_panel_characters[] = {
 	TM1668_7_SEG_LETTERS_ELECARD,
 	TM1668_7_SEG_HEX_DIGITS,
 	TM1668_7_SEG_HEX_DIGITS_WITH_DOT,
@@ -125,7 +125,7 @@ static struct tm1668_character elcStb830_front_panel_characters[] = {
 static struct platform_device elcStb830_front_panel = {
 	.name = "ct1628",
 	.id = -1,
-	.dev.platform_data = &(struct tm1668_platform_data) {
+	.dev.platform_data = &(struct ct1628_platform_data) {
 		.gpio_dio = stm_gpio(11, 2),
 		.gpio_sclk = stm_gpio(11, 3),
 		.gpio_stb = stm_gpio(11, 4),
@@ -138,6 +138,8 @@ static struct platform_device elcStb830_front_panel = {
 		.characters_num = ARRAY_SIZE(elcStb830_front_panel_characters),
 		.characters = elcStb830_front_panel_characters,
 		.text = "boot",
+
+		.GPIOlock = 1,
 	},
 };
 

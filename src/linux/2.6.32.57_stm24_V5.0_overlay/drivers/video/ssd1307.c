@@ -461,11 +461,11 @@ static int __init ssd1307_probe(struct platform_device *pdev)
 error_create_attr_brightness:
 	unregister_framebuffer(info);
 error_request_gpio_12power:
-	gpio_free(par->gpio_stb);
+	if (par->GPIOlock) gpio_free(par->gpio_stb);
 error_request_gpio_stb:
-	gpio_free(par->gpio_sclk);
+	if (par->GPIOlock) gpio_free(par->gpio_sclk);
 error_request_gpio_sclk:
-	gpio_free(par->gpio_dio);
+	if (par->GPIOlock) gpio_free(par->gpio_dio);
 error_request_gpio_dio:
 	unregister_framebuffer(info);
 fbreg_error:

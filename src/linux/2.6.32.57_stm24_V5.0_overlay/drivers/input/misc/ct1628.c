@@ -538,11 +538,11 @@ error_create_attr_keys:
 	input_unregister_device(chip->input);
 error_input_register:
 error_input_allocate:
-	gpio_free(chip->gpio_stb);
+	if (chip->GPIOlock)	gpio_free(chip->gpio_stb);
 error_request_gpio_stb:
-	gpio_free(chip->gpio_sclk);
+	if (chip->GPIOlock)	gpio_free(chip->gpio_sclk);
 error_request_gpio_sclk:
-	gpio_free(chip->gpio_dio);
+	if (chip->GPIOlock)	gpio_free(chip->gpio_dio);
 error_request_gpio_dio:
 	kfree(chip);
 error_kzalloc:
