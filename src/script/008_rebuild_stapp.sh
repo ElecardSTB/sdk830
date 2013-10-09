@@ -1,3 +1,3 @@
 #!/bin/bash
 
-[ -d "$STSDKROOT" ] && rm -rf $STSDKROOT/stapp/stapp.dir
+[ -z "$STSDKROOT" ] || rm -rf $STSDKROOT/stapp/stapp.dir
