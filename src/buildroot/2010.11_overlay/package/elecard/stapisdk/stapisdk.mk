@@ -4,7 +4,7 @@
 #
 #############################################################
 
-STAPISDK_DEPENDENCIES = zlib tiff libpng jpeg freetype directfb openssl commonlib linuxtv-dvb-apps bzip2 elcdrpclib
+STAPISDK_DEPENDENCIES = zlib tiff libpng jpeg freetype directfb openssl commonlib linuxtv-dvb-apps bzip2 elcdrpclib alsa-lib
 STAPISDK_DEPENDENCIES += cjsonlib
 ifeq ($(BR2_PACKAGE_GARB),y)
   STAPISDK_DEPENDENCIES += garb
