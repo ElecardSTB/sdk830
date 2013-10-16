@@ -1,0 +1,26 @@
+#!/bin/sh
+#
+# Start elcd-watchdog
+#
+export PATH=$PATH:/opt/elecard/bin
+
+case "$1" in
+   start)
+	#dont automaticaly run when boot is via nfs
+	if ! grep /dev/nfs /proc/cmdline &>/dev/null; then
+		elcd-watchdog &
+	fi
+	;;
+   stop)
+	killall elcd-watchdog
+	;;
+   restart|reload)
+	"$0" stop
+	"$0" start
+	;;
+   *)
+	echo $"Usage: $0 {start|stop|restart}"
+	exit 1
+esac
+
+exit $?

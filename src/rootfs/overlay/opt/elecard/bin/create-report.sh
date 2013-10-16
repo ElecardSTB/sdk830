@@ -95,12 +95,14 @@ tar -C /tmp -zcf $TMP_ARCH_FILE $name/
 if [ "$BOARD" = "stb820" -a $INITRAMFS -eq 1 ]; then
 	cp -f $TMP_ARCH_FILE $USB_MOUNT_POINT
 else
-	for f in `find /dev -name sd*`; do
+	for f in `ls /dev/sd* 2>/dev/null`; do
 		f1=$USB_MOUNT_POINT/${f#/dev/}
 		[ -d "$f1" ] || continue
 		echo "Copy report into $f1"
 		cp -f $TMP_ARCH_FILE $f1/
 	done
+	mkdir -p $CFG_MOUNT_POUNT/reports
+	cp $TMP_ARCH_FILE $CFG_MOUNT_POUNT/reports
 fi
 
 #for nfs mounts
