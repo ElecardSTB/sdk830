@@ -8,11 +8,11 @@ case "$1" in
    start)
 	#dont automaticaly run when boot is via nfs
 	if ! grep /dev/nfs /proc/cmdline &>/dev/null; then
-		elcd-watchdog &
+		elcd-watchdog.sh &
 	fi
 	;;
    stop)
-	killall elcd-watchdog
+	killall elcd-watchdog.sh
 	;;
    restart|reload)
 	"$0" stop

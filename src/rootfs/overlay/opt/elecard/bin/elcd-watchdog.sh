@@ -5,7 +5,7 @@ LOGGER_OPTS="-t elcd-watchdog -p 2"
 
 while :; do
 	sleep 5
-	if ! pidof $ELCD_PROGNAME &/dev/null; then
+	if ! pidof $ELCD_PROGNAME &>/dev/null; then
 		logger $LOGGER_OPTS "ERROR: elcd is down!"
 		logger $LOGGER_OPTS "Creating report and reboot now."
 		create-report.sh
