@@ -1,0 +1,12 @@
+--- linux-sh4-2.6.32.57_stm24_V5.0/drivers/char/lirc/lirc_stm.c.orig	2013-10-18 15:52:07.000000000 +0700
++++ linux-sh4-2.6.32.57_stm24_V5.0/drivers/char/lirc/lirc_stm.c	2013-10-18 15:52:20.456128391 +0700
+@@ -149,7 +149,8 @@
+  *          Enable last symbol IRQ           1  -> bit  1:
+  *          Enable RX interrupt              1  -> bit  0;
+  */
+-#define LIRC_STM_ENABLE_IRQ		0x0f
++//#define LIRC_STM_ENABLE_IRQ		0x0f
++#define LIRC_STM_ENABLE_IRQ		0x17
+ 
+ /*
+  * IRB IR/UHF receiver configurations
