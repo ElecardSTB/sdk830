@@ -2,8 +2,6 @@
 # Switch leds on PromSvyaz board.
 # Start frontpanel daemon.
 
-[% IF ! CONFIG_TESTSERVER_ENABLE -%]
-
 export PATH=$PATH:/opt/elecard/bin
 BOARD_NAME=${board_name%.*}
 
@@ -28,4 +26,3 @@ case "$1" in
 		;;
 esac
 
-[% END -%]
