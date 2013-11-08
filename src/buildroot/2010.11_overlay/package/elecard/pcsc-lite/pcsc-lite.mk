@@ -12,8 +12,8 @@ PCSC_LITE_CONF_OPT = --disable-libudev --disable-libhal --enable-libusb --enable
 PCSC_LITE_DEPENDENCIES = libusb
 
 define PCSC_LITE_TARGET_FILES_INSTALL
-	$(INSTALL) -m0644 reader.conf $(TARGET_DIR)/etc/reader.conf
-	$(INSTALL) -m0644 pcsc.init $(TARGET_DIR)/etc/init.d/S71pcsc
+	$(INSTALL) -m0644 package/elecard/pcsc-lite/reader.conf $(TARGET_DIR)/etc/reader.conf
+	$(INSTALL) -m0644 package/elecard/pcsc-lite/pcsc.init $(TARGET_DIR)/etc/init.d/S71pcsc
 endef
 
 define PCSC_LITE_UNINSTALL_TARGET_CMDS
@@ -23,4 +23,4 @@ endef
 
 PCSC_LITE_POST_INSTALL_TARGET_HOOKS += PCSC_LITE_TARGET_FILES_INSTALL
 
-$(eval $(call AUTOTARGETS, package, pcsc-lite))
+$(eval $(call AUTOTARGETS, package/elecard, pcsc-lite))
