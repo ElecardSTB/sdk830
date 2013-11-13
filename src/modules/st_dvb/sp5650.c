@@ -36,7 +36,7 @@ static struct lgdt3305_config lgdt3305_cfg = {
 //	unsigned int deny_i2c_rptr:1;
 
 	/* spectral inversion - 0:disabled 1:enabled */
-//	unsigned int spectral_inversion:1;
+	.spectral_inversion = 0,
 
 	/* use RF AGC loop - 0:disabled 1:enabled */
 	.rf_agc_loop = 1,
@@ -50,8 +50,9 @@ static struct lgdt3305_config lgdt3305_cfg = {
 };
 
 static struct mxl603_config mxl603_cfg = {
-	.i2c_addr = 0x60,
-	.externI2C = 0,
+	.i2c_addr	= 0x60,
+	.if_khz		= 5000,
+	.externI2C	= 0,
 //	void *demod_priv;
 //	int (*register_get)(void *priv, u8 addr, u8 reg, u8 *value);
 //	int (*register_set)(void *priv, u8 addr, u8 reg, u8  value);

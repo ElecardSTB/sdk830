@@ -14,9 +14,10 @@
 struct dvb_frontend;
 
 struct mxl603_config {
-	uint8_t	i2c_addr;
-	uint8_t	externI2C; //use external set/get i2c functions
-	void *demod_priv;
+	uint8_t		i2c_addr;
+	uint8_t		externI2C; //use external set/get i2c functions
+	uint16_t	if_khz;
+	void		*demod_priv;
 	int (*register_get)(void *priv, u8 addr, u8 reg, u8 *value);
 	int (*register_set)(void *priv, u8 addr, u8 reg, u8  value);
 };
