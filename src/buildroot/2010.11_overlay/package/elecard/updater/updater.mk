@@ -48,7 +48,7 @@ updater_target_dir:
 	mkdir -p $(TARGET_DIR)/opt/elecard/bin/
 
 updater-install: updater_target_dir
-	install -m 755 -p $(UPDATER_DIR)/clientUpdater2/sh4/clientUpdater_$(FS_TYPE) $(TARGET_DIR)/opt/elecard/bin/clientUpdater
+	install -m 755 -p $(UPDATER_DIR)/clientUpdater2/sh4/$(FS_TYPE)/clientUpdater $(TARGET_DIR)/opt/elecard/bin/clientUpdater
 
 updaterDaemon-install: updater_target_dir
 	install -m 755 -p $(UPDATER_DIR)/updaterDaemon/sh4/updaterDaemon $(TARGET_DIR)/opt/elecard/bin/
