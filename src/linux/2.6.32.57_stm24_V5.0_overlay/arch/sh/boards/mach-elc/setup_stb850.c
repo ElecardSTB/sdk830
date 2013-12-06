@@ -327,6 +327,19 @@ int __init device_init_stb850(int ver)
 
 	if(ver == 2) {
 		i2c_register_board_info(3, rtc_i2c_board_info, ARRAY_SIZE(rtc_i2c_board_info));
+	} else {
+		//rtc Seico s35390a
+		static struct i2c_board_info __initdata rtc_dummy_i2c_board_info[] = {
+			{ I2C_BOARD_INFO("dummy", 0x30)},
+			{ I2C_BOARD_INFO("dummy", 0x31)},
+			{ I2C_BOARD_INFO("dummy", 0x32)},
+			{ I2C_BOARD_INFO("dummy", 0x33)},
+			{ I2C_BOARD_INFO("dummy", 0x34)},
+			{ I2C_BOARD_INFO("dummy", 0x35)},
+			{ I2C_BOARD_INFO("dummy", 0x36)},
+			{ I2C_BOARD_INFO("dummy", 0x37)},
+		};
+		i2c_register_board_info(3, rtc_dummy_i2c_board_info, ARRAY_SIZE(rtc_dummy_i2c_board_info));
 	}
 
 	return platform_add_devices(hdk7105_devices,
