@@ -1,14 +1,14 @@
 #!/bin/sh
 
 case "$1" in
-  start)
-    mount -t usbfs none /proc/bus/usb
-    pcscd
-  ;;
-  stop)
-    killall pcscd
-    umount /proc/bus/usb
-  ;;
-  *)
-    echo "Usage: $0 (start|stop)"
+	start)
+		grep usbfs /proc/mounts &>/dev/null || mount -t usbfs none /proc/bus/usb
+		pcscd
+		;;
+	stop)
+		killall pcscd
+#		umount /proc/bus/usb
+		;;
+	*)
+		echo "Usage: $0 (start|stop)"
 esac
