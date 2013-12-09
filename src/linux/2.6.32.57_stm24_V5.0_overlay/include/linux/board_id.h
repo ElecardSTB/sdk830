@@ -26,9 +26,15 @@ struct board_special_config_s {
 /******************************************************************
 * EXPORTED FUNCTIONS PROTOTYPES               <Module>_<Word>+    *
 *******************************************************************/
+#ifdef __cplusplus
+extern "C" {
+#endif
 extern struct board_special_config_s *get_board_special_config(void);
 extern g_board_type_t elc_get_board_type(void);
 extern int elc_get_board_version(void);
+#ifdef __cplusplus
+}
+#endif
 
 #endif //#ifdef __KERNEL__
 
