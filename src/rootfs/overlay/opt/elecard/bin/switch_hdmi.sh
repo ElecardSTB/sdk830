@@ -1,4 +1,8 @@
 #!/bin/sh
+# HDMI switcher:
+#  80: PIO10.0  - S1  SoC
+#  81: PIO10.1  - S2  HDMI in2
+#  82: PIO10.2  - S3  HDMI in3
 
 usage() {
 	echo "Usage:"
@@ -20,9 +24,11 @@ fi
 
 cd /sys/class/gpio/
 for gpio in 80 81 82; do
-	echo $gpio >export
-	echo out >gpio$gpio/direction
-	echo 0 >gpio$gpio/value
+	if [ ! -e gpio${gpio} ]; then
+		echo $gpio >export
+	fi
+	echo out >gpio${gpio}/direction
+	echo 0 >gpio${gpio}/value
 done
 
 echo 1 >gpio8$1/value

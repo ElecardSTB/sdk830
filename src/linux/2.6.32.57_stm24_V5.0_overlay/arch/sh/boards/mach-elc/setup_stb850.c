@@ -296,9 +296,15 @@ int __init device_init_stb850(int ver)
 // PIO10.1  - S2  HDMI in2
 // PIO10.2  - S3  HDMI in3
 //  set default HDMI from SoC
-//	stpio_request_set_pin(10, 0, "HDMI SoC", STPIO_OUT, 1);
-//	stpio_request_set_pin(10, 1, "HDMI SoC", STPIO_OUT, 0);
-//	stpio_request_set_pin(10, 2, "HDMI SoC", STPIO_OUT, 0);
+
+#define SET_GPIO_OUTPUT(pio, value) \
+	gpio_request(pio, "hdmi"); \
+	gpio_direction_output(pio, value); \
+	gpio_free(pio);
+
+	SET_GPIO_OUTPUT(stm_gpio(10, 0), 1);
+	SET_GPIO_OUTPUT(stm_gpio(10, 1), 0);
+	SET_GPIO_OUTPUT(stm_gpio(10, 2), 0);
 
 	gpio_request(HDK7105_PIO_PHY_RESET, "eth_phy_reset");
 	gpio_direction_output(HDK7105_PIO_PHY_RESET, 1);
