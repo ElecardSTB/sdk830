@@ -111,3 +111,4 @@ fi
 
 rm -rf $TMP_DEST_DIR/ $TMP_ARCH_FILE
 
+sync
