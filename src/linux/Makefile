@@ -18,10 +18,10 @@ _ts_makekernel=$(KDIR)/.ts_makelinux $(TIMESTAMPS_DIR)/.makelinux
 all: patch configure build_initramfs build_kernel
 
 unpack: $(_ts_unpackkernel)
-configure: $(KDIR)/.config
+configure: patch $(KDIR)/.config
 patch: $(_ts_patchkernel)
 build_kernel: $(KDIR)/arch/sh/boot/uImage
-build_initramfs:
+build_initramfs: configure
 	make -C ../initramfs
 
 $(KDIR)/arch/sh/boot/uImage: $(KDIR)/.config $(_ts_patchkernel) $(COMPONENT_DIR)/initramfs.cpio $(_ts_makekernel)

@@ -63,7 +63,7 @@ endif
 	@$(PRJROOT)/bin/genDescrComp.sh
 
 
-$(TIMESTAMPS_DIR) $(COMPONENT_DIR) $(FIRMWARE_DIR) $(SDK_PACKAGES_DIR) $(TARBALLS_DIR) $(PACKAGES_DIR):
+$(TIMESTAMPS_DIR) $(COMPONENT_DIR) $(FIRMWARE_DIR) $(SDK_PACKAGES_DIR) $(PACKAGES_DIR):
 	mkdir -p $@
 
 #	cd $(BUILDROOT) && rm -f images_initramfs initramfs images rootfs
