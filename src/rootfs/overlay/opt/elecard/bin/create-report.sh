@@ -1,9 +1,10 @@
 #!/bin/sh
 
-
 BOARD=stb830
-#BOARD=`stbstm -m 2>/dev/null`
-#if [ -z "$BOARD" ]; then BOARD="stb830"; fi
+if [ ! -e /proc/board/name ]; then
+	#BOARD=`stbstm -m 2>/dev/null`
+	BOARD=stb820
+fi
 
 ADD_FILES=
 LOGS_ADD_FILES=
@@ -77,24 +78,41 @@ cp -f \
 STBMAINAPP_REPORT_DIR=$TMP_DEST_DIR/StbMainApp
 mkdir -p $STBMAINAPP_REPORT_DIR
 cp -f \
+	$STBMAINAPP_CFGDIR/analog.json \
 	$STBMAINAPP_CFGDIR/settings.conf \
 	$STBMAINAPP_CFGDIR/playlist.txt \
 	$STBMAINAPP_CFGDIR/channels.conf \
 	$STBMAINAPP_REPORT_DIR/
 
 #files
-cp -f \
-	$ADD_FILES \
-	$TMP_DEST_DIR/
+if [ "$ADD_FILES" ]; then
+	cp -f \
+		$ADD_FILES \
+		$TMP_DEST_DIR/
+fi
 
 ls -la $CFG_MOUNT_POUNT >$TMP_DEST_DIR/config_ls
 find $CFG_MOUNT_POUNT >$TMP_DEST_DIR/config_find
 #nanddump -o -b -f $TMP_DEST_DIR/config_dump /dev/mtd`grep '"Sys-Config"' /proc/mtd | cut -b4` 2>&1 >$TMP_DEST_DIR/config_dump.log
 
 tar -C /tmp -zcf $TMP_ARCH_FILE $name/
-if [ "$BOARD" = "stb820" -a $INITRAMFS -eq 1 ]; then
-	cp -f $TMP_ARCH_FILE $USB_MOUNT_POINT
-else
+if [ "$BOARD" = "stb820" ]; then
+	if [ $INITRAMFS -eq 1 ]; then
+		cp -f $TMP_ARCH_FILE $USB_MOUNT_POINT
+	else
+		for f in `ls /dev/sd? 2>/dev/null`; do
+			diskLetter=${f#/dev/sd}
+			if ls $f[0-9] 2>/dev/null 1>/dev/null; then
+				cp -f $TMP_ARCH_FILE "$USB_MOUNT_POINT/Disk $diskLetter Partition 1"
+				echo "Copy $TMP_ARCH_FILE into \"$USB_MOUNT_POINT/Disk $diskLetter Partition 1\""
+			else
+				#no partitions
+				cp -f $TMP_ARCH_FILE "$USB_MOUNT_POINT/Disk $diskLetter"
+				echo "Copy  $TMP_ARCH_FILE into \"$USB_MOUNT_POINT/Disk $diskLetter\""
+			fi
+		done
+	fi
+else #stb830
 	for f in `ls /dev/sd* 2>/dev/null`; do
 		f1=$USB_MOUNT_POINT/${f#/dev/}
 		[ -d "$f1" ] || continue
