@@ -2,8 +2,7 @@
 include $(PRJROOT)/etc/envvars.mk
 
 ROOTFS_OUTPUT_DIR := $(PACKAGES_DIR)/buildroot/output_rootfs
-LINUXTV_VERSION := $(shell grep "^LINUXTV_VERSION" $(PACKAGES_DIR)/buildroot/package/elecard/linuxtv/linuxtv.mk | sed "s/^LINUXTV_VERSION.*= *//")
-LINUXTV_PATH := $(ROOTFS_OUTPUT_DIR)/build/linuxtv-$(LINUXTV_VERSION)
+LINUXTV_PATH := $(ROOTFS_OUTPUT_DIR)/build/linuxtv
 
 ADD_LINUXTV_ENV := n
 

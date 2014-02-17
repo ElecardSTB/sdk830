@@ -26,6 +26,7 @@ case "$1" in
 		source $STAPISDK_ROOT/modules/load_modules.sh
 		insmodSafe $STAPISDK_ROOT/modules/stpccrd_core.ko
 		insmodSafe $STAPISDK_ROOT/modules/stpccrd_ioctl.ko
+		insmodSafe $STAPISDK_ROOT/modules/stfdma-wrap.ko
 	fi
 	;;
   stop)
