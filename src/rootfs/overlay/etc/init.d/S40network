@@ -5,18 +5,17 @@
 
 export PATH=$PATH:/opt/elecard/bin
 
-if [ `edcfg /var/etc/ifcfg-wlan0 get WAN_MODE` = "1" ]; then
-WAN=wlan0
-LAN=eth0
+if [ "`edcfg /var/etc/ifcfg-wlan0 get WAN_MODE 2>/dev/null`" = "1" ]; then
+	WAN=wlan0
+	LAN=eth0
 else
-WAN=eth0
-LAN=wlan0
+	WAN=eth0
+	LAN=wlan0
 fi
 
-dhcp()
-{
+dhcp() {
 	if [ -d /sys/class/net/wlan0 -o -d /sys/class/net/eth1 ] && \
-	   [ "`edcfg /var/etc/ifcfg-lan get MODE`" = "NAT" ]; then
+	   [ "`edcfg /var/etc/ifcfg-lan get MODE 2>/dev/null`" = "NAT" ]; then
 		touch /var/etc/dhcpd.leases
 		[ -f /var/etc/dhcpd.conf ] || ifcfg dhcp > /var/etc/dhcpd.conf
 		dhcpd -q -lf /var/etc/dhcpd.leases -cf /var/etc/dhcpd.conf $LAN
@@ -26,82 +25,83 @@ dhcp()
 }
 
 case "$1" in
-  start)
-	echo -n "Starting network... "
+	start)
+		echo -n "Starting network... "
 
-	modprobe rt2800usb &> /dev/null
+		modprobe rt2800usb &> /dev/null
 
-    if [ -d /sys/class/net/eth1 ]; then
-	LAN=br0
-	brctl addbr br0
-	brctl setfd br0 0
-    fi
+		if [ -d /sys/class/net/eth1 ]; then
+			LAN=br0
+			brctl addbr br0
+			brctl setfd br0 0
+		fi
 
-	if [ ! -d /sys/class/net/wlan0 -a "$WAN" = "wlan0" ]; then
-		echo
-		echo "Wi-Fi not found! Falling back to Ethernet"
-		edcfg /var/etc/ifcfg-wlan0 set WAN_MODE 0
-		ifcfg config > /var/etc/interfaces
-		WAN=eth0
-		LAN=wlan0
-	fi
+		if [ ! -d /sys/class/net/wlan0 -a "$WAN" = "wlan0" ]; then
+			echo
+			echo "Wi-Fi not found! Falling back to Ethernet"
+			edcfg /var/etc/ifcfg-wlan0 set WAN_MODE 0
+			ifcfg config > /var/etc/interfaces
+			WAN=eth0
+			LAN=wlan0
+		fi
 
-	if ! grep /dev/nfs /proc/cmdline > /dev/null; then
-[% IF ! CONFIG_TESTSERVER_ENABLE -%]
-		/sbin/ifup -a
+		if grep /dev/nfs /proc/cmdline > /dev/null; then
+			# Get routes and nameservers from dhcp
+			udhcpc -n -i eth0 -s /opt/elecard/bin/udhcpc.nfs
+			test -d /sys/class/net/wlan0 && ifup wlan0
+		else
+[% IF CONFIG_TESTSERVER_ENABLE -%]
+			:
+[% ELSE -%]
+			/sbin/ifup -a
 [% END -%]
-		:
-	else
-		# Get routes and nameservers from dhcp
-		udhcpc -n -i eth0 -s /opt/elecard/bin/udhcpc.nfs
-		test -d /sys/class/net/wlan0 && ifup wlan0
-	fi
+		fi
 
-	# Add multicast route
-	route add -net 224.0.0.0 netmask 240.0.0.0 $WAN
+		# Add multicast route
+		route add -net 224.0.0.0 netmask 240.0.0.0 $WAN
 
 [% IF ! ENV.ROOTFS_DISABLE_TELNETD -%]
-	echo -n "telnet "
-	telnetd
+		echo -n "telnet "
+		telnetd
 [% END -%]
 
-	dhcp && echo -n "dhcp "
+		dhcp && echo -n "dhcp "
 
-	if ! brctl show | grep $WAN > /dev/null; then
-		# Enable ip forwarding
-		echo 1 > /proc/sys/net/ipv4/ip_forward
-	fi
-	echo "done"
+		if ! brctl show | grep $WAN > /dev/null; then
+			# Enable ip forwarding
+			echo 1 > /proc/sys/net/ipv4/ip_forward
+		fi
+		echo "done"
 
-	;;
-  stop)
-	echo -n "Stopping network... "
-	killall telnetd
-	killall dhcpd
-	killall udhcpc
-	iptables -t nat -F
-	echo 0 > /proc/sys/net/ipv4/ip_forward
-	if [ -z "`cat /proc/cmdline | grep /dev/nfs`" ]; then
-		ifdown -a
-	else
-		ifdown $LAN
-	fi
-	test -d /sys/class/net/wlan0 && ifdown wlan0
-	brctl delbr br0 2>/dev/null
-	;;
-  restart|reload)
-	"$0" stop
-	"$0" start
-	;;
-  dhcpd)
-	echo "Restarting dhcp server..."
-	killall dhcpd &>/dev/null
-	rm -f /var/etc/dhcpd.conf
-	dhcp
-	;;
-  *)
-	echo $"Usage: $0 {start|stop|restart|dhcpd}"
-	exit 1
+		;;
+	stop)
+		echo -n "Stopping network... "
+		killall telnetd
+		killall dhcpd
+		killall udhcpc
+		iptables -t nat -F
+		echo 0 > /proc/sys/net/ipv4/ip_forward
+		if grep /dev/nfs /proc/cmdline > /dev/null; then
+			ifdown $LAN
+		else
+			ifdown -a
+		fi
+		test -d /sys/class/net/wlan0 && ifdown wlan0
+		brctl delbr br0 2>/dev/null
+		;;
+	restart|reload)
+		"$0" stop
+		"$0" start
+		;;
+	dhcpd)
+		echo "Restarting dhcp server..."
+		killall dhcpd &>/dev/null
+		rm -f /var/etc/dhcpd.conf
+		dhcp
+		;;
+	*)
+		echo $"Usage: $0 {start|stop|restart|dhcpd}"
+		exit 1
 esac
 
 exit $?
