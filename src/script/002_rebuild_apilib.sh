@@ -1,4 +1,4 @@
 #!/bin/sh
 
-#up 2
+#up 3
 [ "$STSDKROOT" ] && rm -f $STSDKROOT/.makeapilib
