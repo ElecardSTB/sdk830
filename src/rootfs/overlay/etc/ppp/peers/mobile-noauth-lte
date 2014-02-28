@@ -1,0 +1,3 @@
+file /etc/ppp/options.lte.mobile
+linkname mobile-lte
+connect "/usr/sbin/chat -v -t15 -f /etc/ppp/chatscripts/mobile-modem.lte.chat"
