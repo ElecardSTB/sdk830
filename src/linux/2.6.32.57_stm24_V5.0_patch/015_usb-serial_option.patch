@@ -1,0 +1,12 @@
+--- linux-sh4-2.6.32.57_stm24_V5.0/drivers/usb/serial/option.orig.c	2014-03-01 00:52:19.929894154 +0700
++++ linux-sh4-2.6.32.57_stm24_V5.0/drivers/usb/serial/option.c	2014-03-01 00:51:23.793892188 +0700
+@@ -974,6 +974,9 @@
+ 	{ USB_DEVICE(CELOT_VENDOR_ID, CELOT_PRODUCT_CT680M) }, /* CT-650 CDMA 450 1xEVDO modem */
+ 	{ USB_DEVICE(ONDA_VENDOR_ID, ONDA_MT825UP) }, /* ONDA MT825UP modem */
+ 	{ USB_DEVICE_AND_INTERFACE_INFO(SAMSUNG_VENDOR_ID, SAMSUNG_PRODUCT_GT_B3730, USB_CLASS_CDC_DATA, 0x00, 0x00) }, /* Samsung GT-B3730/GT-B3710 LTE USB modem.*/
++
++#include "option.ids"
++
+ 	{ } /* Terminating entry */
+ };
+ MODULE_DEVICE_TABLE(usb, option_ids);

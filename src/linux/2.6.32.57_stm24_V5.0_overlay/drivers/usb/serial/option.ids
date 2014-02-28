@@ -1,0 +1,17 @@
+//this file includes in option.c: struct usb_device_id option_ids[] = {
+//...
+#define USB_VENDOR_AND_INTERFACE_INFO(vend, cl, sc, pr) \
+			.match_flags = USB_DEVICE_ID_MATCH_INT_INFO \
+							| USB_DEVICE_ID_MATCH_VENDOR, \
+			.idVendor = (vend), \
+			.bInterfaceClass = (cl), \
+			.bInterfaceSubClass = (sc), \
+			.bInterfaceProtocol = (pr)
+
+	{ USB_VENDOR_AND_INTERFACE_INFO(HUAWEI_VENDOR_ID, 0xff, 0x01, 0x01) },
+	{ USB_VENDOR_AND_INTERFACE_INFO(HUAWEI_VENDOR_ID, 0xff, 0x01, 0x02) },
+	{ USB_VENDOR_AND_INTERFACE_INFO(HUAWEI_VENDOR_ID, 0xff, 0x01, 0x03) },
+	{ USB_VENDOR_AND_INTERFACE_INFO(HUAWEI_VENDOR_ID, 0xff, 0x02, 0x10) },
+	{ USB_VENDOR_AND_INTERFACE_INFO(HUAWEI_VENDOR_ID, 0xff, 0x02, 0x12) },
+//...
+//}
