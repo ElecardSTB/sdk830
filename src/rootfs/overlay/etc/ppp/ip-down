@@ -1,0 +1,10 @@
+#!/bin/sh
+
+if [ -f /var/etc/ppp/route.default.prev ]; then
+	ip route add `head -1 /var/etc/ppp/route.default.prev`
+fi
+if [ -f /var/etc/ppp/resolv.prev ]; then
+	cp /var/etc/ppp/resolv.prev /etc/resolv.conf
+fi
+#echo "ip-down" >/dev/console
+#env >/dev/console
