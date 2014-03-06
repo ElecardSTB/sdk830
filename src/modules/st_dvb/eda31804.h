@@ -1,17 +1,11 @@
 /*
- * Copyright (C) 2011 by Elecard-STB.
+ * Copyright (C) 2014 by Elecard-STB.
  * Written by Anton Sergeev <Anton.Sergeev@elecard.ru>
- * 
- * EDC-1051 frontend header.
- * 
+ *
+ * EDA-31804 ATSC NIM based on Panasonic MN88436 and MxL603
  */
-/**
- @File   edc-1051.h
- @brief
-*/
-
-#if !(defined __EDC_1051_H__)
-#define __EDC_1051_H__
+#if (!defined __EDA31804_H__)
+#define __EDA31804_H__
 
 /******************************************************************
 * INCLUDE FILES                                                   *
@@ -21,6 +15,6 @@
 /******************************************************************
 * EXPORTED FUNCTIONS PROTOTYPES               <Module>_<Word>+    *
 *******************************************************************/
-struct dvb_frontend* edc1051_init_frontend(struct i2c_adapter *adapter);
+struct dvb_frontend* eda31804_init_frontend(struct i2c_adapter *adapter);
 
-#endif //#if !(define __EDC_1051_H__)
+#endif // __EDA31804_H__

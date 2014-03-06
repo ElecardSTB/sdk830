@@ -2,6 +2,9 @@
  * MN88472 demodulator driver
  *
  * Copyright (C) 2013 Andrey Kuleshov <andrey.kuleshov@elecard.ru>
+ * 
+ * This is header of private driver for mn88472.
+ * See $PRJROOT/src/elecard/modules/mn88472/ if have access.
  */
 
 #ifndef __MN88472_H__
@@ -12,7 +15,6 @@
 *******************************************************************/
 #include "st_dvb.h"
 
-//This is header of closed driver for mn88472. See $PRJROOT/src/elecard/modules/mn88472/ if have access.
 
 /******************************************************************
 * EXPORTED TYPEDEFS                                               *

@@ -50,8 +50,10 @@ static struct lgdt3305_config lgdt3305_cfg = {
 };
 
 static struct mxl603_config mxl603_cfg = {
-	.i2c_addr	= 0x60,
-	.if_khz		= 5000,
+	.i2c_addr		= MXL603_I2C_ADDR >> 1,
+	.xtal_freq_id	= 0,//0 - 16MHz, 1 - 24MHz
+	.if_khz			= 5000,
+
 	.externI2C	= 0,
 //	void *demod_priv;
 //	int (*register_get)(void *priv, u8 addr, u8 reg, u8 *value);

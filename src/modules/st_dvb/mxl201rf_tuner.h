@@ -3,6 +3,9 @@
  * Written by Andrey Kuleshov <Andrey.Kuleshov@elecard.ru>
  *
  * MxL201RF tuner driver header.
+ * 
+ * This is header of private driver for MxL201RF.
+ * See $PRJROOT/src/elecard/modules/mxl201.
  */
 
 #if !(defined __MXL201RF_H__)
@@ -13,8 +16,6 @@
 *******************************************************************/
 #include "st_dvb.h"
 #include <linux/i2c.h>
-
-//This is header of closed driver for MxL201RF. See $PRJROOT/src/elecard/modules/mxl201/.
 
 /******************************************************************
 * EXPORTED MACROS                                                 *

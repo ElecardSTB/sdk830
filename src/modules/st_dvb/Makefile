@@ -2,7 +2,7 @@
 # objects will be automatically built from the corresponding .c file -
 # no need to list the source files explicitly.
 
-MODULE_BASENAME:=st_dvb
+MODULE_BASENAME := st_dvb
 obj-m := $(MODULE_BASENAME).o
 
 $(MODULE_BASENAME)-objs := \
@@ -11,8 +11,11 @@ $(MODULE_BASENAME)-objs := \
 			sonydvbt2.o \
 			sp9680.o \
 			sp5650.o \
+			eda31804.o \
 
 MODULE_NAME := $(MODULE_BASENAME).ko
+
+$(MODULE_NAME): default
 
 ELC_DVB_DRIVER := y
 include $(PRJROOT)/src/modules/linuxtv_common/linuxtv_kernel.mk
@@ -22,9 +25,8 @@ endif
 
 # PWD is the current working directory and the location of our module
 # source files.
-PWD   := $(shell pwd)
+PWD := $(shell pwd)
 
-$(MODULE_NAME): default
 default:
 	$(MAKE) -C $(KDIR) M=$(PWD) ARCH=sh CROSS_COMPILE=sh4-linux- modules
 

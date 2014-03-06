@@ -58,7 +58,7 @@ MODULE_PARM_DESC(debug_edc_1051, "enable verbose debug messages");
 /******************************************************************
 * FUNCTION IMPLEMENTATION                                         *
 *******************************************************************/
-struct dvb_frontend* edc_1051_init_frontend(struct i2c_adapter *adapter)
+struct dvb_frontend* edc1051_init_frontend(struct i2c_adapter *adapter)
 {
 	struct dvb_frontend * fe = NULL;
 
