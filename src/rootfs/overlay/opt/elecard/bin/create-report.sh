@@ -37,7 +37,7 @@ else
 	exit 1
 fi
 
-name="$BOARD-`date +%Y%m%d%H%M`"
+name="$BOARD${1:+.$1}-`date +%Y%m%d%H%M`"
 TMP_DEST_DIR=/tmp/$name
 TMP_ARCH_FILE=/tmp/$name.tgz
 
@@ -121,6 +121,7 @@ else #stb830
 	done
 	mkdir -p $CFG_MOUNT_POUNT/reports
 	cp $TMP_ARCH_FILE $CFG_MOUNT_POUNT/reports
+	echo "Copy  $TMP_ARCH_FILE into \"$CFG_MOUNT_POUNT/reports\""
 fi
 
 #for nfs mounts
