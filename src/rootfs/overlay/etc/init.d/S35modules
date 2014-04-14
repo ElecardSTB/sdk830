@@ -9,12 +9,16 @@ BOARD_NAME=${board_name%.*}
 case "$1" in
 	start)
 		if [ "$BOARD_NAME" = "stb850" ]; then
+			#increase free memory hanging by kernel
+			echo 2884 >/proc/sys/vm/min_free_kbytes
 			load_em28xx.sh start &
 		fi
 		;;
 	stop)
 		if [ "$BOARD_NAME" = "stb850" ]; then
 			load_em28xx.sh stop
+			#return default value
+			echo 1442 >/proc/sys/vm/min_free_kbytes
 		fi
 		;;
 	restart|reload)
