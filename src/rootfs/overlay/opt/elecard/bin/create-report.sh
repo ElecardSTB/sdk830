@@ -53,6 +53,11 @@ df >$SYSTEM_REPORT_DIR/df
 mount >$SYSTEM_REPORT_DIR/mount
 lsmod >$SYSTEM_REPORT_DIR/lsmod
 ps >$SYSTEM_REPORT_DIR/ps
+echo -e "\n#netstat -tun:" >$SYSTEM_REPORT_DIR/netstat
+netstat -tun >>$SYSTEM_REPORT_DIR/netstat 2>&1
+echo -e "\n#netstat -tunl:" >>$SYSTEM_REPORT_DIR/netstat
+netstat -tunl >>$SYSTEM_REPORT_DIR/netstat 2>&1
+
 if [ $INITRAMFS -eq 0 ]; then
 	cp -f $LOGS_DIR/messages $SYSTEM_REPORT_DIR/
 else
@@ -61,34 +66,44 @@ fi
 cp /proc/cmdline /proc/version $SYSTEM_REPORT_DIR
 if [ "$BOARD" = "stb830" ]; then
 	cp /sys/class/thermal/thermal_zone0/temp $SYSTEM_REPORT_DIR/temp
+	echo `cat /proc/board/name`.`cat /proc/board/ver` >$SYSTEM_REPORT_DIR/board_name
 fi
+
+copyFile() {
+	if [ ! -e "$1" ]; then
+		echo "\"$1\" not exist!"
+		return
+	fi
+	if [ ! -d "$2" ]; then
+		echo "\"$2\" not directory!"
+		return
+	fi
+	cp -a $1 $2
+}
 
 #logs
 LOGS_REPORT_DIR=$TMP_DEST_DIR/logs
 mkdir -p $LOGS_REPORT_DIR
-if [ $INITRAMFS -eq 0 ]; then
-	cp -f $LOGS_DIR/mainapp.log $LOGS_REPORT_DIR/
-fi
-cp -f \
-	$LOGS_ADD_FILES \
-	$LOGS_REPORT_DIR/
-
+for i in $LOGS_DIR/mainapp.log $LOGS_ADD_FILES; do
+	copyFile $i $LOGS_REPORT_DIR
+done
 
 #StbMainApp
 STBMAINAPP_REPORT_DIR=$TMP_DEST_DIR/StbMainApp
 mkdir -p $STBMAINAPP_REPORT_DIR
-cp -f \
-	$STBMAINAPP_CFGDIR/analog.json \
+for i in $STBMAINAPP_CFGDIR/analog.json \
 	$STBMAINAPP_CFGDIR/settings.conf \
 	$STBMAINAPP_CFGDIR/playlist.txt \
-	$STBMAINAPP_CFGDIR/channels.conf \
-	$STBMAINAPP_REPORT_DIR/
+	$STBMAINAPP_CFGDIR/channels.conf;
+do
+	copyFile $i $STBMAINAPP_REPORT_DIR
+done
 
 #files
 if [ "$ADD_FILES" ]; then
-	cp -f \
-		$ADD_FILES \
-		$TMP_DEST_DIR/
+	for i in $ADD_FILES; do
+		copyFile $i $TMP_DEST_DIR
+	done
 fi
 
 ls -la $CFG_MOUNT_POUNT >$TMP_DEST_DIR/config_ls
