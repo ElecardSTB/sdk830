@@ -1,0 +1,6 @@
+config BR2_PACKAGE_PURE_FTPD
+	bool "Pure-FTPd"
+	default n
+	help
+	  Pure-FTPd is a free (BSD), secure, production-quality and standard-conformant FTP server.
+	  http://www.pureftpd.org/project/pure-ftpd
