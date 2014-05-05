@@ -53,10 +53,10 @@ df >$SYSTEM_REPORT_DIR/df
 mount >$SYSTEM_REPORT_DIR/mount
 lsmod >$SYSTEM_REPORT_DIR/lsmod
 ps >$SYSTEM_REPORT_DIR/ps
-echo -e "\n#netstat -tun:" >$SYSTEM_REPORT_DIR/netstat
-netstat -tun >>$SYSTEM_REPORT_DIR/netstat 2>&1
-echo -e "\n#netstat -tunl:" >>$SYSTEM_REPORT_DIR/netstat
-netstat -tunl >>$SYSTEM_REPORT_DIR/netstat 2>&1
+echo -e "\n#netstat -tunp:" >$SYSTEM_REPORT_DIR/netstat
+netstat -tunp >>$SYSTEM_REPORT_DIR/netstat 2>&1
+echo -e "\n#netstat -tunlp:" >>$SYSTEM_REPORT_DIR/netstat
+netstat -tunlp >>$SYSTEM_REPORT_DIR/netstat 2>&1
 
 if [ $INITRAMFS -eq 0 ]; then
 	cp -f $LOGS_DIR/messages $SYSTEM_REPORT_DIR/
