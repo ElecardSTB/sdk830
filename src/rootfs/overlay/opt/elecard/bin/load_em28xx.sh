@@ -1,8 +1,24 @@
 #!/bin/sh
 
+reset_AC97() {
+	echo -n "Reseting AC97... "
+	echo 83 >/sys/class/gpio/export
+	echo out >/sys/class/gpio/gpio83/direction
+	echo 0 >/sys/class/gpio/gpio83/value
+	usleep 1000
+	echo 1 >/sys/class/gpio/gpio83/value
+	usleep 1000
+	echo 83 >/sys/class/gpio/unexport
+	echo "done"
+}
+
 case "$1" in
 	start)
 #		echo "Starting loading em28xx..."
+[% IF ! CONFIG_TESTSERVER_ENABLE -%]
+		reset_AC97
+[% END -%]
+
 		while :; do
 			modprobe -r em28xx_v4l
 			modprobe em28xx_v4l
