@@ -275,6 +275,14 @@ int __init device_init_stb840_promSvyaz(int ver)
 
 	stx7105_configure_nand(&stm_nand_device);
 
+	if(ver >= 2) {
+		struct gpio_led_platform_data *led_data = pdk7105_leds.dev.platform_data;
+
+		led_data->leds[0].gpio = stm_gpio(7, 1);
+		led_data->leds[0].active_low = 0;
+		led_data->leds[1].gpio = stm_gpio(7, 0);
+		led_data->leds[1].active_low = 0;
+	}
 	return platform_add_devices(hdk7105_devices,
 			ARRAY_SIZE(hdk7105_devices));
 }
