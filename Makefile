@@ -44,7 +44,7 @@ define CHECK_COMP_SIZE
 endef
 
 firmwarePackGenerator=$(PACKAGES_DIR)/buildroot/output_rootfs/host/usr/bin/firmwarePackGenerator
-make_firmware:
+make_firmware: make_components
 	$(call ECHO_MESSAGE,Creating firmware pack:)
 	$(firmwarePackGenerator) $(COMPONENT_DIR)/stb830_efp.conf
 	@echo "Creating symlink on latest firmware."
