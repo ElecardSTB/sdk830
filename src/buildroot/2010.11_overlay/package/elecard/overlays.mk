@@ -14,8 +14,22 @@ endif
 #Add open keys. clientUpdater work from initramfs and rootfs (check only mode), so copy keys there.
 	rm -rf $(TARGET_DIR)/config.firmware/keys
 	mkdir -p $(TARGET_DIR)/config.firmware/keys
-	for i in elecard $(BUILD_ADD_KEYS_TO_FW); do \
-		cp -f $(PRJROOT)/src/firmware/keys/open/$$i.pem $(TARGET_DIR)/config.firmware/keys/; \
+	keys=$(BUILD_ADD_KEYS_TO_FW); \
+	[ "$${BUILD_SKIP_ELECARD_KEY:-0}" == "0" ] && keys="$$keys elecard"; \
+	for i in $$keys; do \
+		found=0; \
+		echo "Copying \"$$i\" sertificat (open key)"; \
+		for dir in $(PRJROOT)/src $(PRJROOT)/src/elecard; do \
+			if [ -d "$$dir" -a -e "$$dir/firmware/keys/open/$$i.pem" ]; then \
+				cp -f $$dir/firmware/keys/open/$$i.pem $(TARGET_DIR)/config.firmware/keys/; \
+				found=1; \
+				break; \
+			fi; \
+		done; \
+		if [ "$$found" -eq 0 ]; then \
+			echo "Can't find \"$$i\" sertificat (open key)"; \
+			false; \
+		fi; \
 	done
 	@echo
 
