@@ -12,9 +12,10 @@ ifeq ($(FS_TYPE),rootfs)
 	cp $(PRJROOT)/src/$(FS_TYPE)/dev/dev-stapi-$(STAPISDK_VERSION).tar $(TARGET_DIR)/etc/dev-stapi.tar
 endif
 #Add open keys. clientUpdater work from initramfs and rootfs (check only mode), so copy keys there.
-	rm -rf $(TARGET_DIR)/config.firmware/keys
-	mkdir -p $(TARGET_DIR)/config.firmware/keys
-	keys=$(BUILD_ADD_KEYS_TO_FW); \
+	@$(call MESSAGE,"Copy sertificates");
+	@rm -rf $(TARGET_DIR)/config.firmware/keys
+	@mkdir -p $(TARGET_DIR)/config.firmware/keys
+	@keys=$(BUILD_ADD_KEYS_TO_FW); \
 	[ "$${BUILD_SKIP_ELECARD_KEY:-0}" == "0" ] && keys="$$keys elecard"; \
 	for i in $$keys; do \
 		found=0; \
@@ -31,6 +32,6 @@ endif
 			false; \
 		fi; \
 	done
-	@echo
+	@echo -e "done\n"
 
 endif #ifneq ($(FS_TYPE),)
