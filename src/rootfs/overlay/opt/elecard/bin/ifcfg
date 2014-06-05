@@ -10,135 +10,129 @@ WLAN_CONFIG_FILE=/var/etc/ifcfg-wlan0
 WAN=eth0
 LAN=wlan0
 
-usage()
-{
-echo "Usage:"
-echo "  $0 config"
-echo "  $0 dhcp"
-echo "  $0 <wan|lan>"
-echo "  $0 get <eth0|wlan|ppp> OPTION"
-echo "  $0 set <eth0|wlan|ppp> OPTION VALUE"
-echo
-echo "Options:"
-echo "  IPADDR"
-echo "  NETMASK"
-echo "  DEFAULT_GATEWAY"
-echo "  BOOTPROTO"
+usage() {
+	echo "Usage:"
+	echo "  $0 config"
+	echo "  $0 dhcp"
+	echo "  $0 <wan|lan>"
+	echo "  $0 get <eth0|wlan|ppp> OPTION"
+	echo "  $0 set <eth0|wlan|ppp> OPTION VALUE"
+	echo
+	echo "Options:"
+	echo "  IPADDR"
+	echo "  NETMASK"
+	echo "  DEFAULT_GATEWAY"
+	echo "  BOOTPROTO"
 }
 
-lan_ip()
-{
-LAN_IP=`edcfg $LAN_CONFIG_FILE get IPADDR`
-if [ -z "$LAN_IP" ]; then
-	LAN_IP=$DEFAULT_LANIP
-fi
-echo $LAN_IP
+lan_ip() {
+	LAN_IP=`edcfg $LAN_CONFIG_FILE get IPADDR`
+	if [ -z "$LAN_IP" ]; then
+		LAN_IP=$DEFAULT_LANIP
+	fi
+	echo $LAN_IP
 }
 
 # USage: subnet_part <IPADDR>
-subnet_part()
-{
-echo $1 | cut -d'.' -f1-3
+subnet_part() {
+	echo $1 | cut -d'.' -f1-3
 }
 
-config()
-{
-LAN_IP=`lan_ip`
-SUBNET_PART=`subnet_part $LAN_IP`
+config() {
+	LAN_IP=`lan_ip`
+	SUBNET_PART=`subnet_part $LAN_IP`
 
-echo "auto lo"
-echo "iface lo inet loopback"
-echo
-# TODO check eth1 and setup bridge
-if [ "`edcfg $WLAN_CONFIG_FILE get WAN_MODE`" = 1 ]; then
-	if [ "`edcfg $WLAN_CONFIG_FILE get ENABLE_WIRELESS`" = 1 ]; then
-		echo "auto wlan0"
-		if [ "`edcfg $WLAN_CONFIG_FILE get BOOTPROTO`" = "static" ]; then
-			echo "iface wlan0 inet static"
-			echo "  address `edcfg $WLAN_CONFIG_FILE get IPADDR`"
-			MASK=`edcfg $WLAN_CONFIG_FILE get NETMASK`
-			test -n "$MASK" && echo "  netmask $MASK"
-			GW=`edcfg $WLAN_CONFIG_FILE get DEFAULT_GATEWAY`
-			test -n "$GW"   && echo "  gateway $GW"
-			echo "  pre-up static-dns-config.sh"
-		else
-			echo "iface wlan0 inet dhcp"
+	echo "auto lo"
+	echo "iface lo inet loopback"
+	echo
+	# TODO check eth1 and setup bridge
+	if [ "`edcfg $WLAN_CONFIG_FILE get WAN_MODE`" = 1 ]; then
+		if [ "`edcfg $WLAN_CONFIG_FILE get ENABLE_WIRELESS`" = 1 ]; then
+			echo "auto wlan0"
+			if [ "`edcfg $WLAN_CONFIG_FILE get BOOTPROTO`" = "static" ]; then
+				echo "iface wlan0 inet static"
+				echo "  address `edcfg $WLAN_CONFIG_FILE get IPADDR`"
+				MASK=`edcfg $WLAN_CONFIG_FILE get NETMASK`
+				test -n "$MASK" && echo "  netmask $MASK"
+				GW=`edcfg $WLAN_CONFIG_FILE get DEFAULT_GATEWAY`
+				test -n "$GW"   && echo "  gateway $GW"
+				echo "  pre-up static-dns-config.sh"
+			else
+				echo "iface wlan0 inet dhcp"
+			fi
+			echo "  pre-up wpa_supplicant -Dnl80211 -iwlan0 -c $WPA_SUPPLICANT_CONF -B"
+			echo "  pre-up wifi_led.sh 1"
+			echo "  post-down wifi_down.sh"
+			echo
 		fi
-		echo "  pre-up wpa_supplicant -Dnl80211 -iwlan0 -c $WPA_SUPPLICANT_CONF -B"
-		echo "  pre-up wifi_led.sh 1"
-		echo "  post-down wifi_down.sh"
-		echo
-	fi
-	echo "auto eth0"
-	echo "iface eth0 inet static"
-	echo "  address $LAN_IP"
-	echo "  netmask 255.255.255.0"
-	echo "  pre-up iptables -t nat -A POSTROUTING -s $SUBNET_PART.0/24 -o wlan0 -j MASQUERADE"
-	echo "  post-down iptables -t nat -D POSTROUTING -s $SUBNET_PART.0/24 -o wlan0 -j MASQUERADE || true"
-	echo
-else
-	echo "auto eth0"
-	if [ "`edcfg $WAN_CONFIG_FILE get BOOTPROTO`" = "static" ]; then
+		echo "auto eth0"
 		echo "iface eth0 inet static"
-		echo "  address `edcfg $WAN_CONFIG_FILE get IPADDR`"
-		MASK=`edcfg $WAN_CONFIG_FILE get NETMASK`
-		test -n "$MASK" && echo "  netmask $MASK"
-		GW=`edcfg $WAN_CONFIG_FILE get DEFAULT_GATEWAY`
-		test -n "$GW"   && echo "  gateway $GW"
-		echo "  up static-dns-config.sh"
-	else
-		echo "iface eth0 inet dhcp"
-	fi
-	echo
-	if [ "`edcfg $WLAN_CONFIG_FILE get ENABLE_WIRELESS`" = 1 ]; then
-		echo "auto wlan0"
-		echo "iface wlan0 inet static"
 		echo "  address $LAN_IP"
 		echo "  netmask 255.255.255.0"
-		echo "  pre-up hostapd $HOSTAPD_CONF -B"
-		echo "  pre-up iptables -t nat -A POSTROUTING -s $SUBNET_PART.0/24 -o eth0 -j MASQUERADE"
-		echo "  pre-up wifi_led.sh 1"
-		echo "  post-down iptables -t nat -D POSTROUTING -s $SUBNET_PART.0/24 -o eth0 -j MASQUERADE || true"
-		echo "  post-down wifi_down.sh"
+		echo "  pre-up iptables -t nat -A POSTROUTING -s $SUBNET_PART.0/24 -o wlan0 -j MASQUERADE"
+		echo "  post-down iptables -t nat -D POSTROUTING -s $SUBNET_PART.0/24 -o wlan0 -j MASQUERADE || true"
 		echo
+	else
+		echo "auto eth0"
+		if [ "`edcfg $WAN_CONFIG_FILE get BOOTPROTO`" = "static" ]; then
+			echo "iface eth0 inet static"
+			echo "  address `edcfg $WAN_CONFIG_FILE get IPADDR`"
+			MASK=`edcfg $WAN_CONFIG_FILE get NETMASK`
+			test -n "$MASK" && echo "  netmask $MASK"
+			GW=`edcfg $WAN_CONFIG_FILE get DEFAULT_GATEWAY`
+			test -n "$GW"   && echo "  gateway $GW"
+			echo "  up static-dns-config.sh"
+		else
+			echo "iface eth0 inet dhcp"
+		fi
+		echo
+		if [ "`edcfg $WLAN_CONFIG_FILE get ENABLE_WIRELESS`" = 1 ]; then
+			echo "auto wlan0"
+			echo "iface wlan0 inet static"
+			echo "  address $LAN_IP"
+			echo "  netmask 255.255.255.0"
+			echo "  pre-up hostapd $HOSTAPD_CONF -B"
+			echo "  pre-up iptables -t nat -A POSTROUTING -s $SUBNET_PART.0/24 -o eth0 -j MASQUERADE"
+			echo "  pre-up wifi_led.sh 1"
+			echo "  post-down iptables -t nat -D POSTROUTING -s $SUBNET_PART.0/24 -o eth0 -j MASQUERADE || true"
+			echo "  post-down wifi_down.sh"
+			echo
+		fi
 	fi
-fi
 }
 
-get_wanlan()
-{
-if [ "`edcfg $WLAN_CONFIG_FILE get WAN_MODE`" = 1 ]; then
-	WAN=wlan0
-	LAN=eth0
-#else
-#	WAN=eth0
-#	LAN=wlan0
-fi
+get_wanlan() {
+	if [ "`edcfg $WLAN_CONFIG_FILE get WAN_MODE`" = 1 ]; then
+		WAN=wlan0
+		LAN=eth0
+	#else
+	#	WAN=eth0
+	#	LAN=wlan0
+	fi
 }
 
-dhcp()
-{
-get_wanlan
+dhcp() {
+	get_wanlan
 
-LAN_IP=`lan_ip`
-SUBNET_PART=`subnet_part $LAN_IP`
-HOST_ADDR=${LAN_IP##*.}
-if [ "$HOST_ADDR" -gt "128" ]; then
-	RANGE_START=${SUBNET_PART}.10
-	RANGE_END=${SUBNET_PART}.$((${HOST_ADDR}-1))
-else
-	RANGE_START=${SUBNET_PART}.$((${HOST_ADDR}+1))
-	RANGE_END=${SUBNET_PART}.250
-fi
+	LAN_IP=`lan_ip`
+	SUBNET_PART=`subnet_part $LAN_IP`
+	HOST_ADDR=${LAN_IP##*.}
+	if [ "$HOST_ADDR" -gt "128" ]; then
+		RANGE_START=${SUBNET_PART}.10
+		RANGE_END=${SUBNET_PART}.$((${HOST_ADDR}-1))
+	else
+		RANGE_START=${SUBNET_PART}.$((${HOST_ADDR}+1))
+		RANGE_END=${SUBNET_PART}.250
+	fi
 
-DNS=`grep nameserver /etc/resolv.conf | cut -d' ' -f2 | tr '\n' ','`
-# Remove trailing comma
-DNS=${DNS%?}
-if [ -n "$DNS" ]; then
-	DNS="  option domain-name-servers $DNS;"
-fi
+	DNS=`grep nameserver /etc/resolv.conf | cut -d' ' -f2 | tr '\n' ','`
+	# Remove trailing comma
+	DNS=${DNS%?}
+	if [ -n "$DNS" ]; then
+		DNS="  option domain-name-servers $DNS;"
+	fi
 
-cat <<DHCP_CONF_END
+	cat <<DHCP_CONF_END
 ddns-update-style none;
 default-lease-time 14400;
 subnet $SUBNET_PART.0 netmask 255.255.255.0 {
@@ -153,33 +147,34 @@ case "$1" in
 	get)
 		case "$3" in
 			subnet)
-			SUBNET_PART=`subnet_part $(lan_ip)`
-			echo "$SUBNET_PART.0/24"
-			;;
-			*) edcfg /var/etc/ifcfg-$2 get $3
-			;;
+				SUBNET_PART=`subnet_part $(lan_ip)`
+				echo "$SUBNET_PART.0/24"
+				;;
+			*)
+				edcfg /var/etc/ifcfg-$2 get $3
+				;;
 		esac
 		exit $?
-	;;
+		;;
 	set)
 		edcfg /var/etc/ifcfg-$2 set $3 $4
 		exit $?
-	;;
+		;;
 	config)
-	config
-	;;
+		config
+		;;
 	lan)
-	get_wanlan
-	echo $LAN
-	;;
+		get_wanlan
+		echo $LAN
+		;;
 	wan)
-	get_wanlan
-	echo $WAN
-	;;
+		get_wanlan
+		echo $WAN
+		;;
 	dhcp)
-	dhcp
-	;;
+		dhcp
+		;;
 	*)
-	usage
-	;;
+		usage
+		;;
 esac
