@@ -30,6 +30,10 @@ case "$1" in
 
 		modprobe rt2800usb &> /dev/null
 
+		if [ ! -e /var/etc/interfaces ]; then
+			ifcfg config >/var/etc/interfaces
+		fi
+
 		if [ -d /sys/class/net/eth1 ]; then
 			LAN=br0
 			brctl addbr br0
@@ -40,7 +44,7 @@ case "$1" in
 			echo
 			echo "Wi-Fi not found! Falling back to Ethernet"
 			edcfg /var/etc/ifcfg-wlan0 set WAN_MODE 0
-			ifcfg config > /var/etc/interfaces
+			ifcfg config >/var/etc/interfaces
 			WAN=eth0
 			LAN=wlan0
 		fi
