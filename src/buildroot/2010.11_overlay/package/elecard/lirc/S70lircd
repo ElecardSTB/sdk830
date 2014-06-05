@@ -5,20 +5,20 @@ PID_FILE=/var/run/lircd.pid
 LIRCFLAGS="-P $PID_FILE"
 
 case "$1" in
-    start)
-	echo -n "Starting daemon lircd: "
-        mkdir -p /var/run/lirc 2>/dev/null
-        start-stop-daemon --start --quiet --pidfile $PID_FILE --exec $LIRCD -- $LIRCFLAGS
-        echo "done"
-	;;
-    stop)
-	echo -n "Shutting down daemon lircd: "
-	start-stop-daemon --stop --quiet --pidfile $PID_FILE --exec $LIRCD
-        echo "done"
-	;;
-    *)
-        echo "Usage: $0 {start|stop}"
-        exit 1
+	start)
+		echo -n "Starting daemon lircd: "
+		mkdir -p /var/run/lirc 2>/dev/null
+		start-stop-daemon --start --quiet --pidfile $PID_FILE --exec $LIRCD -- $LIRCFLAGS
+		echo "done"
+		;;
+	stop)
+		echo -n "Shutting down daemon lircd: "
+		start-stop-daemon --stop --quiet --pidfile $PID_FILE --exec $LIRCD
+		echo "done"
+		;;
+	*)
+		echo "Usage: $0 {start|stop}"
+		exit 1
 	;;
 esac
 
