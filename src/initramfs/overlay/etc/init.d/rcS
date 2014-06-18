@@ -2,6 +2,7 @@
 # Start/stop all init scripts in /etc/init.d
 # executing them in numerical order.
 #
+#exec 1>/tmp/script.log 2>&1
 
 LIST=
 if [ "$1" = "start" ]; then

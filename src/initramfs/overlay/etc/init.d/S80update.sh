@@ -3,27 +3,49 @@
 # Start updater....
 #
 
+. /opt/elecard/bin/need_network.sh
+
 DEFAULT_HTTP_URL=http://192.168.0.1/STB830_last.efp
+DEFAULT_NAMESERVER=8.8.8.8
+
+waitNET() {
+	if [ -z "$NETWORK_NEED" ]; then
+		return
+	fi
+	local x=0
+	while [ ! -f /tmp/resolv.conf ] ; do
+		if [ $x -ge 15 ]; then
+			echo "WARNING: Cant wait for resolv.conf!!! Use default nameserver $DEFAULT_NAMESERVER."
+			echo "nameserver $DEFAULT_NAMESERVER" >/tmp/resolv.conf
+			break
+		fi
+		usleep 200000
+#		echo "waitNET(): $x"
+		let x+=1
+	done
+	echo "waitNET(): done $x"
+}
 
 #dummy wait for time when usb mass storage is appiear in system
 #this should be improved, and maybe moved to clientUpdater
 waitUSB() {
-	HAS_USB_MASS_STORAGE=`dmesg | grep "SCSI emulation for USB Mass Storage devices"`
+	local HAS_USB_MASS_STORAGE=`dmesg | grep "SCSI emulation for USB Mass Storage devices"`
 	if [ -z "$HAS_USB_MASS_STORAGE" ]; then
 		echo "There no usb mass storages! Skip waiting."
+		waitNET
 		return
 	fi
 
-	x=0
-	while [ $x -lt 30 ]; do
-		[ $x -ne 0 ] && usleep 200000
-		[ -n "`mount | grep "/mnt/sd[a-z]"`" ] && break
+	local x=0
+	while ! grep "/mnt/sd[a-z]" /proc/mounts; do
+		[ $x -ge 30 ] && break
+		usleep 200000
+#		echo "waitUSB(): $x"
 		let x+=1
 	done
-	echo "x=$x"
+	echo "waitUSB(): done $x"
 }
 
-. /opt/elecard/bin/need_network.sh
 
 case "$1" in
   start)
@@ -79,6 +101,7 @@ case "$1" in
 	if [ $NOUSB -ne 0 ]; then
 		echo "Disable USB update"
 		UPDATER_FLAGS="-u $UPDATER_FLAGS"
+		waitNET
 	else
 		waitUSB
 	fi
