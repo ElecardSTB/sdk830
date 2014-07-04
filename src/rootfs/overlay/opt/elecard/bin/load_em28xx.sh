@@ -15,9 +15,7 @@ reset_AC97() {
 case "$1" in
 	start)
 #		echo "Starting loading em28xx..."
-[% IF CONFIG_TESTSERVER_ENABLE -%]
 		reset_AC97
-[% END -%]
 
 		while :; do
 			modprobe -r em28xx_v4l

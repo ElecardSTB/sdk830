@@ -20,7 +20,7 @@ APP_PVR=StbPvr
 
 case "$1" in
   start)
-	if [ -z "`cat /proc/cmdline | grep /dev/nfs`" ]; then
+	if ! grep /dev/nfs /proc/cmdline &>/dev/null; then
 		. /etc/profile
 		echo $APP_PATH $URL
 		$APP_PATH $URL
