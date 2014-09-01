@@ -57,6 +57,7 @@ echo -e "\n#netstat -tunp:" >$SYSTEM_REPORT_DIR/netstat
 netstat -tunp >>$SYSTEM_REPORT_DIR/netstat 2>&1
 echo -e "\n#netstat -tunlp:" >>$SYSTEM_REPORT_DIR/netstat
 netstat -tunlp >>$SYSTEM_REPORT_DIR/netstat 2>&1
+lsusb >>$SYSTEM_REPORT_DIR/lsusb
 
 if [ $INITRAMFS -eq 0 ]; then
 	cp -f $LOGS_DIR/messages $SYSTEM_REPORT_DIR/
@@ -68,6 +69,14 @@ if [ "$BOARD" = "stb830" ]; then
 	cp /sys/class/thermal/thermal_zone0/temp $SYSTEM_REPORT_DIR/temp
 	echo `cat /proc/board/name`.`cat /proc/board/ver` >$SYSTEM_REPORT_DIR/board_name
 fi
+
+grep /sys/kernel/debug /proc/mounts || mount -t debugfs none /sys/kernel/debug/
+mkdir -p $SYSTEM_REPORT_DIR/debug
+for i in bpa2 gpio ilc pads sysconf; do
+	cp -a /sys/kernel/debug/$i $SYSTEM_REPORT_DIR/debug
+done
+cp -a /sys/kernel/debug/usb/devices $SYSTEM_REPORT_DIR/debug/usb_devices
+
 
 copyFile() {
 	if [ ! -e "$1" ]; then
@@ -110,6 +119,8 @@ ls -la $CFG_MOUNT_POUNT >$TMP_DEST_DIR/config_ls
 find $CFG_MOUNT_POUNT >$TMP_DEST_DIR/config_find
 #nanddump -o -b -f $TMP_DEST_DIR/config_dump /dev/mtd`grep '"Sys-Config"' /proc/mtd | cut -b4` 2>&1 >$TMP_DEST_DIR/config_dump.log
 
+REPORT_FILENAME=${TMP_ARCH_FILE#/tmp/}
+
 tar -C /tmp -zcf $TMP_ARCH_FILE $name/
 if [ "$BOARD" = "stb820" ]; then
 	if [ $INITRAMFS -eq 1 ]; then
@@ -119,11 +130,11 @@ if [ "$BOARD" = "stb820" ]; then
 			diskLetter=${f#/dev/sd}
 			if ls $f[0-9] 2>/dev/null 1>/dev/null; then
 				cp -f $TMP_ARCH_FILE "$USB_MOUNT_POINT/Disk $diskLetter Partition 1"
-				echo "Copy $TMP_ARCH_FILE into \"$USB_MOUNT_POINT/Disk $diskLetter Partition 1\""
+				echo "Copy into \"$USB_MOUNT_POINT/Disk $diskLetter Partition 1/$REPORT_FILENAME\""
 			else
 				#no partitions
 				cp -f $TMP_ARCH_FILE "$USB_MOUNT_POINT/Disk $diskLetter"
-				echo "Copy  $TMP_ARCH_FILE into \"$USB_MOUNT_POINT/Disk $diskLetter\""
+				echo "Copy into \"$USB_MOUNT_POINT/Disk $diskLetter/$REPORT_FILENAME\""
 			fi
 		done
 	fi
@@ -131,12 +142,12 @@ else #stb830
 	for f in `ls /dev/sd* 2>/dev/null`; do
 		f1=$USB_MOUNT_POINT/${f#/dev/}
 		[ -d "$f1" ] || continue
-		echo "Copy report into $f1"
+		echo "Copy report into $f1/$REPORT_FILENAME"
 		cp -f $TMP_ARCH_FILE $f1/
 	done
 	mkdir -p $CFG_MOUNT_POUNT/reports
 	cp $TMP_ARCH_FILE $CFG_MOUNT_POUNT/reports
-	echo "Copy  $TMP_ARCH_FILE into \"$CFG_MOUNT_POUNT/reports\""
+	echo "Copy into \"$CFG_MOUNT_POUNT/reports/$REPORT_FILENAME\""
 fi
 
 #for nfs mounts
