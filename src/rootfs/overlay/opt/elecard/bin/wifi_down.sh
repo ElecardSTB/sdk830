@@ -6,9 +6,12 @@ exec 2>/dev/null
 
 wifi_led.sh 0
 
-kill `cat /var/run/udhcpc.wlan0.pid`
+# this should be done by ifdown
+# if [ -e /var/run/udhcpc.wlan0.pid ]; then
+# 	kill `cat /var/run/udhcpc.wlan0.pid`
+# fi
 killall hostapd
-killall wpa_supplicant
+# killall wpa_supplicant
 sleep 1
 killall -9 wpa_supplicant
 rm -rf /var/run/wpa_supplicant

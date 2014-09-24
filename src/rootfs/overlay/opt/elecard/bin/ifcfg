@@ -62,7 +62,11 @@ config() {
 			fi
 			echo "  pre-up wpa_supplicant -Dnl80211 -iwlan0 -c $WPA_SUPPLICANT_CONF -B"
 			echo "  pre-up wifi_led.sh 1"
+			# Killing wpa_supplicant should be in down section,
+			# coz post-down cannot be executed if udhcpc didnt get ip
+			echo "  down killall wpa_supplicant"
 			echo "  post-down wifi_down.sh"
+			echo "  udhcpc_opts -b"
 			echo
 		fi
 		echo "auto eth0"
