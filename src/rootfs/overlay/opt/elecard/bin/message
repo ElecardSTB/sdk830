@@ -1,0 +1,10 @@
+#!/bin/sh
+
+STB_SOCK=/tmp/app_server.sock
+
+if [ ! -e $STB_SOCK ]; then 
+	echo "Error: Seems StbMainApp not running!!!"
+	exit 1
+fi
+
+StbCommandClient -pf $STB_SOCK "$@"
