@@ -2,9 +2,20 @@
 
 STB_SOCK=/tmp/app_server.sock
 
-if [ ! -e $STB_SOCK ]; then 
-	echo "Error: Seems StbMainApp not running!!!"
+help() {
+	echo "Usage:"
+	echo "  $0 [-d DELAY_TIME] TEXT"
+}
+
+if [ "$#" -le 0 ]; then
+	echo "Wrong arguments!"
+	help
 	exit 1
 fi
 
-StbCommandClient -pf $STB_SOCK "$@"
+if [ ! -e $STB_SOCK ]; then 
+	echo "Error: Seems StbMainApp not running!!!"
+	exit 2
+fi
+
+StbCommandClient -pf $STB_SOCK fastmsg "$@"
