@@ -97,16 +97,8 @@ for i in $LOGS_DIR/mainapp.log $LOGS_ADD_FILES; do
 	copyFile $i $LOGS_REPORT_DIR
 done
 
-#StbMainApp
-STBMAINAPP_REPORT_DIR=$TMP_DEST_DIR/StbMainApp
-mkdir -p $STBMAINAPP_REPORT_DIR
-for i in $STBMAINAPP_CFGDIR/analog.json \
-	$STBMAINAPP_CFGDIR/settings.conf \
-	$STBMAINAPP_CFGDIR/playlist.txt \
-	$STBMAINAPP_CFGDIR/channels.conf;
-do
-	copyFile $i $STBMAINAPP_REPORT_DIR
-done
+#StbMainApp config files
+copyFile $STBMAINAPP_CFGDIR $TMP_DEST_DIR
 
 #files
 if [ "$ADD_FILES" ]; then
