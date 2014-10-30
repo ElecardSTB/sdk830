@@ -76,7 +76,8 @@ else
 [% IF CONFIG_TESTSERVER_ENABLE -%]
 			MOUNT_OPTS=",codepage=866,iocharset=utf8,errors=continue"
 [% ELSE -%]
-			MOUNT_OPTS=",codepage=866,iocharset=utf8,errors=remount-ro"
+			#MOUNT_OPTS=",codepage=866,iocharset=utf8,errors=remount-ro"
+			MOUNT_OPTS=",codepage=866,iocharset=utf8,errors=continue"
 [% END -%]
 		fi
 
