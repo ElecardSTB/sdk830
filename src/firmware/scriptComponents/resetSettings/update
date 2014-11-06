@@ -1,0 +1,5 @@
+#!/bin/sh
+
+rm -rf /var/etc/*
+echo "Script executed!!! All settings are destroed!" > /dev/console
+
