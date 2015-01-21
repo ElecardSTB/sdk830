@@ -21,4 +21,9 @@ source "package/elecard/modules/Config.in"
 source "package/elecard/commonlib/Config.in"
 source "package/elecard/xl2tpd/Config.in"
 source "package/elecard/frontpanel/Config.in"
+
+source "package/elecard/boost/Config.in"
+source "package/elecard/rlog/Config.in"
+source "package/elecard/encfs/Config.in"
+
 endmenu

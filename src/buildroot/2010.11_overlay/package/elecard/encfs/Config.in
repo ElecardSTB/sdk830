@@ -1,0 +1,13 @@
+
+config BR2_PACKAGE_ENCFS
+	bool "encfs"
+	depends on BR2_PACKAGE_BOOST
+	depends on BR2_PACKAGE_RLOG
+	depends on BR2_PACKAGE_LIBFUSE
+
+	help
+	EncFS provides an encrypted filesystem in user-space. It runs without any special permissions and uses the FUSE library module to provide the filesystem interface. EncFS is open source software, licensed under the GPL (with the underlying library released under the LGPL).
+
+	https://vgough.github.io/encfs/
+	http://www.arg0.net/encfs	
+	http://encfs.googlecode.com/files/encfs-1.7.4.tgz
