@@ -6,7 +6,7 @@ echo $USB_DIR
 
 #if [ $USB_DIR -eq "" ]; then echo "Error: No USB mounted" && exit; fi
 
-HIDDEN_DIR="$USB_DIR""/.hidden"
+HIDDEN_DIR="$USB_DIR""/._hidden"
 OPEN_DIR="$USB_DIR""/opened"
 
 echo $HIDDEN_DIR
@@ -35,7 +35,7 @@ else
 	hwconfigManager l 0 FUSION_PASSWD $NEW_PASSWD
 
 	# first time volume creation
-	echo p | encfs --extpass='echo $NEW_PASSWD' $HIDDEN_DIR $OPEN_DIR;
+	printf 'x\n2\n128\n1024\n1\nYes\nYes\nNo\nNo\n0\nYes' | encfs --extpass='echo $NEW_PASSWD' $HIDDEN_DIR $OPEN_DIR;
 fi
 
 #check if we are ok
