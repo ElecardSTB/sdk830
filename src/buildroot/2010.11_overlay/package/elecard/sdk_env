@@ -6,7 +6,7 @@
 ifeq ($(_ELECARD_ENVIRONMENT_),)
 _ELECARD_ENVIRONMENT_:=1
 
-ELECARD_UPLOAD_SERVER:=ftp://93.91.165.233/incoming/sdk830_packs/
+ELECARD_UPLOAD_SERVER:=ftp://ftp.elecard.com/pub/stb830/packs/
 ELECARD_SMITHY_ADDR:=smithy.elecard.net.ru
 ELECARD_SMITHY_TARBALLS:=http://$(ELECARD_SMITHY_ADDR)/tarballs
 
