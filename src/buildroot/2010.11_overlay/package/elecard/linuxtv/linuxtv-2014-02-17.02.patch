@@ -1,0 +1,13 @@
+--- linuxtv-2014-02-17.02/linux/Makefile.orif	2014-05-12 14:05:06.000000000 +0700
++++ linuxtv-2014-02-17.02/linux/Makefile	2015-04-10 17:18:06.048329724 +0600
+@@ -57,8 +57,8 @@
+ 
+ TODAY_TAR := linux-media-`date "+%Y-%m-%d"`.tar
+ TODAY_TAR_MD5 := linux-media-`date "+%Y-%m-%d"`.tar.bz2.md5
+-LATEST_TAR := http://linuxtv.org/downloads/drivers/old/linux-media-2014-02-08.tar.bz2
+-LATEST_TAR_MD5 := http://linuxtv.org/downloads/drivers/old/linux-media-2014-02-08.tar.bz2.md5
++LATEST_TAR := ftp://ftp.elecard.com/pub/stb830/packs/linux-media-2014-02-08.tar.bz2
++LATEST_TAR_MD5 := ftp://ftp.elecard.com/pub/stb830/packs/linux-media-2014-02-08.tar.bz2.md5
+ 
+ default:
+ 	make -C ..
