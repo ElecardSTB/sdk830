@@ -16,13 +16,13 @@ else
 fi
 echo "usb_dir = $USB_DIR"
 
-if [ "$USB_FS" != "ext3" ]; then
+if [ "$USB_FS" != "ext2" ]; then
 	echo "umount -f $USB_DIR"
 	umount -l $USB_DIR
-	echo "mkfs.ext3 -F $USB_DEV"
-	mkfs.ext3 -F $USB_DEV 
+	echo "mkfs.ext2 -F $USB_DEV"
+	mkfs.ext2 -F $USB_DEV 
 	echo "mount $USB_DEV $USB_DIR"
-	mount -o rw -t ext3 $USB_DEV $USB_DIR 
+	mount -o rw -t ext2 $USB_DEV $USB_DIR 
 	chmod 777 $USB_DIR
 	echo "ok"
 fi
