@@ -120,8 +120,8 @@ define HOST_BOOST_CONFIGURE_CMDS
 	echo "" >> $(@D)/user-config.jam
 endef
 
-PARALLEL_JOBS=`grep processor /proc/cpuinfo | wc -l`
-$(warning "PARALLEL_JOBS=$(PARALLEL_JOBS)")
+# PARALLEL_JOBS=`grep processor /proc/cpuinfo | wc -l`
+PARALLEL_JOBS=$(BR2_JLEVEL)
 define BOOST_INSTALL_TARGET_CMDS
 	(cd $(@D) && ./b2 -j$(PARALLEL_JOBS) -q -d+1 \
 	--user-config=$(@D)/user-config.jam \
