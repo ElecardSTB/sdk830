@@ -13,14 +13,14 @@ waitNET() {
 		return
 	fi
 	local x=0
-	while [ ! -f /tmp/resolv.conf ] ; do
+	while [ ! -s /tmp/resolv.conf ] ; do
 		if [ $x -ge 15 ]; then
 			echo "WARNING: Cant wait for resolv.conf!!! Use default nameserver $DEFAULT_NAMESERVER."
 			echo "nameserver $DEFAULT_NAMESERVER" >/tmp/resolv.conf
 			break
 		fi
 		usleep 200000
-#		echo "waitNET(): $x"
+# 		echo "waitNET(): $x" >>/tmp/waitNET
 		let x+=1
 	done
 	echo "waitNET(): done $x"
