@@ -1,0 +1,6 @@
+config BR2_PACKAGE_BACKPORTS
+	bool "backported linux drivers"
+	help
+	  Backports provide drivers released on newer kernels backported
+	  for usage on older kernels.
+	  See https://backports.wiki.kernel.org/index.php/Main_Page

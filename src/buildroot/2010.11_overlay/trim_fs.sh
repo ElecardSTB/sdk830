@@ -18,4 +18,11 @@ rm -rf $trim_files
 
 find $FS_TARGET -name .svn -type d | xargs rm -rf
 
-
+if [ "$FS_TYPE" == "rootfs" ]; then
+	KERNEL_RELEASE_FILE=$KDIR/include/config/kernel.release
+	if [ -e $KERNEL_RELEASE_FILE ]; then
+		KERNEL_RELEASE=`cat $KERNEL_RELEASE_FILE`
+		echo "DEPMOD: $KERNEL_RELEASE"
+		depmod -a -b $1 $KERNEL_RELEASE
+	fi
+fi

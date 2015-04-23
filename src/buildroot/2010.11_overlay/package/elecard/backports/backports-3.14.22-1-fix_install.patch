@@ -1,0 +1,15 @@
+--- backports-3.14.22-1/Makefile.real.orig	2015-04-21 17:13:58.000000000 +0600
++++ backports-3.14.22-1/Makefile.real	2015-04-21 17:14:31.951667186 +0600
+@@ -90,9 +90,9 @@
+ 	@./scripts/blacklist.sh $(KLIB)/ $(KLIB)/$(KMODDIR)
+ 	@./scripts/compress_modules.sh $(KLIB)/$(KMODDIR)
+ 	@./scripts/check_depmod.sh
+-	@./scripts/backport_firmware_install.sh
+-	@/sbin/depmod -a
+-	@./scripts/update-initramfs.sh $(KLIB)
++# 	@./scripts/backport_firmware_install.sh
++# 	@/sbin/depmod -a
++# 	@./scripts/update-initramfs.sh $(KLIB)
+ 	@echo
+ 	@echo Your backported driver modules should be installed now.
+ 	@echo Reboot.

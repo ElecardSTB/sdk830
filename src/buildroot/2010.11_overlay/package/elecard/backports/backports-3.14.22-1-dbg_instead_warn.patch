@@ -1,0 +1,11 @@
+--- backports-3.14.22-1/drivers/net/wireless/rt2x00/rt2800usb.c.orig	2014-10-25 21:22:27.000000000 +0700
++++ backports-3.14.22-1/drivers/net/wireless/rt2x00/rt2800usb.c	2015-04-23 19:15:03.825944294 +0600
+@@ -125,7 +125,7 @@
+ 
+ 	tout = time_after(jiffies, entry->last_action + msecs_to_jiffies(100));
+ 	if (unlikely(tout))
+-		rt2x00_warn(entry->queue->rt2x00dev,
++		rt2x00_dbg(entry->queue->rt2x00dev,
+ 			    "TX status timeout for entry %d in queue %d\n",
+ 			    entry->entry_idx, entry->queue->qid);
+ 	return tout;

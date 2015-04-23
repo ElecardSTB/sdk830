@@ -1,0 +1,13 @@
+--- backports-3.14.22-1/net/wireless/Kconfig.orig	2015-04-23 18:25:36.000000000 +0600
++++ backports-3.14.22-1/net/wireless/Kconfig	2015-04-23 18:25:59.153841176 +0600
+@@ -114,6 +114,10 @@
+ 
+ 	  Most distributions have a CRDA package.  So if unsure, say N.
+ 
++config WEXT_CORE
++	bool
++	default WIRELESS_EXT
++
+ config CFG80211_WEXT
+ 	bool "cfg80211 wireless extensions compatibility"
+ 	depends on CFG80211

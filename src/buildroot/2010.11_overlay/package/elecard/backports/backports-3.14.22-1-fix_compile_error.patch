@@ -1,0 +1,11 @@
+--- backports-3.14.22-1/backport-include/linux/compat.h.orig	2015-04-21 17:17:01.000000000 +0600
++++ backports-3.14.22-1/backport-include/linux/compat.h	2015-04-21 17:17:17.475672982 +0600
+@@ -15,7 +15,7 @@
+ 
+ #if (LINUX_VERSION_CODE < KERNEL_VERSION(3,4,0))
+ #define compat_put_timespec LINUX_BACKPORT(compat_put_timespec)
+-extern int compat_put_timespec(const struct timespec *, void __user *);
++// extern int compat_put_timespec(const struct timespec *, void __user *);
+ #endif
+ 
+ #endif /* __BACKPORT_COMPAT_H */
