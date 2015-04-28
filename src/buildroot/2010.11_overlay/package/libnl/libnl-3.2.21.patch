@@ -1,0 +1,33 @@
+--- libnl-3.2.21/include/netlink/route/link/can.h.orig	2013-01-24 19:30:22.000000000 +0700
++++ libnl-3.2.21/include/netlink/route/link/can.h	2014-09-24 16:38:21.432570505 +0700
+@@ -16,6 +16,30 @@
+ #include <netlink/route/link.h>
+ #include <linux/can/netlink.h>
+ 
++#if !(defined CAN_CTRLMODE_ONE_SHOT)
++/*
++ * CAN bus error counters
++ */
++struct can_berr_counter {
++	__u16 txerr;
++	__u16 rxerr;
++};
++
++#define CAN_CTRLMODE_ONE_SHOT		0x08	/* One-Shot mode */
++#define CAN_CTRLMODE_BERR_REPORTING	0x10	/* Bus-error reporting */
++#define CAN_CTRLMODE_FD			0x20	/* CAN FD mode */
++
++enum {
++	IFLA_CAN_BERR_COUNTER = IFLA_CAN_RESTART + 1,
++	IFLA_CAN_DATA_BITTIMING,
++	IFLA_CAN_DATA_BITTIMING_CONST,
++};
++
++#undef IFLA_CAN_MAX
++#define IFLA_CAN_MAX	(IFLA_CAN_DATA_BITTIMING_CONST)
++#endif
++
++
+ #ifdef __cplusplus
+ extern "C" {
+ #endif
