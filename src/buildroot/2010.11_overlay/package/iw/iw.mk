@@ -23,7 +23,7 @@ endif
 
 define IW_CONFIGURE_CMDS
 	echo "CC = $(TARGET_CC)" >$(IW_CONFIG)
-	echo "CFLAGS = $(TARGET_CFLAGS)" >>$(IW_CONFIG)
+	echo "CFLAGS = $(TARGET_CFLAGS) -I$(STAGING_DIR)/usr/include/libnl3/" >>$(IW_CONFIG)
 	echo "LDFLAGS = $(TARGET_LDFLAGS)" >>$(IW_CONFIG)
 endef
 
