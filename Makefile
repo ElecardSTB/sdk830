@@ -18,7 +18,7 @@ maketools:
 	make -C $(PRJROOT)/etc/tools
 
 
-COMMON_SCRIPT_FILES=$(sort $(wildcard ./src/script/*.sh))
+COMMON_SCRIPT_FILES=$(sort $(wildcard $(PRJROOT)/src/script/*.sh))
 $(_ts_commonscript): $(COMMON_SCRIPT_FILES)
 	$(call ECHO_MESSAGE,Common scripts)
 	@echo "Scripts:"
@@ -94,24 +94,26 @@ clean:
 
 
 br buildroot rootfs: scripts
-	make -C ./src/rootfs
+	make -C $(PRJROOT)/src/rootfs
 
 bri br_i buildroot_i initramfs: scripts
-	make -C ./src/buildroot initramfs_rm_make_ts
-	make -C ./src/initramfs
+	make -C $(PRJROOT)/src/buildroot initramfs_rm_make_ts
+	make -C $(PRJROOT)/src/initramfs
 
 linux kernel: scripts
-	make -C ./src/linux kernel_only
+	make -C $(PRJROOT)/src/linux kernel_only
 
+stb:
+	make -C $(PRJROOT)/src/apps/StbMainApp
 
 ifeq ($(STB830_SDK),)
 packs: scripts $(SDK_PACKAGES_DIR)
 	$(PRJROOT)/src/elecard/bin/genPackages.sh
 
-stapisdk stsdk: scripts
-	make -C ./src/elecard/stapisdk stapisdk
+stapisdk stsdk elcd: scripts
+	make -C $(PRJROOT)/src/elecard/stapisdk stapisdk
 else
-stapisdk stsdk packs: scripts
+stapisdk stsdk elcd packs: scripts
 	@echo "You should run it in FULL build (not SDK)!"
 endif
 
