@@ -6,7 +6,7 @@
 #
 
 [% IF ! CONFIG_ELECD_ENABLE -%]
-	[% SKIPFILE %]
+  [% SKIPFILE %]
 [% END -%]
 
 
@@ -20,31 +20,35 @@ APP_PVR=StbPvr
 
 case "$1" in
   start)
-	if ! grep /dev/nfs /proc/cmdline &>/dev/null; then
-		. /etc/profile
-		echo $APP_PATH $URL
-		$APP_PATH $URL
-		while [ ! -e /tmp/elcd.sock ]; do
-			usleep 100000
-		done
-[% IF (ENV.ENABLE_PVR == 1) -%]
-		$APP_PVR >>/var/log/StbPvr.log 2>&1 &
+    if ! grep /dev/nfs /proc/cmdline &>/dev/null; then
+      . /etc/profile
+      echo $APP_PATH $URL
+[% IF (ENV.ELCD_USE_LIBIOCTL == 1) -%]
+      LD_PRELOAD=/opt/elecard/lib/libioctl.so $APP_PATH $URL
+[% ELSE -%]
+      $APP_PATH $URL
 [% END -%]
-		mainapp.sh &
-	fi
+      while [ ! -e /tmp/elcd.sock ]; do
+        usleep 100000
+      done
+[% IF (ENV.ENABLE_PVR == 1) -%]
+      $APP_PVR >>/var/log/StbPvr.log 2>&1 &
+[% END -%]
+      mainapp.sh &
+    fi
 
-	;;
+    ;;
   stop)
-	killall $APP
-	echo "done."
-	;;
-  restart|reload)
-	"$0" stop
-	"$0" start
-	;;
+    killall $APP
+    echo "done."
+    ;;
+    restart|reload)
+    "$0" stop
+    "$0" start
+    ;;
   *)
-	echo $"Usage: $0 {start|stop|restart}"
-	exit 1
+    echo $"Usage: $0 {start|stop|restart}"
+    exit 1
 esac
 
 exit $?
