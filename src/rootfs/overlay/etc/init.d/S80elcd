@@ -24,7 +24,7 @@ case "$1" in
       . /etc/profile
       echo $APP_PATH $URL
 [% IF (ENV.ELCD_USE_LIBIOCTL == 1) -%]
-      LD_PRELOAD=/opt/elecard/lib/libioctl.so $APP_PATH $URL
+      LD_PRELOAD=/serga/libictl/register_frame_info_fix.so:/opt/elecard/lib/libioctl.so $APP_PATH $URL
 [% ELSE -%]
       $APP_PATH $URL
 [% END -%]

@@ -5,7 +5,7 @@
 #############################################################
 include package/elecard/overlayTemplate.mk
 
-GARB_VERSION:=2014.07.28
+GARB_VERSION:=2016.03.03
 GARB_SOURCE:=elc-garb-bin-$(GARB_VERSION).tar.xz
 ifeq ($(STB830_SDK),)
 GARB_SITE:=$(ELECARD_SMITHY_TARBALLS)
