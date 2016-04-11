@@ -7,16 +7,16 @@ DEFAULT_LANIP=192.168.111.1
 WAN_CONFIG_FILE=/var/etc/ifcfg-wan
 LAN_CONFIG_FILE=/var/etc/ifcfg-lan
 WLAN_CONFIG_FILE=/var/etc/ifcfg-wlan0
-WAN=eth0
-LAN=wlan0
+WAN=
+LAN=
 
 usage() {
 	echo "Usage:"
 	echo "  $0 config"
 	echo "  $0 dhcp"
 	echo "  $0 <wan|lan>"
-	echo "  $0 get <eth0|wlan|ppp> OPTION"
-	echo "  $0 set <eth0|wlan|ppp> OPTION VALUE"
+	echo "  $0 get <wan|lan|wlan0> OPTION"
+	echo "  $0 set <wan|lan|wlan0> OPTION VALUE"
 	echo
 	echo "Options:"
 	echo "  IPADDR"
@@ -38,81 +38,82 @@ subnet_part() {
 	echo $1 | cut -d'.' -f1-3
 }
 
-config() {
-	LAN_IP=`lan_ip`
-	SUBNET_PART=`subnet_part $LAN_IP`
+print_wan_config() {
+    iface=$WAN
+    cfg_file=$1
+    echo "auto $iface"
+    if [ "`edcfg $cfg_file get BOOTPROTO`" = "static" ]; then
+        echo "iface $iface inet static"
+        echo "  address `edcfg $cfg_file get IPADDR`"
+        MASK=`edcfg $cfg_file get NETMASK`
+        test -n "$MASK" && echo "  netmask $MASK"
+        GW=`edcfg $cfg_file get DEFAULT_GATEWAY`
+        test -n "$GW"   && echo "  gateway $GW"
+        echo "  pre-up static-dns-config.sh"
+    else
+        echo "iface $iface inet dhcp"
+    fi
+}
 
-	echo "auto lo"
-	echo "iface lo inet loopback"
-	echo
-	# TODO check eth1 and setup bridge
-	if [ "`edcfg $WLAN_CONFIG_FILE get WAN_MODE`" = 1 ]; then
-		if [ "`edcfg $WLAN_CONFIG_FILE get ENABLE_WIRELESS`" = 1 ]; then
-			echo "auto wlan0"
-			if [ "`edcfg $WLAN_CONFIG_FILE get BOOTPROTO`" = "static" ]; then
-				echo "iface wlan0 inet static"
-				echo "  address `edcfg $WLAN_CONFIG_FILE get IPADDR`"
-				MASK=`edcfg $WLAN_CONFIG_FILE get NETMASK`
-				test -n "$MASK" && echo "  netmask $MASK"
-				GW=`edcfg $WLAN_CONFIG_FILE get DEFAULT_GATEWAY`
-				test -n "$GW"   && echo "  gateway $GW"
-				echo "  pre-up static-dns-config.sh"
-			else
-				echo "iface wlan0 inet dhcp"
-			fi
-			echo "  pre-up wpa_supplicant -Dnl80211 -iwlan0 -c $WPA_SUPPLICANT_CONF -B"
-			echo "  pre-up wifi_led.sh 1"
-			# Killing wpa_supplicant should be in down section,
-			# coz post-down cannot be executed if udhcpc didnt get ip
-			echo "  down killall wpa_supplicant"
-			echo "  post-down wifi_down.sh"
-			echo "  udhcpc_opts -b"
-			echo
-		fi
-		echo "auto eth0"
-		echo "iface eth0 inet static"
-		echo "  address $LAN_IP"
-		echo "  netmask 255.255.255.0"
-		echo "  pre-up iptables -t nat -A POSTROUTING -s $SUBNET_PART.0/24 -o wlan0 -j MASQUERADE"
-		echo "  post-down iptables -t nat -D POSTROUTING -s $SUBNET_PART.0/24 -o wlan0 -j MASQUERADE || true"
-		echo
-	else
-		echo "auto eth0"
-		if [ "`edcfg $WAN_CONFIG_FILE get BOOTPROTO`" = "static" ]; then
-			echo "iface eth0 inet static"
-			echo "  address `edcfg $WAN_CONFIG_FILE get IPADDR`"
-			MASK=`edcfg $WAN_CONFIG_FILE get NETMASK`
-			test -n "$MASK" && echo "  netmask $MASK"
-			GW=`edcfg $WAN_CONFIG_FILE get DEFAULT_GATEWAY`
-			test -n "$GW"   && echo "  gateway $GW"
-			echo "  up static-dns-config.sh"
-		else
-			echo "iface eth0 inet dhcp"
-		fi
-		echo
-		if [ "`edcfg $WLAN_CONFIG_FILE get ENABLE_WIRELESS`" = 1 ]; then
-			echo "auto wlan0"
-			echo "iface wlan0 inet static"
-			echo "  address $LAN_IP"
-			echo "  netmask 255.255.255.0"
-			echo "  pre-up hostapd $HOSTAPD_CONF -B"
-			echo "  pre-up iptables -t nat -A POSTROUTING -s $SUBNET_PART.0/24 -o eth0 -j MASQUERADE"
-			echo "  pre-up wifi_led.sh 1"
-			echo "  post-down iptables -t nat -D POSTROUTING -s $SUBNET_PART.0/24 -o eth0 -j MASQUERADE || true"
-			echo "  post-down wifi_down.sh"
-			echo
-		fi
-	fi
+print_hostap_config() {
+    echo "  pre-up hostapd $HOSTAPD_CONF -B"
+    echo "  pre-up wifi_led.sh 1"
+    echo "  down wifi_down.sh"
+}
+
+config() {
+    LAN_IP=`lan_ip`
+    SUBNET_PART=`subnet_part $LAN_IP`
+
+    echo "auto lo"
+    echo "iface lo inet loopback"
+    echo
+    # TODO check eth1 and setup bridge
+    enable_wireless=`edcfg $WLAN_CONFIG_FILE get ENABLE_WIRELESS`
+    get_wanlan
+    if [ "$WAN" = "wlan0" ]; then
+        if [ "$enable_wireless" = 1 ]; then
+            print_wan_config $WLAN_CONFIG_FILE
+            echo "  pre-up wpa_supplicant -Dnl80211 -iwlan0 -c $WPA_SUPPLICANT_CONF -B"
+            echo "  pre-up wifi_led.sh 1"
+            # Killing wpa_supplicant should be in down section,
+            # coz post-down cannot be executed if udhcpc didnt get ip
+            echo "  down killall wpa_supplicant"
+            echo "  post-down wifi_down.sh"
+            echo "  udhcpc_opts -b"
+        fi
+    else
+        print_wan_config $WAN_CONFIG_FILE
+        [ "$WAN" = "br0" ] && print_hostap_config
+    fi
+    echo
+
+    if [ "$LAN" != "wlan0" -o "$enable_wireless" = "1" ] && [ "$WAN" != "br0" -a -n "$LAN" ]; then
+        echo "auto $LAN"
+        echo "iface $LAN inet static"
+        echo "  address $LAN_IP"
+        echo "  netmask 255.255.255.0"
+        echo "  pre-up iptables -t nat -A POSTROUTING -s $SUBNET_PART.0/24 -o $WAN -j MASQUERADE"
+        echo "  post-down iptables -t nat -D POSTROUTING -s $SUBNET_PART.0/24 -o $WAN -j MASQUERADE || true"
+        [ "$LAN" = "wlan0" ] && print_hostap_config
+        echo
+    fi
 }
 
 get_wanlan() {
-	if [ "`edcfg $WLAN_CONFIG_FILE get WAN_MODE`" = 1 ]; then
-		WAN=wlan0
-		LAN=eth0
-	#else
-	#	WAN=eth0
-	#	LAN=wlan0
-	fi
+    WAN=`edcfg $WAN_CONFIG_FILE get IFACE`;
+    if [ "$WAN" ]; then
+        LAN=`edcfg $LAN_CONFIG_FILE get IFACE`;
+    else
+        # legacy
+        if [ "`edcfg $WLAN_CONFIG_FILE get WAN_MODE`" = 1 ]; then
+            WAN=wlan0
+            LAN=eth0
+        else
+            WAN=eth0
+            LAN=wlan0
+        fi
+    fi
 }
 
 dhcp() {
