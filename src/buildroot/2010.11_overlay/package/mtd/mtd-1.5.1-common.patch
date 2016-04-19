@@ -1,0 +1,10 @@
+--- mtd-1.5.1/common.orig.mk	2014-04-07 18:01:36.000000000 +0700
++++ mtd-1.5.1/common.mk	2014-09-22 15:13:52.768950421 +0700
+@@ -1,5 +1,5 @@
+-CC := $(CROSS)gcc
+-AR := $(CROSS)ar
++CC ?= $(CROSS)gcc
++AR ?= $(CROSS)ar
+ RANLIB := $(CROSS)ranlib
+ 
+ # Stolen from Linux build system
