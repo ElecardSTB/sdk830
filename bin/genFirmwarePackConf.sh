@@ -69,7 +69,7 @@ REVISION=${UPD_CONFIG}${UPD_CONFIG_REV}
 SYSID=02-001-1-00-00.01
 DATE=`date +'%Y%m%d%H%M'`
 DATE_READABLE=`date +'%Y-%m-%d %H:%M:%S'`
-HOSTNAME=`uname -n`
+HOSTNAME=`uname -n | cut -d '.' -f 1` #use only part before '.' character
 SYSREV_PKG=${DATE#??}
 
 KERNELVER=0
